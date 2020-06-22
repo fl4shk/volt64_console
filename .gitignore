@@ -1,0 +1,5 @@
+*.sw[pox]
+tags
+*.taghl
+src/__pycache__
+src/build

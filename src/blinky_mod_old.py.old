@@ -1,0 +1,24 @@
+#!/usr/bin/env python3
+
+from misc_util import *
+
+from nmigen import *
+from nmigen.hdl.rec import *
+
+class Blinky(Elaboratable):
+	def elaborate(self, platform):
+		led_pin_arr = Array([platform.request("led", i) for i in range(10)])
+		button_n_pin_arr = Array([platform.request("button", i)
+			for i in range(4)])
+		switch_pin_arr = Array([platform.request("switch", i)
+			for i in range(10)])
+
+
+		m = Module()
+
+		#for i in range(len(button_pins)):
+		#	m.d.sync += led_pins[i].eq(button_pins[i] == 0)
+		for i in range(len(button_pins)):
+			m.d.sync += led_pins[i].eq(button_pins[i])
+
+		return m
