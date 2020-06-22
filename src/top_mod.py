@@ -4,7 +4,7 @@ from misc_util import *
 from nmigen import *
 from nmigen.hdl.rec import *
 
-from alu_mod import *
+from vga_driver_mod import *
 
 class Top(Elaboratable):
 	def __init__(self, platform):
@@ -25,7 +25,7 @@ class Top(Elaboratable):
 
 	#--------
 	def __elab_build_pll100(self, m):
-		return inst_pll("pll_50_to_100_mod.v", "pll100", "pll_50_to_100",
+		return inst_pll("pll_50_to_100_mod.v", "dom", "pll_50_to_100",
 			100, self.platform(), m)
 	#--------
 
@@ -56,14 +56,37 @@ class Top(Elaboratable):
 		#--------
 
 		#--------
-		ALU_WIDTH = 3
+		#ALU_WIDTH = 3
 
-		m.submodules.alu = Alu(ALU_WIDTH)
+		#m.submodules.alu = Alu(ALU_WIDTH)
+
+		# 640 x 480 @ 60 Hz, taken from http://www.tinyvga.com
+		#vga_driver = m.submodules.vga_driver \
+		#	= VgaDriver \
+		#	(
+		#		cpp=100 // 25,
+		#		htiming \
+		#			= VgaTiming \
+		#			(
+		#				visib=640,
+		#				front=16,
+		#				sync=96,
+		#				back=48
+		#			),
+		#		vtiming \
+		#			= VgaTiming \
+		#			(
+		#				visib=480,
+		#				front=10,
+		#				sync=2,
+		#				back=33
+		#			)
+		#	)
 		#--------
 
 		#--------
 		pll100 = self.__elab_build_pll100(m)
-		io_vecs = self.__elab_build_io_vecs(m)
+		io = self.__elab_build_io_vecs(m)
 		#--------
 
 		#--------
@@ -73,10 +96,13 @@ class Top(Elaboratable):
 		cntr_32.fast = Signal(unsigned(CNTR_32_WIDTH), reset=0)
 
 		m.d.sync += cntr_32.slow.eq(cntr_32.slow - 0b1)
-		m.d.pll100 += cntr_32.fast.eq(cntr_32.fast - 0b1)
+		m.d.dom += cntr_32.fast.eq(cntr_32.fast - 0b1)
 
-		m.d.comb += io_vecs.led[0:5].eq(~cntr_32.slow[27:32])
-		m.d.comb += io_vecs.led[5:10].eq(~cntr_32.fast[27:32])
+		m.d.comb += io.led[0:5].eq(~cntr_32.slow[27:32])
+		m.d.comb += io.led[5:10].eq(~cntr_32.fast[27:32])
+		#--------
+
+		#--------
 		#--------
 
 		#--------

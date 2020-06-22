@@ -26,8 +26,10 @@ def printerr(*args):
 def convert_enum_to_str(to_conv):
 	return str(to_conv)[str(to_conv).find(".") + 1:]
 
+def width_from_arg(arg):
+	return math.ceil(math.log2(arg))
 def width_from_len(arg):
-	return math.ceil(math.log2(len(arg)))
+	return width_from_arg(len(arg))
 
 #def add_unique_memb(self, name, val):
 #	if name not in self.__dict__:
@@ -62,7 +64,6 @@ def inst_pll(pll_file_name, domain, pll_module_name, freq, platform, m):
 			o_locked=ret.locked,
 		))
 
-	#self.platform().add_clock_constraint(ret.clk, 100)
 	platform.add_clock_constraint(ret.pll_clk, freq)
 
 	return ret
