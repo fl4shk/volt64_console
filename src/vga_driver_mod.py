@@ -4,109 +4,64 @@ from misc_util import *
 from nmigen import *
 from nmigen.hdl.rec import *
 
-#class VgaDriverBusLayout(Layout):
-#	def __init__(self):
-#		super().__init__\
-#		([
-#			("clk", unsigned(1)),
-#
-#			("r", self.__unsgn_color()),
-#			("g", self.__unsgn_color()),
-#			("b", self.__unsgn_color()),
-#			("hsync", self.__unsgn_sync()),
-#			("vsync", self.__unsgn_sync()),
-#		])
-#
-#	def __unsgn_color(self):
-#		return unsigned(4)
-#	def __unsgn_sync(self):
-#		return unsigned(1)
+from vga_ext_types import *
+from bram_mod import *
 
 
-class VgaTiming:
-	def __init__(self, visib, front, sync, back):
-		self.__visib, self.__front, self.__sync, self.__back \
-			= visib, front, sync, back
-
-	def visib(self):
-		return self.__visib
-	def front(self):
-		return self.__front
-	def sync(self):
-		return self.__sync
-	def back(self):
-		return self.__back
-
-	# This is specifically the minimum width instead of like, 32-bit or
-	# something
-	def COUNTER_WIDTH(self):
-		return width_from_arg(self.visib() + self.front() + self.sync()
-			+ self.back())
-
-class VgaColorsLayout(Layout):
-	def __init__(self):
-		super().__init__ \
-		([
-			("r", self.__unsgn_color()),
-			("g", self.__unsgn_color()),
-			("b", self.__unsgn_color()),
-		])
-
-	def COLOR_WIDTH(self):
-		return 4
-	def __unsgn_color(self):
-		return unsigned(self.COLOR_WIDTH())
-
-	def drive(self, other):
-		return Cat(self.r, self.g, self.b) \
-			.eq(Cat(other.r, other.g, other.b))
-
-def VgaColors(Record):
-	def __init__(self):
-		super().__init__(VgaColorsLayout())
-
-class VgaDriverBufLayout(Layout):
-	def __init__(self):
-		super().__init__ \
-		([
-			("can_prep", unsigned(1), "o"),
-			("prep", unsigned(1), "i"),
-			("col", VgaColorsLayout(), "i"),
-		])
 
 class VgaDriverBusLayout(Layout):
 	def __init__(self):
 		super().__init__ \
 		([
+			# Clock and global VGA driving enable
 			("clk", unsigned(1), "i"),
+			("en", unsigned(1), "i"),
 
+			# VGA physical pins
 			("col", VgaColorsLayout(), "o"),
 			("hsync", self.__unsgn_sync(), "o"),
 			("vsync", self.__unsgn_sync(), "o"),
 
+			# Pixel buffer
 			("buf", VgaDriverBufLayout()),
 		])
 
 	def __unsgn_sync(self):
 		return unsigned(1)
 
-	def drive_hsync(self, inv_hsync):
-		return self.hsync.eq(~inv_hsync)
-	def drive_vsync(self, inv_vsync):
-		return self.vsync.eq(~inv_vsync)
+	def drive_hsync(hsync_sig, inv_hsync):
+		return hsync_sig.eq(~inv_hsync)
+	def drive_vsync(vsync_sig, inv_vsync):
+		return vsync_sig.eq(~inv_vsync)
+
 class VgaDriverBus(Record):
 	def __init__(self):
 		super().__init__(VgaDriverBusLayout())
 
 class VgaDriver(Elaboratable):
-	def __init__(self, cpp, htiming, vtiming):
+	def __init__(self, CPP, HTIMING, VTIMING, NUM_BUF_SCANLINES):
 		self.bus = VgaDriverBus()
 
 		# clocks per pixel
-		self.__cpp = cpp
-		self.__htiming = htiming
-		self.__vtiming = vtiming
+		self.__CPP = CPP
+		self.__HTIMING = HTIMING
+		self.__VTIMING = VTIMING
+		self.__NUM_BUF_SCANLINES = NUM_BUF_SCANLINES
 
+	def CPP(self):
+		return self.__CPP
+	def HTIMING(self):
+		return self.__HTIMING
+	def VTIMING(self):
+		return self.__VTIMING
+	def NUM_BUF_SCANLINES(self):
+		return self.__NUM_BUF_SCANLINES
+	def FB_SIZE(self):
+		ret = Blank()
+		ret.x, ret.y = self.HTIMING().visib(), self.VTIMING().visib()
+		return ret
+	def CLK_COUNTER_WIDTH(self):
+		return width_from_arg(self.CPP())
 
 	def elaborate(self, platform: str):
 		#--------
@@ -114,22 +69,38 @@ class VgaDriver(Elaboratable):
 		#--------
 
 		#--------
-		add_clk_domain(m, "dom", self.bus.clk)
+		add_clk_domain(m, self.bus.clk)
 		#--------
 
 		#--------
-		clk_counter = Signal(unsigned(width_from_arg(self.__cpp)),
-			reset=self.__cpp - 1)
+		#--------
+
+		#--------
+		# Implement the clock enable
+		CLK_COUNTER_WIDTH = self.CLK_COUNTER_WIDTH()
+		clk_counter = Signal(CLK_COUNTER_WIDTH)
+
+		# Force this addition to be of width `CLK_COUNTER_WIDTH + 1` to
+		# prevent wrap-around
+		clk_counter_p_1 = Signal(CLK_COUNTER_WIDTH + 1)
+		m.d.comb += clk_counter_p_1.eq(clk_counter + 0b1)
 
 		# Implement wrap-around for the clock counter
-		clk_counter_p_1 = clk_counter + 0x1
-		with m.If(clk_counter_p_1 < self.__cpp):
-			m.d.dom += clk_counter.eq(clk_counter_p_1)
-		with m.Else():
+		with m.If(self.bus.en == 0b1):
+			with m.If(clk_counter_p_1 < self.CPP()):
+				m.d.dom += clk_counter.eq(clk_counter_p_1)
+			with m.Else():
+				m.d.dom += clk_counter.eq(0x0)
+		with m.Else();
 			m.d.dom += clk_counter.eq(0x0)
+
+		# Since this is an alias, use ALL_CAPS for its name.
+		PIXEL_EN = ((self.bus.en == 0b1) & (clk_counter == 0x0))
 		#--------
 
 		#--------
+		#h_counter = Signal(self.__HTIMING.COUNTER_WIDTH())
+		#h_state = VgaTiming.State.FRONT
 		#--------
 
 		#--------

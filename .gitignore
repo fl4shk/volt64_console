@@ -3,3 +3,6 @@ tags
 *.taghl
 src/__pycache__
 src/build
+src/*_bmc
+src/*_cover
+src/*_prove

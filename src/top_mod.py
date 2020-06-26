@@ -56,37 +56,43 @@ class Top(Elaboratable):
 		#--------
 
 		#--------
+		pll100 = self.__elab_build_pll100(m)
+		io = self.__elab_build_io_vecs(m)
+		#--------
+
+		#--------
 		#ALU_WIDTH = 3
 
 		#m.submodules.alu = Alu(ALU_WIDTH)
 
 		# 640 x 480 @ 60 Hz, taken from http://www.tinyvga.com
-		#vga_driver = m.submodules.vga_driver \
-		#	= VgaDriver \
-		#	(
-		#		cpp=100 // 25,
-		#		htiming \
-		#			= VgaTiming \
-		#			(
-		#				visib=640,
-		#				front=16,
-		#				sync=96,
-		#				back=48
-		#			),
-		#		vtiming \
-		#			= VgaTiming \
-		#			(
-		#				visib=480,
-		#				front=10,
-		#				sync=2,
-		#				back=33
-		#			)
-		#	)
-		#--------
+		vga_driver = m.submodules.vga_driver \
+			= VgaDriver \
+			(
+				CPP=100 // 25,
+				HTIMING \
+					= VgaTiming \
+					(
+						visib=640,
+						front=16,
+						sync=96,
+						back=48
+					),
+				VTIMING \
+					= VgaTiming \
+					(
+						visib=480,
+						front=10,
+						sync=2,
+						back=33
+					),
+				NUM_BUF_SCANLINES=2
+			)
+		vdbus = vga_driver.bus
+		m.d.comb += vdbus.clk.eq(m.d.dom.clk)
+		m.d.comb += vdbus.en.eq(0b1)
 
-		#--------
-		pll100 = self.__elab_build_pll100(m)
-		io = self.__elab_build_io_vecs(m)
+		m.d.comb += vdbus.col.drive(
 		#--------
 
 		#--------
@@ -100,9 +106,6 @@ class Top(Elaboratable):
 
 		m.d.comb += io.led[0:5].eq(~cntr_32.slow[27:32])
 		m.d.comb += io.led[5:10].eq(~cntr_32.fast[27:32])
-		#--------
-
-		#--------
 		#--------
 
 		#--------
