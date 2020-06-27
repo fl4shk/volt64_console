@@ -3,7 +3,7 @@
 import sys
 
 from misc_util import *
-#from top_mod import *
+from top_mod import *
 from fifo_mod import *
 
 
@@ -42,4 +42,5 @@ def program(mod_name, **kw_args):
 	mod.platform().build(mod, do_program=True)
 
 if __name__ == "__main__":
-	formal(Fifo, data_t=unsigned(8), SIZE=4)
+	#formal(Fifo, shape_t=unsigned(8), SIZE=4)
+	program(Top)

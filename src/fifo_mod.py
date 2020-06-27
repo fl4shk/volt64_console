@@ -8,8 +8,8 @@ from nmigen.asserts import Past, Rose, Fell, Stable
 
 #--------
 class FifoBusLayout(Layout):
-	def __init__(self, data_t, SIZE):
-		self.__data_t, self.__SIZE = data_t, SIZE
+	def __init__(self, shape_t, SIZE):
+		self.__shape_t, self.__SIZE = shape_t, SIZE
 
 		super().__init__ \
 		([
@@ -20,10 +20,10 @@ class FifoBusLayout(Layout):
 
 			#--------
 			("wr_en", 1),
-			("wr_data", self.data_t()),
+			("wr_data", self.shape_t()),
 
 			("rd_en", 1),
-			("rd_data", self.data_t()),
+			("rd_data", self.shape_t()),
 			#--------
 
 			#--------
@@ -32,17 +32,17 @@ class FifoBusLayout(Layout):
 			#--------
 		])
 
-	def data_t(self):
-		return self.__data_t
+	def shape_t(self):
+		return self.__shape_t
 	def SIZE(self):
 		return self.__SIZE
 
 class FifoBus(Record):
-	def __init__(self, data_t, SIZE):
-		super().__init__(FifoBusLayout(data_t, SIZE))
+	def __init__(self, shape_t, SIZE):
+		super().__init__(FifoBusLayout(shape_t, SIZE))
 
-	def data_t(self):
-		return self.layout.data_t()
+	def shape_t(self):
+		return self.layout.shape_t()
 	def SIZE(self):
 		return self.layout.SIZE()
 
@@ -53,8 +53,8 @@ class FifoBus(Record):
 
 #--------
 class Fifo(Elaboratable):
-	def __init__(self, data_t, SIZE, FORMAL=False):
-		self.__bus = FifoBus(data_t, SIZE)
+	def __init__(self, shape_t, SIZE, FORMAL=False):
+		self.__bus = FifoBus(shape_t, SIZE)
 		self.__FORMAL = FORMAL
 
 	def bus(self):
@@ -70,12 +70,12 @@ class Fifo(Elaboratable):
 		#--------
 
 		#--------
-		# Local signals
+		# Local variables
 		bus = self.bus()
 
 		loc = Blank()
 
-		loc.arr = Array([Signal(bus.data_t()) for _ in range(bus.SIZE())])
+		loc.arr = Array([Signal(bus.shape_t()) for _ in range(bus.SIZE())])
 
 		loc.PTR_WIDTH = width_from_arg(bus.SIZE())
 
@@ -99,11 +99,11 @@ class Fifo(Elaboratable):
 		if self.FORMAL():
 			loc.formal = Blank()
 
-			loc.formal.last_rd_val = Signal(bus.data_t())
+			loc.formal.last_rd_val = Signal(bus.shape_t())
 			loc.formal.test_wr = Signal(loc.PTR_WIDTH)
 			#loc.formal.empty = Signal()
 			#loc.formal.full = Signal()
-			loc.formal.wd_cnt = Signal(bus.data_t(), reset=0xa0)
+			loc.formal.wd_cnt = Signal(bus.shape_t(), reset=0xa0)
 		#--------
 
 		#--------
@@ -158,14 +158,14 @@ class Fifo(Elaboratable):
 		# Clocked behavioral code
 		with m.If(bus.rst):
 			#for elem in loc.arr:
-			#	m.d.dom += elem.eq(bus.data_t()())
+			#	m.d.dom += elem.eq(bus.shape_t()())
 
 			m.d.dom \
 			+= [
 				loc.rd.eq(0x0),
 				loc.wr.eq(0x0),
 
-				#bus.rd_data.eq(bus.data_t()()),
+				#bus.rd_data.eq(bus.shape_t()()),
 
 				bus.empty.eq(0b1),
 				bus.full.eq(0b0),
@@ -213,12 +213,23 @@ class Fifo(Elaboratable):
 								Assert(Stable(loc.rd)),
 							]
 						with m.Else(): # If(~Past(bus.empty)):
-							with m.If(~Past(bus.wr_en)):
-								m.d.dom \
-								+= [
-									Assert(bus.rd_data
-										== loc.arr[Past(loc.rd)])
-								]
+							#with m.If(~Past(bus.wr_en)):
+							m.d.dom \
+							+= [
+								Assert(bus.rd_data
+									== loc.arr[Past(loc.rd)])
+							]
+					with m.If(Past(bus.wr_en)):
+						with m.If(Past(bus.full)):
+							m.d.dom \
+							+= [
+								Assert(Stable(loc.wr)),
+							]
+						#with m.Else(): # If(~Past(bus.full)):
+						#	m.d.dom \
+						#	+= [
+						#		Assert(Past(bus.wr_data))
+						#	]
 					with m.Switch(Cat(bus.empty, bus.full)):
 						with m.Case(0b00):
 							m.d.dom \

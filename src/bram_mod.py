@@ -13,19 +13,19 @@ class BramBusLayout(Layout):
 		super().__init__ \
 		([
 			#--------
-			("clk", 1, "i"),
-			("rst", 1, "i"),
+			("clk", 1),
+			("rst", 1),
 			#--------
 
 			#--------
-			("rd_data", self.DATA_WIDTH(), "o"),
-			("rd_addr", self.ADDR_WIDTH(), "i"),
+			("rd_data", self.DATA_WIDTH()),
+			("rd_addr", self.ADDR_WIDTH()),
 			#--------
 
 			#--------
-			("wr_en", 1, "i"),
-			("wr_data", self.DATA_WIDTH(), "i"),
-			("wr_addr", self.ADDR_WIDTH(), "i"),
+			("wr_en", 1),
+			("wr_data", self.DATA_WIDTH()),
+			("wr_addr", self.ADDR_WIDTH()),
 			#--------
 		])
 

@@ -47,29 +47,42 @@ class VgaTiming:
 	#--------
 
 	#--------
-	def update_state_and_counter(self, m, state, counter):
+	def update_state_cnt(self, m, state_cnt):
+		def mk_case(m, state_cnt, state_size, next_state):
+			counter_p_1 = state_cnt["c"] + 0x1
+			with m.If(counter_p_1 >= state_size):
+				m.d.dom += state_cnt["s"].eq(next_state)
+				m.d.dom += state_cnt["c"].eq(0x0)
+			with m.Else():
+				m.d.dom += state_cnt["c"].eq(counter_p_1)
 
-		def mk_case(m, state, counter, state_size, next_state):
-			counter_p_1 = counter + 0x1
-				with m.If(counter_p_1 >= state_size):
-					m.d.dom += state.eq(next_state)
-					m.d.dom += counter.eq(0x0)
-				with m.Else():
-					m.d.dom += counter.eq(counter_p_1)
-
-		with m.Switch(state):
+		State = VgaTiming.State
+		with m.Switch(state_cnt["s"]):
 			with m.Case(State.FRONT):
-				mk_case(m, state, counter, self.front(), State.SYNC)
-			with m.Case(State.SYNC);
-				mk_case(m, state, counter, self.sync(), State.BACK)
+				mk_case(m, state_cnt, self.front(), State.SYNC)
+			with m.Case(State.SYNC):
+				mk_case(m, state_cnt, self.sync(), State.BACK)
 			with m.Case(State.BACK):
-				mk_case(m, state, counter, self.back(), State.VISIB)
+				mk_case(m, state_cnt, self.back(), State.VISIB)
 			with m.Case(State.VISIB):
-				mk_case(m, state, counter, self.visib(), State.FRONT)
+				mk_case(m, state_cnt, self.visib(), State.FRONT)
 	#--------
 
+class VgaTimingInfo:
+	def __init__(self, PIXEL_CLK, HTIMING, VTIMING):
+		self.__PIXEL_CLK, self.__HTIMING, self.__VTIMING \
+			= PIXEL_CLK, HTIMING, VTIMING
+	def PIXEL_CLK(self):
+		return self.__PIXEL_CLK
+	def HTIMING(self):
+		return self.__HTIMING
+	def VTIMING(self):
+		return self.__VTIMING
+
+
 class VgaColorsLayout(Layout):
-	def __init__(self):
+	def __init__(self, COLOR_WIDTH=4):
+		self.__COLOR_WIDTH = COLOR_WIDTH
 		super().__init__ \
 		([
 			("r", self.__unsgn_color()),
@@ -78,7 +91,7 @@ class VgaColorsLayout(Layout):
 		])
 
 	def COLOR_WIDTH(self):
-		return 4
+		return self.__COLOR_WIDTH
 	def __unsgn_color(self):
 		return unsigned(self.COLOR_WIDTH())
 
@@ -86,15 +99,20 @@ class VgaColorsLayout(Layout):
 		return Cat(self.r, self.g, self.b) \
 			.eq(Cat(other.r, other.g, other.b))
 
-def VgaColors(Record):
+class VgaColors(Record):
 	def __init__(self):
 		super().__init__(VgaColorsLayout())
+
+	def COLOR_WIDTH(self):
+		return self.layout.COLOR_WIDTH()
+	def drive(self, other):
+		self.layout.drive(other)
 
 class VgaDriverBufLayout(Layout):
 	def __init__(self):
 		super().__init__ \
 		([
-			("can_prep", unsigned(1), "o"),
-			("prep", unsigned(1), "i"),
-			("col", VgaColorsLayout(), "i"),
+			("can_prep", unsigned(1)),
+			("prep", unsigned(1)),
+			("col", VgaColorsLayout()),
 		])

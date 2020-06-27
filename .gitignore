@@ -6,3 +6,4 @@ src/build
 src/*_bmc
 src/*_cover
 src/*_prove
+*.il

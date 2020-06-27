@@ -5,102 +5,208 @@ from nmigen import *
 from nmigen.hdl.rec import *
 
 from vga_ext_types import *
+from fifo_mod import *
 from bram_mod import *
 
 
+VGA_TIMING_INFO_DICT \
+= {
+	# 640 x 480 @ 60 Hz, taken from http://www.tinyvga.com
+	"640x480@60":
+		VgaTimingInfo \
+		(
+			PIXEL_CLK=25,
+			HTIMING \
+				=VgaTiming
+				(
+					visib=640,
+					front=16,
+					sync=96,
+					back=48
+				),
+			VTIMING \
+				=VgaTiming
+				(
+					visib=480,
+					front=10,
+					sync=2,
+					back=33
+				),
+		)
+}
 
 class VgaDriverBusLayout(Layout):
 	def __init__(self):
 		super().__init__ \
 		([
 			# Clock and global VGA driving enable
-			("clk", unsigned(1), "i"),
-			("en", unsigned(1), "i"),
+			("clk", unsigned(1)),
+			("en", unsigned(1)),
 
 			# VGA physical pins
-			("col", VgaColorsLayout(), "o"),
-			("hsync", self.__unsgn_sync(), "o"),
-			("vsync", self.__unsgn_sync(), "o"),
+			("col", VgaColorsLayout()),
+			("hsync", unsigned(1)),
+			("vsync", unsigned(1)),
 
 			# Pixel buffer
 			("buf", VgaDriverBufLayout()),
 		])
-
-	def __unsgn_sync(self):
-		return unsigned(1)
-
-	def drive_hsync(hsync_sig, inv_hsync):
-		return hsync_sig.eq(~inv_hsync)
-	def drive_vsync(vsync_sig, inv_vsync):
-		return vsync_sig.eq(~inv_vsync)
 
 class VgaDriverBus(Record):
 	def __init__(self):
 		super().__init__(VgaDriverBusLayout())
 
 class VgaDriver(Elaboratable):
-	def __init__(self, CPP, HTIMING, VTIMING, NUM_BUF_SCANLINES):
-		self.bus = VgaDriverBus()
+	def __init__(self, CLK_RATE, TIMING_INFO, NUM_BUF_SCANLINES):
+		self.__bus = VgaDriverBus()
 
-		# clocks per pixel
-		self.__CPP = CPP
-		self.__HTIMING = HTIMING
-		self.__VTIMING = VTIMING
+		self.__CLK_RATE = CLK_RATE
+		self.__TIMING_INFO = TIMING_INFO
 		self.__NUM_BUF_SCANLINES = NUM_BUF_SCANLINES
 
+	def bus(self):
+		return self.__bus
+	def CLK_RATE(self):
+		return self.__CLK_RATE
+	def TIMING_INFO(self):
+		return self.__TIMING_INFO
 	def CPP(self):
-		return self.__CPP
+		return self.CLK_RATE() // self.TIMING_INFO().PIXEL_CLK()
 	def HTIMING(self):
-		return self.__HTIMING
+		return self.TIMING_INFO().HTIMING()
 	def VTIMING(self):
-		return self.__VTIMING
+		return self.TIMING_INFO().VTIMING()
 	def NUM_BUF_SCANLINES(self):
 		return self.__NUM_BUF_SCANLINES
+	def FIFO_SIZE(self):
+		return (self.FB_SIZE().x * self.NUM_BUF_SCANLINES())
 	def FB_SIZE(self):
 		ret = Blank()
 		ret.x, ret.y = self.HTIMING().visib(), self.VTIMING().visib()
 		return ret
-	def CLK_COUNTER_WIDTH(self):
+	def CLK_CNT_WIDTH(self):
 		return width_from_arg(self.CPP())
 
 	def elaborate(self, platform: str):
 		#--------
 		m = Module()
+
+		#add_clk_domain(m, self.bus().clk)
 		#--------
 
 		#--------
-		add_clk_domain(m, self.bus.clk)
+		# Local variables
+		loc = Blank()
+		bus = self.bus()
 		#--------
 
 		#--------
+		loc.fifo = m.submodules.fifo \
+			= Fifo \
+			(
+				shape_t=Value.cast(VgaColors()).shape(), 
+				SIZE=self.FIFO_SIZE()
+			)
 		#--------
 
 		#--------
 		# Implement the clock enable
-		CLK_COUNTER_WIDTH = self.CLK_COUNTER_WIDTH()
-		clk_counter = Signal(CLK_COUNTER_WIDTH)
+		loc.CLK_CNT_WIDTH = self.CLK_CNT_WIDTH()
+		loc.clk_cnt = Signal(loc.CLK_CNT_WIDTH)
 
-		# Force this addition to be of width `CLK_COUNTER_WIDTH + 1` to
+		# Force this addition to be of width `CLK_CNT_WIDTH + 1` to
 		# prevent wrap-around
-		clk_counter_p_1 = Signal(CLK_COUNTER_WIDTH + 1)
-		m.d.comb += clk_counter_p_1.eq(clk_counter + 0b1)
+		loc.clk_cnt_p_1 = Signal(loc.CLK_CNT_WIDTH + 1)
+		m.d.comb += loc.clk_cnt_p_1.eq(loc.clk_cnt + 0b1)
 
 		# Implement wrap-around for the clock counter
-		with m.If(self.bus.en == 0b1):
-			with m.If(clk_counter_p_1 < self.CPP()):
-				m.d.dom += clk_counter.eq(clk_counter_p_1)
+		with m.If(bus.en == 0b1):
+			with m.If(loc.clk_cnt_p_1 < self.CPP()):
+				m.d.dom += loc.clk_cnt.eq(loc.clk_cnt_p_1)
 			with m.Else():
-				m.d.dom += clk_counter.eq(0x0)
-		with m.Else();
-			m.d.dom += clk_counter.eq(0x0)
+				m.d.dom += loc.clk_cnt.eq(0x0)
+		with m.Else():
+			m.d.dom += loc.clk_cnt.eq(0x0)
 
 		# Since this is an alias, use ALL_CAPS for its name.
-		PIXEL_EN = ((self.bus.en == 0b1) & (clk_counter == 0x0))
+		#loc.PIXEL_EN = ((bus.en == 0b1) & (loc.clk_cnt == 0x0))
 		#--------
 
 		#--------
-		#h_counter = Signal(self.__HTIMING.COUNTER_WIDTH())
-		#h_state = VgaTiming.State.FRONT
+		# Implement the State/Counter stuff
+		loc.Tstate = VgaTiming.State
+		loc.hsc \
+		= {
+			"s": Signal(width_from_len(loc.Tstate)),
+			"c": Signal(self.HTIMING().COUNTER_WIDTH()),
+		}
+		loc.vsc \
+		= {
+			"s": Signal(width_from_len(loc.Tstate)),
+			"c": Signal(self.VTIMING().COUNTER_WIDTH()),
+		}
+		#--------
+
+		#--------
+		# Implement HSYNC and VSYNC logic
+		with m.Switch(loc.hsc["s"]):
+			with m.Case(loc.Tstate.FRONT):
+				m.d.dom += bus.hsync.eq(0b1)
+			with m.Case(loc.Tstate.SYNC):
+				m.d.dom += bus.hsync.eq(0b0)
+			with m.Case(loc.Tstate.BACK):
+				m.d.dom += bus.hsync.eq(0b1)
+			with m.Case(loc.Tstate.VISIB):
+				m.d.dom += bus.hsync.eq(0b1),
+				with m.If((loc.hsc["c"] + 0x1) >= self.FB_SIZE().x):
+					self.VTIMING().update_state_cnt(m, loc.vsc)
+
+		with m.Switch(loc.vsc["s"]):
+			with m.Case(loc.Tstate.FRONT):
+				m.d.dom += bus.vsync.eq(0b1)
+			with m.Case(loc.Tstate.SYNC):
+				m.d.dom += bus.vsync.eq(0b0)
+			with m.Case(loc.Tstate.BACK):
+				m.d.dom += bus.vsync.eq(0b1)
+			with m.Case(loc.Tstate.VISIB):
+				m.d.dom += bus.vsync.eq(0b1)
+		#--------
+
+		#--------
+		# Implement drawing the picture
+		def black_border(m, loc, bus):
+			# Black border
+			with m.If((loc.hsc["s"] != loc.Tstate.VISIB)
+				| (loc.vsc["s"] != loc.Tstate.VISIB)):
+				m.d.dom \
+				+= [
+					bus.col.r.eq(0x0),
+					bus.col.g.eq(0x0),
+					bus.col.b.eq(0x0),
+				]
+
+		with m.If(loc.clk_cnt == 0x0):
+			self.HTIMING().update_state_cnt(m, loc.hsc)
+
+			with m.If(~bus.en):
+				black_border(m, loc, bus)
+				with m.Else():
+					m.d.dom \
+					+= [
+						bus.col.r.eq(0xf),
+						bus.col.g.eq(0xf),
+						bus.col.b.eq(0xf),
+					]
+			with m.Else(): # If(bus.en):
+				black_border(m, loc, bus)
+				with m.Else():
+					# Display image here
+					m.d.dom \
+					+= [
+						bus.col.r.eq(0xf),
+						bus.col.g.eq(0x0),
+						bus.col.b.eq(0x0),
+					]
 		#--------
 
 		#--------
