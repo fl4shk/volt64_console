@@ -18,11 +18,14 @@ class Top(Elaboratable):
 		self.__vga = self.platform().request("vga", 0)
 		self.__ps2_kb = self.platform().request("ps2_host", 0)
 		self.__ps2_mouse = self.platform().request("ps2_host", 1)
+		self.__sd_card = self.platform().request("sd_card_spi", 0)
 	#--------
 
 	#--------
 	def platform(self):
 		return self.__platform
+	def MAIN_CLK_RATE(self):
+		return self.__MAIN_CLK_RATE
 	#--------
 
 	#--------
@@ -34,12 +37,14 @@ class Top(Elaboratable):
 		return self.__ps2_kb
 	def ps2_mouse(self):
 		return self.__ps2_mouse
+	def sd_card(self):
+		return self.__sd_card
 	#--------
 
 	#--------
 	def __elab_build_pll100(self, m):
 		return inst_pll("pll_50_to_100_mod.v", "dom", "pll_50_to_100",
-			self.__MAIN_CLK_RATE, self.platform(), m)
+			self.MAIN_CLK_RATE(), self.platform(), m)
 	#--------
 
 	#--------
@@ -80,17 +85,18 @@ class Top(Elaboratable):
 		vga.NUM_BUF_SCANLINES = 2
 
 		vga.driver = m.submodules.vga_driver \
-			= VgaDriver \
+			= DomainRenamer({"sync": "dom"}) \
 			(
-				CLK_RATE=self.__MAIN_CLK_RATE,
-				#CLK_RATE=50,
-				TIMING_INFO=vga.TIMING_INFO,
-				NUM_BUF_SCANLINES=vga.NUM_BUF_SCANLINES,
+				VgaDriver \
+				(
+					CLK_RATE=self.MAIN_CLK_RATE(),
+					TIMING_INFO=vga.TIMING_INFO,
+					NUM_BUF_SCANLINES=vga.NUM_BUF_SCANLINES,
+				)
 			)
 		vga.drbus = vga.driver.bus()
 		m.d.comb \
 		+= [
-			vga.drbus.clk.eq(ClockSignal("dom")),
 			vga.drbus.en.eq(io.switch[0]),
 
 			self.vga().r.eq(vga.drbus.col.r),
@@ -99,19 +105,6 @@ class Top(Elaboratable):
 			self.vga().hs.eq(vga.drbus.hsync),
 			self.vga().vs.eq(vga.drbus.vsync),
 		]
-		##--------
-
-		#--------
-		#CNTR_32_WIDTH = 32
-		#cntr_32 = Blank()
-		#cntr_32.slow = Signal(unsigned(CNTR_32_WIDTH), reset=0)
-		#cntr_32.fast = Signal(unsigned(CNTR_32_WIDTH), reset=0)
-
-		#m.d.sync += cntr_32.slow.eq(cntr_32.slow - 0b1)
-		#m.d.dom += cntr_32.fast.eq(cntr_32.fast - 0b1)
-
-		#m.d.comb += io.led[0:5].eq(~cntr_32.slow[27:32])
-		#m.d.comb += io.led[5:10].eq(~cntr_32.fast[27:32])
 		#--------
 
 		#--------

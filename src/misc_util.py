@@ -42,13 +42,14 @@ def width_from_len(arg):
 #def add_clk_domain(m, clk, domain="dom"):
 #	m.domains += ClockDomain(domain)
 #	m.d.comb += ClockSignal(domain=domain).eq(clk)
+def rec_to_shape(rec_t):
+	return Value.cast(rec_t).shape()
 
 def inst_pll(pll_file_name, domain, pll_module_name, freq, platform, m):
 	ret = Blank()
 	ret.pll_clk = Signal()
 	ret.locked = Signal()
 
-	#add_clk_domain(m, ret.pll_clk, domain)
 	m.domains += ClockDomain(domain)
 	m.d.comb += ClockSignal(domain=domain).eq(ret.pll_clk)
 

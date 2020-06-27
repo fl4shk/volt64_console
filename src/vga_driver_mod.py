@@ -39,8 +39,7 @@ class VgaDriverBusLayout(Layout):
 	def __init__(self):
 		super().__init__ \
 		([
-			# Clock and global VGA driving enable
-			("clk", unsigned(1)),
+			# Global VGA driving enable (white screen when off)
 			("en", unsigned(1)),
 
 			# VGA physical pins
@@ -90,12 +89,6 @@ class VgaDriver(Elaboratable):
 	def elaborate(self, platform: str):
 		#--------
 		m = Module()
-
-		#add_clk_domain(m, self.bus().clk)
-		#m.d.comb += ClockSignal(domain="dom").eq(self.bus().clk)
-		#add_clk_from_domain(m, self.bus().clk)
-		m.domains += ClockDomain("dom2")
-		m.d.comb += ClockSignal("dom2").eq(self.bus().clk)
 		#--------
 
 		#--------
@@ -105,12 +98,17 @@ class VgaDriver(Elaboratable):
 		#--------
 
 		#--------
-		#loc.fifo = m.submodules.fifo \
-		#	= Fifo \
-		#	(
-		#		shape_t=Value.cast(VgaColors()).shape(), 
-		#		SIZE=self.FIFO_SIZE()
-		#	)
+		loc.fifo = m.submodules.fifo \
+			= Fifo \
+			(
+				shape_t=rec_to_shape(VgaColors()),
+				SIZE=self.FIFO_SIZE()
+			)
+		#--------
+
+		#--------
+		loc.col = VgaColors()
+		loc.visib = Signal()
 		#--------
 
 		#--------
@@ -125,9 +123,9 @@ class VgaDriver(Elaboratable):
 
 		# Implement wrap-around for the clock counter
 		with m.If(loc.clk_cnt_p_1 < self.CPP()):
-			m.d.dom2 += loc.clk_cnt.eq(loc.clk_cnt_p_1)
+			m.d.sync += loc.clk_cnt.eq(loc.clk_cnt_p_1)
 		with m.Else():
-			m.d.dom2 += loc.clk_cnt.eq(0x0)
+			m.d.sync += loc.clk_cnt.eq(0x0)
 
 		# Since this is an alias, use ALL_CAPS for its name.
 		loc.PIXEL_EN = (loc.clk_cnt == 0x0)
@@ -155,58 +153,92 @@ class VgaDriver(Elaboratable):
 
 			with m.Switch(loc.hsc["s"]):
 				with m.Case(loc.Tstate.FRONT):
-					m.d.dom2 += bus.hsync.eq(0b1)
+					m.d.sync += bus.hsync.eq(0b1)
 				with m.Case(loc.Tstate.SYNC):
-					m.d.dom2 += bus.hsync.eq(0b0)
+					m.d.sync += bus.hsync.eq(0b0)
 				with m.Case(loc.Tstate.BACK):
-					m.d.dom2 += bus.hsync.eq(0b1)
+					m.d.sync += bus.hsync.eq(0b1)
 				with m.Case(loc.Tstate.VISIB):
-					m.d.dom2 += bus.hsync.eq(0b1),
+					m.d.sync += bus.hsync.eq(0b1),
 					with m.If((loc.hsc["c"] + 0x1) >= self.FB_SIZE().x):
 						self.VTIMING().update_state_cnt(m, loc.vsc)
 
 			with m.Switch(loc.vsc["s"]):
 				with m.Case(loc.Tstate.FRONT):
-					m.d.dom2 += bus.vsync.eq(0b1)
+					m.d.sync += bus.vsync.eq(0b1)
 				with m.Case(loc.Tstate.SYNC):
-					m.d.dom2 += bus.vsync.eq(0b0)
+					m.d.sync += bus.vsync.eq(0b0)
 				with m.Case(loc.Tstate.BACK):
-					m.d.dom2 += bus.vsync.eq(0b1)
+					m.d.sync += bus.vsync.eq(0b1)
 				with m.Case(loc.Tstate.VISIB):
-					m.d.dom2 += bus.vsync.eq(0b1)
+					m.d.sync += bus.vsync.eq(0b1)
 		#--------
 
 		#--------
 		# Implement drawing the picture
+		m.d.comb += loc.visib.eq((loc.hsc["s"] == loc.Tstate.VISIB)
+			& (loc.vsc["s"] == loc.Tstate.VISIB))
 
 		with m.If(loc.PIXEL_EN):
-
 			# Visible area
-			with m.If((loc.hsc["s"] == loc.Tstate.VISIB)
-				& (loc.vsc["s"] == loc.Tstate.VISIB)):
+			with m.If(loc.visib):
 				with m.If(~bus.en):
-					m.d.dom2 \
+					m.d.sync \
 					+= [
 						bus.col.r.eq(0xf),
 						bus.col.g.eq(0xf),
 						bus.col.b.eq(0xf),
 					]
 				with m.Else(): # If(bus.en):
-					m.d.dom2 \
+					m.d.sync \
 					+= [
-						bus.col.r.eq(0xf),
-						bus.col.g.eq(0x0),
-						bus.col.b.eq(0x0),
+						#bus.col.r.eq(0xf),
+						#bus.col.g.eq(0x0),
+						#bus.col.b.eq(0x0),
+						bus.col.eq(loc.col)
 					]
 			# Black border
-			with m.Else():
-				m.d.dom2 \
+			with m.Else(): # If (~loc.visib)
+				m.d.sync \
 				+= [
 					bus.col.r.eq(0x0),
 					bus.col.g.eq(0x0),
 					bus.col.b.eq(0x0),
 				]
+		#--------
 
+		#--------
+		# Implement VgaDriver bus to Fifo bus transaction
+		m.d.comb \
+		+= [
+			bus.buf.can_prep.eq(~loc.fifo.bus().full),
+			loc.fifo.bus().wr_en.eq(bus.buf.prep),
+			loc.fifo.bus().wr_data.eq(bus.buf.col),
+		]
+		#--------
+
+		#--------
+		# Implement grabbing pixels from the FIFO.
+		# This is done with an assumption that the VgaDriver's clock rate
+		# is four times as great as the pixel clock.
+		loc.FIFO_NOT_EMPTY = ~loc.fifo.bus().empty
+		loc.START_GRAB_FROM_FIFO = loc.FIFO_NOT_EMPTY \
+			& (loc.clk_cnt == (self.CLK_CNT_WIDTH() - 3))
+		loc.END_GRAB_FROM_FIFO = loc.FIFO_NOT_EMPTY \
+			& (loc.clk_cnt == (self.CLK_CNT_WIDTH() - 1))
+
+		with m.If(loc.START_GRAB_FROM_FIFO):
+			m.d.sync += loc.fifo.bus().rd_en.eq(0b1)
+		with m.Elif(loc.END_GRAB_FROM_FIFO):
+			m.d.sync += loc.col.eq(loc.fifo.bus().rd_data)
+		with m.Else():
+			m.d.sync \
+			+= [
+				loc.fifo.bus().rd_en.eq(0b0),
+				loc.col.r.eq(0xf),
+				loc.col.g.eq(0xf),
+				loc.col.b.eq(0x0),
+			]
 		#--------
 
 		#--------

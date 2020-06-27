@@ -14,11 +14,6 @@ class FifoBusLayout(Layout):
 		super().__init__ \
 		([
 			#--------
-			("clk", 1),
-			("rst", 1),
-			#--------
-
-			#--------
 			("wr_en", 1),
 			("wr_data", self.shape_t()),
 
@@ -47,7 +42,9 @@ class FifoBus(Record):
 		return self.layout.SIZE()
 
 	def ports(self):
-		return [self.clk, self.rst, self.wr_en, self.wr_data, self.rd_en,
+		#return [self.clk, self.rst, self.wr_en, self.wr_data, self.rd_en,
+		#	self.rd_data, self.empty, self.full]
+		return [self.wr_en, self.wr_data, self.rd_en,
 			self.rd_data, self.empty, self.full]
 #--------
 
@@ -95,6 +92,8 @@ class Fifo(Elaboratable):
 		loc.next_rd = Signal(loc.PTR_WIDTH)
 		loc.next_wr = Signal(loc.PTR_WIDTH)
 
+		loc.rst = ResetSignal("sync")
+
 		#loc.curr_en_cat = Signal(2)
 
 		if self.FORMAL():
@@ -109,7 +108,7 @@ class Fifo(Elaboratable):
 
 		#--------
 		if self.FORMAL():
-			m.d.dom \
+			m.d.sync \
 			+= [
 				loc.formal.last_rd_val.eq(loc.arr[loc.rd]),
 				loc.formal.wd_cnt.eq(loc.formal.wd_cnt - 0x10)
@@ -157,11 +156,11 @@ class Fifo(Elaboratable):
 
 		#--------
 		# Clocked behavioral code
-		with m.If(bus.rst):
+		with m.If(loc.rst):
 			#for elem in loc.arr:
-			#	m.d.dom += elem.eq(bus.shape_t()())
+			#	m.d.sync += elem.eq(bus.shape_t()())
 
-			m.d.dom \
+			m.d.sync \
 			+= [
 				loc.rd.eq(0x0),
 				loc.wr.eq(0x0),
@@ -171,9 +170,9 @@ class Fifo(Elaboratable):
 				bus.empty.eq(0b1),
 				bus.full.eq(0b0),
 			]
-		with m.Else(): # If(~bus.rst):
+		with m.Else(): # If(~loc.rst):
 			#--------
-			m.d.dom \
+			m.d.sync \
 			+= [
 				bus.empty.eq(loc.next_empty),
 				bus.full.eq(loc.next_full),
@@ -182,15 +181,15 @@ class Fifo(Elaboratable):
 			]
 
 			with m.If(bus.rd_en & (~bus.empty)):
-				m.d.dom += bus.rd_data.eq(loc.arr[loc.rd])
+				m.d.sync += bus.rd_data.eq(loc.arr[loc.rd])
 			with m.If(bus.wr_en & (~bus.full)):
-				m.d.dom += loc.arr[loc.wr].eq(bus.wr_data)
+				m.d.sync += loc.arr[loc.wr].eq(bus.wr_data)
 			#--------
 
 			#--------
 			if self.FORMAL():
-				with m.If(Fell(bus.rst)):
-					m.d.dom \
+				with m.If(Fell(loc.rst)):
+					m.d.sync \
 					+= [
 						Assert(loc.rd == 0x0),
 						Assert(loc.wr == 0x0),
@@ -198,8 +197,8 @@ class Fifo(Elaboratable):
 						Assert(bus.empty == 0b1),
 						Assert(bus.full == 0b0),
 					]
-				with m.Else(): # If(~Fell(bus.rst)):
-					m.d.dom \
+				with m.Else(): # If(~Fell(loc.rst)):
+					m.d.sync \
 					+= [
 						Assert(bus.empty == Past(loc.next_empty)),
 						Assert(bus.full == Past(loc.next_full)),
@@ -208,47 +207,47 @@ class Fifo(Elaboratable):
 					]
 					with m.If(Past(bus.rd_en)):
 						with m.If(Past(bus.empty)):
-							m.d.dom \
+							m.d.sync \
 							+= [
 								#Assert(Stable(bus.empty)),
 								Assert(Stable(loc.rd)),
 							]
 						with m.Else(): # If(~Past(bus.empty)):
 							#with m.If(~Past(bus.wr_en)):
-							m.d.dom \
+							m.d.sync \
 							+= [
 								Assert(bus.rd_data
 									== loc.arr[Past(loc.rd)])
 							]
 					with m.If(Past(bus.wr_en)):
 						with m.If(Past(bus.full)):
-							m.d.dom \
+							m.d.sync \
 							+= [
 								Assert(Stable(loc.wr)),
 							]
 						#with m.Else(): # If(~Past(bus.full)):
-						#	m.d.dom \
+						#	m.d.sync \
 						#	+= [
 						#		Assert(Past(bus.wr_data))
 						#	]
 					with m.Switch(Cat(bus.empty, bus.full)):
 						with m.Case(0b00):
-							m.d.dom \
+							m.d.sync \
 							+= [
 								Assume(loc.wr != loc.rd),
 								Assume(loc.formal.test_wr != loc.rd),
 							]
 						with m.Case(0b01):
-							m.d.dom \
+							m.d.sync \
 							+= [
 								Assert(loc.wr == loc.rd)
 							]
 						with m.Case(0b10):
-							m.d.dom \
+							m.d.sync \
 							+= [
 								Assert(loc.formal.test_wr == loc.rd),
 							]
-					m.d.dom \
+					m.d.sync \
 					+= [
 						Assert(~(bus.empty & bus.full)),
 						#Assume(~Stable(bus.wr_data)),
