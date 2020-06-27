@@ -91,7 +91,7 @@ class VgaDriver(Elaboratable):
 		#--------
 		m = Module()
 
-		#add_clk_domain(m, self.bus().clk)
+		add_clk_domain(m, self.bus().clk)
 		#--------
 
 		#--------
