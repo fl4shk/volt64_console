@@ -56,8 +56,6 @@ class Bram(Elaboratable):
 	def elaborate(self, platform: str):
 		#--------
 		m = Module()
-
-		add_clk_domain(m, self.bus.clk)
 		#--------
 
 		#--------
