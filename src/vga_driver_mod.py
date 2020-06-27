@@ -91,7 +91,11 @@ class VgaDriver(Elaboratable):
 		#--------
 		m = Module()
 
-		add_clk_domain(m, self.bus().clk)
+		#add_clk_domain(m, self.bus().clk)
+		#m.d.comb += ClockSignal(domain="dom").eq(self.bus().clk)
+		#add_clk_from_domain(m, self.bus().clk)
+		m.domains += ClockDomain("dom2")
+		m.d.comb += ClockSignal("dom2").eq(self.bus().clk)
 		#--------
 
 		#--------
@@ -101,12 +105,12 @@ class VgaDriver(Elaboratable):
 		#--------
 
 		#--------
-		loc.fifo = m.submodules.fifo \
-			= Fifo \
-			(
-				shape_t=Value.cast(VgaColors()).shape(), 
-				SIZE=self.FIFO_SIZE()
-			)
+		#loc.fifo = m.submodules.fifo \
+		#	= Fifo \
+		#	(
+		#		shape_t=Value.cast(VgaColors()).shape(), 
+		#		SIZE=self.FIFO_SIZE()
+		#	)
 		#--------
 
 		#--------
@@ -120,16 +124,13 @@ class VgaDriver(Elaboratable):
 		m.d.comb += loc.clk_cnt_p_1.eq(loc.clk_cnt + 0b1)
 
 		# Implement wrap-around for the clock counter
-		with m.If(bus.en == 0b1):
-			with m.If(loc.clk_cnt_p_1 < self.CPP()):
-				m.d.dom += loc.clk_cnt.eq(loc.clk_cnt_p_1)
-			with m.Else():
-				m.d.dom += loc.clk_cnt.eq(0x0)
+		with m.If(loc.clk_cnt_p_1 < self.CPP()):
+			m.d.dom2 += loc.clk_cnt.eq(loc.clk_cnt_p_1)
 		with m.Else():
-			m.d.dom += loc.clk_cnt.eq(0x0)
+			m.d.dom2 += loc.clk_cnt.eq(0x0)
 
 		# Since this is an alias, use ALL_CAPS for its name.
-		#loc.PIXEL_EN = ((bus.en == 0b1) & (loc.clk_cnt == 0x0))
+		loc.PIXEL_EN = (loc.clk_cnt == 0x0)
 		#--------
 
 		#--------
@@ -148,65 +149,64 @@ class VgaDriver(Elaboratable):
 		#--------
 
 		#--------
-		# Implement HSYNC and VSYNC logic
-		with m.Switch(loc.hsc["s"]):
-			with m.Case(loc.Tstate.FRONT):
-				m.d.dom += bus.hsync.eq(0b1)
-			with m.Case(loc.Tstate.SYNC):
-				m.d.dom += bus.hsync.eq(0b0)
-			with m.Case(loc.Tstate.BACK):
-				m.d.dom += bus.hsync.eq(0b1)
-			with m.Case(loc.Tstate.VISIB):
-				m.d.dom += bus.hsync.eq(0b1),
-				with m.If((loc.hsc["c"] + 0x1) >= self.FB_SIZE().x):
-					self.VTIMING().update_state_cnt(m, loc.vsc)
+		## Implement HSYNC and VSYNC logic
+		with m.If(loc.PIXEL_EN): 
+			self.HTIMING().update_state_cnt(m, loc.hsc)
 
-		with m.Switch(loc.vsc["s"]):
-			with m.Case(loc.Tstate.FRONT):
-				m.d.dom += bus.vsync.eq(0b1)
-			with m.Case(loc.Tstate.SYNC):
-				m.d.dom += bus.vsync.eq(0b0)
-			with m.Case(loc.Tstate.BACK):
-				m.d.dom += bus.vsync.eq(0b1)
-			with m.Case(loc.Tstate.VISIB):
-				m.d.dom += bus.vsync.eq(0b1)
+			with m.Switch(loc.hsc["s"]):
+				with m.Case(loc.Tstate.FRONT):
+					m.d.dom2 += bus.hsync.eq(0b1)
+				with m.Case(loc.Tstate.SYNC):
+					m.d.dom2 += bus.hsync.eq(0b0)
+				with m.Case(loc.Tstate.BACK):
+					m.d.dom2 += bus.hsync.eq(0b1)
+				with m.Case(loc.Tstate.VISIB):
+					m.d.dom2 += bus.hsync.eq(0b1),
+					with m.If((loc.hsc["c"] + 0x1) >= self.FB_SIZE().x):
+						self.VTIMING().update_state_cnt(m, loc.vsc)
+
+			with m.Switch(loc.vsc["s"]):
+				with m.Case(loc.Tstate.FRONT):
+					m.d.dom2 += bus.vsync.eq(0b1)
+				with m.Case(loc.Tstate.SYNC):
+					m.d.dom2 += bus.vsync.eq(0b0)
+				with m.Case(loc.Tstate.BACK):
+					m.d.dom2 += bus.vsync.eq(0b1)
+				with m.Case(loc.Tstate.VISIB):
+					m.d.dom2 += bus.vsync.eq(0b1)
 		#--------
 
 		#--------
 		# Implement drawing the picture
-		def black_border(m, loc, bus):
+
+		with m.If(loc.PIXEL_EN):
+
+			# Visible area
+			with m.If((loc.hsc["s"] == loc.Tstate.VISIB)
+				& (loc.vsc["s"] == loc.Tstate.VISIB)):
+				with m.If(~bus.en):
+					m.d.dom2 \
+					+= [
+						bus.col.r.eq(0xf),
+						bus.col.g.eq(0xf),
+						bus.col.b.eq(0xf),
+					]
+				with m.Else(): # If(bus.en):
+					m.d.dom2 \
+					+= [
+						bus.col.r.eq(0xf),
+						bus.col.g.eq(0x0),
+						bus.col.b.eq(0x0),
+					]
 			# Black border
-			with m.If((loc.hsc["s"] != loc.Tstate.VISIB)
-				| (loc.vsc["s"] != loc.Tstate.VISIB)):
-				m.d.dom \
+			with m.Else():
+				m.d.dom2 \
 				+= [
 					bus.col.r.eq(0x0),
 					bus.col.g.eq(0x0),
 					bus.col.b.eq(0x0),
 				]
 
-		with m.If(loc.clk_cnt == 0x0):
-			self.HTIMING().update_state_cnt(m, loc.hsc)
-
-			with m.If(~bus.en):
-				black_border(m, loc, bus)
-				with m.Else():
-					m.d.dom \
-					+= [
-						bus.col.r.eq(0xf),
-						bus.col.g.eq(0xf),
-						bus.col.b.eq(0xf),
-					]
-			with m.Else(): # If(bus.en):
-				black_border(m, loc, bus)
-				with m.Else():
-					# Display image here
-					m.d.dom \
-					+= [
-						bus.col.r.eq(0xf),
-						bus.col.g.eq(0x0),
-						bus.col.b.eq(0x0),
-					]
 		#--------
 
 		#--------

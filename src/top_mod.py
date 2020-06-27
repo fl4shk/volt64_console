@@ -83,6 +83,7 @@ class Top(Elaboratable):
 			= VgaDriver \
 			(
 				CLK_RATE=self.__MAIN_CLK_RATE,
+				#CLK_RATE=50,
 				TIMING_INFO=vga.TIMING_INFO,
 				NUM_BUF_SCANLINES=vga.NUM_BUF_SCANLINES,
 			)
@@ -98,86 +99,6 @@ class Top(Elaboratable):
 			self.vga().hs.eq(vga.drbus.hsync),
 			self.vga().vs.eq(vga.drbus.vsync),
 		]
-
-
-		#vga.HTIMING = vga.TIMING_INFO.HTIMING()
-		#vga.VTIMING = vga.TIMING_INFO.VTIMING()
-
-		#vga.Tstate = VgaTiming.State
-		#vga.hsc \
-		#= {
-		#	"s": Signal(width_from_len(vga.Tstate),
-		#		reset=vga.Tstate.FRONT),
-		#	"c": Signal(vga.HTIMING.COUNTER_WIDTH()),
-		#}
-		#vga.vsc \
-		#= {
-		#	"s": Signal(width_from_len(vga.Tstate),
-		#		reset=vga.Tstate.FRONT),
-		#	"c": Signal(vga.VTIMING.COUNTER_WIDTH()),
-		#}
-
-		## Clocks Per Pixel
-		#vga.CPP = self.__MAIN_CLK_RATE // vga.TIMING_INFO.PIXEL_CLK()
-
-		## Clock counter, used to figure out when we can update the VGA pins
-		#vga.CLK_CNT_WIDTH = width_from_arg(vga.CPP)
-		#vga.clk_cnt = Signal(vga.CLK_CNT_WIDTH)
-
-		#vga.clk_cnt_p_1 = Signal(vga.CLK_CNT_WIDTH)
-		#m.d.comb += vga.clk_cnt_p_1.eq(vga.clk_cnt + 0b1)
-
-		#with m.If(vga.clk_cnt_p_1 < vga.CPP):
-		#	m.d.dom += vga.clk_cnt.eq(vga.clk_cnt_p_1)
-		#with m.Else():
-		#	m.d.dom += vga.clk_cnt.eq(0x0)
-
-		#vga.PIXEL_EN = (vga.clk_cnt == 0x0)
-
-
-		#with m.If(vga.PIXEL_EN):
-		#	vga.HTIMING.update_state_cnt(m, vga.hsc)
-
-		#	# Black border
-		#	with m.If((vga.hsc["s"] != vga.Tstate.VISIB)
-		#		| (vga.vsc["s"] != vga.Tstate.VISIB)):
-		#		m.d.dom \
-		#		+= [
-		#			self.vga().r.eq(0b0000),
-		#			self.vga().g.eq(0b0000),
-		#			self.vga().b.eq(0b0000),
-		#		]
-
-		#	with m.Else():
-		#		# Display image here
-		#		m.d.dom \
-		#		+= [
-		#			self.vga().r.eq(0b1111),
-		#			self.vga().g.eq(0b0000),
-		#			self.vga().b.eq(0b1111),
-		#		]
-
-		#	with m.Switch(vga.hsc["s"]):
-		#		with m.Case(vga.Tstate.FRONT):
-		#			m.d.dom += self.vga().hs.eq(0b1)
-		#		with m.Case(vga.Tstate.SYNC):
-		#			m.d.dom += self.vga().hs.eq(0b0)
-		#		with m.Case(vga.Tstate.BACK):
-		#			m.d.dom += self.vga().hs.eq(0b1)
-		#		with m.Case(vga.Tstate.VISIB):
-		#			m.d.dom += self.vga().hs.eq(0b1),
-		#			with m.If((vga.hsc["c"] + 0x1) >= vga.HTIMING.visib()):
-		#				vga.VTIMING.update_state_cnt(m, vga.vsc)
-
-		#	with m.Switch(vga.vsc["s"]):
-		#		with m.Case(vga.Tstate.FRONT):
-		#			m.d.dom += self.vga().vs.eq(0b1)
-		#		with m.Case(vga.Tstate.SYNC):
-		#			m.d.dom += self.vga().vs.eq(0b0)
-		#		with m.Case(vga.Tstate.BACK):
-		#			m.d.dom += self.vga().vs.eq(0b1)
-		#		with m.Case(vga.Tstate.VISIB):
-		#			m.d.dom += self.vga().vs.eq(0b1)
 		##--------
 
 		#--------
