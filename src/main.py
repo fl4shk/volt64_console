@@ -3,8 +3,8 @@
 import sys
 
 from misc_util import *
-from top_mod import *
-from fifo_mod import *
+#from top_mod import *
+from fifo_mods import *
 
 
 from nmigen import *
@@ -42,5 +42,6 @@ def program(mod_name, **kw_args):
 	mod.platform().build(mod, do_program=True)
 
 if __name__ == "__main__":
-	#formal(Fifo, shape_t=unsigned(8), SIZE=4)
+	#formal(Fifo, ShapeT=unsigned(8), SIZE=4)
+	#formal(FwftFifo, ShapeT=unsigned(8), SIZE=4)
 	program(Top)

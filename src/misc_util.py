@@ -4,6 +4,7 @@ import sys
 import math
 
 from nmigen import *
+from nmigen.hdl.rec import *
 
 class Blank:
 	pass
@@ -42,8 +43,8 @@ def width_from_len(arg):
 #def add_clk_domain(m, clk, domain="dom"):
 #	m.domains += ClockDomain(domain)
 #	m.d.comb += ClockSignal(domain=domain).eq(clk)
-def rec_to_shape(rec_t):
-	return Value.cast(rec_t).shape()
+def rec_to_shape(RecT):
+	return Value.cast(RecT).shape()
 
 def inst_pll(pll_file_name, domain, pll_module_name, freq, platform, m):
 	ret = Blank()
@@ -70,3 +71,17 @@ def inst_pll(pll_file_name, domain, pll_module_name, freq, platform, m):
 	platform.add_clock_constraint(ret.pll_clk, freq)
 
 	return ret
+
+class Vec2Layout(Layout):
+	def __init__(self, ShapeT):
+		self.__ShapeT = ShapeT
+		super().__init__ \
+		([
+			("x", self.ShapeT()),
+			("y", self.ShapeT()),
+		])
+	def ShapeT(self):
+		return self.__ShapeT
+class Vec2(Record):
+	def __init__(self, ShapeT):
+		super().__init__(Vec2Layout(shape_t))
