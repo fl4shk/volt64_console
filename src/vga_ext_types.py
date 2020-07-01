@@ -80,7 +80,7 @@ class VgaTimingInfo:
 		return self.__VTIMING
 
 
-class VgaColorsLayout(Layout):
+class VgaColorLayout(Layout):
 	def __init__(self, COLOR_WIDTH=4):
 		self.__COLOR_WIDTH = COLOR_WIDTH
 		super().__init__ \
@@ -99,9 +99,9 @@ class VgaColorsLayout(Layout):
 		return Cat(self.r, self.g, self.b) \
 			.eq(Cat(other.r, other.g, other.b))
 
-class VgaColors(Record):
+class VgaColor(Record):
 	def __init__(self):
-		super().__init__(VgaColorsLayout())
+		super().__init__(VgaColorLayout())
 
 	def COLOR_WIDTH(self):
 		return self.layout.COLOR_WIDTH()
@@ -114,5 +114,5 @@ class VgaDriverBufLayout(Layout):
 		([
 			("can_prep", unsigned(1)),
 			("prep", unsigned(1)),
-			("col", VgaColorsLayout()),
+			("col", VgaColorLayout()),
 		])

@@ -108,7 +108,7 @@ class Top(Elaboratable):
 				)
 			)
 		vga.drbus = vga.driver.bus()
-		vga.col = VgaColors()
+		vga.col = VgaColor()
 		m.d.comb \
 		+= [
 			vga.drbus.en.eq(io.switch[0]),
@@ -144,18 +144,18 @@ class Top(Elaboratable):
 		#	]
 		m.d.comb += vga.drbus.buf.prep.eq(0b1)
 
-		vga.last_pos = Vec2(vga.drbus.pos.ShapeT())
+		#vga.last_pos = Vec2(vga.drbus.pos.CoordShapeT())
 		with m.If(vga.drbus.pixel_en & vga.drbus.visib):
-			m.d.dom += vga.last_pos.eq(vga.drbus.pos)
+			#m.d.dom += vga.drbus.past_draw_pos.eq(vga.drbus.draw_pos)
 
-			with m.If(vga.drbus.pos.x == 0x0):
+			with m.If(vga.drbus.draw_pos.x == 0x0):
 				m.d.dom += vga.col.r.eq(0x0)
-			with m.Elif(vga.last_pos.x != vga.drbus.pos.x):
+			with m.Elif(vga.drbus.past_draw_pos.x != vga.drbus.draw_pos.x):
 				m.d.dom += vga.col.r.eq(vga.col.r + 0x1)
 
-			with m.If(vga.drbus.pos.y == 0x0):
+			with m.If(vga.drbus.draw_pos.y == 0x0):
 				m.d.dom += vga.col.g.eq(0x0)
-			with m.Elif(vga.last_pos.y != vga.drbus.pos.y):
+			with m.Elif(vga.drbus.past_draw_pos.y != vga.drbus.draw_pos.y):
 				m.d.dom += vga.col.g.eq(vga.col.g + 0x1)
 
 			m.d.dom \

@@ -5,7 +5,7 @@ from nmigen import *
 from nmigen.hdl.rec import *
 
 from vga_ext_types import *
-#from fifo_mods import *
+from fifo_mods import *
 #from bram_mod import *
 
 
@@ -43,23 +43,30 @@ class VgaDriverBusLayout(Layout):
 			("en", unsigned(1)),
 
 			# VGA physical pins
-			("col", VgaColorsLayout()),
+			("col", VgaColorLayout()),
 			("hsync", unsigned(1)),
 			("vsync", unsigned(1)),
 
 			# Pixel buffer
 			("buf", VgaDriverBufLayout()),
 
-			#("dbg_fifo_empty", unsigned(1)),
-			#("dbg_fifo_full", unsigned(1)),
+			# Debug
+			("dbg_fifo_empty", unsigned(1)),
+			("dbg_fifo_full", unsigned(1)),
+
+			# Misc.
 			("pixel_en", unsigned(1)),
+			("next_visib", unsigned(1)),
 			("visib", unsigned(1)),
 			("past_visib", unsigned(1)),
-			("draw_pos", Vec2Layout(unsigned(16))),
-			("past_draw_pos", Vec2Layout(unsigned(16))),
-			("size", Vec2Layout(unsigned(16))),
+			("draw_pos", Vec2Layout(self.CoordShapeT())),
+			("past_draw_pos", Vec2Layout(self.CoordShapeT())),
+			("size", Vec2Layout(self.CoordShapeT())),
 			#("start_draw", unsigned(1)),
 		])
+
+	def CoordShapeT(self):
+		return unsigned(16)
 
 class VgaDriverBus(Record):
 	def __init__(self):
@@ -108,12 +115,12 @@ class VgaDriver(Elaboratable):
 		#--------
 
 		#--------
-		#loc.fifo = m.submodules.fifo \
-		#	= Fifo \
-		#	(
-		#		shape_t=rec_to_shape(VgaColors()),
-		#		SIZE=self.FIFO_SIZE()
-		#	)
+		fifo = m.submodules.fifo \
+			= FwftFifo \
+			(
+				ShapeT=rec_to_shape(VgaColor()),
+				SIZE=self.FIFO_SIZE()
+			)
 
 		##loc.fifo_rst = Signal(reset=0b1)
 
@@ -124,7 +131,8 @@ class VgaDriver(Elaboratable):
 		#--------
 
 		#--------
-		loc.col = VgaColors()
+		loc.col = VgaColor()
+		loc.next_col = VgaColor()
 		#--------
 
 		#--------
@@ -197,7 +205,7 @@ class VgaDriver(Elaboratable):
 
 		with m.If(bus.pixel_en):
 			# Visible area
-			with m.If(loc.visib):
+			with m.If(bus.visib):
 				with m.If(~bus.en):
 					m.d.sync \
 					+= [
@@ -211,7 +219,7 @@ class VgaDriver(Elaboratable):
 						bus.col.eq(loc.col)
 					]
 			# Black border
-			with m.Else(): # If (~loc.visib)
+			with m.Else(): # If (~bus.visib)
 				m.d.sync \
 				+= [
 					bus.col.r.eq(0x0),
@@ -221,43 +229,53 @@ class VgaDriver(Elaboratable):
 		#--------
 
 		##--------
-		## Implement VgaDriver bus to Fifo bus transaction
-		#m.d.comb \
-		#+= [
-		#	bus.buf.can_prep.eq(~loc.fifo.bus().full),
-		#	loc.fifo.bus().wr_en.eq(bus.buf.prep),
-		#	loc.fifo.bus().wr_data.eq(bus.buf.col),
-		#]
+		# Implement VgaDriver bus to Fifo bus transaction
+		m.d.comb \
+		+= [
+			bus.buf.can_prep.eq(~fifo.bus().full),
+			fifo.bus().wr_en.eq(bus.buf.prep),
+			fifo.bus().wr_data.eq(bus.buf.col),
+		]
 		##--------
 
 		#--------
-		# Implement grabbing pixels from the FIFO.
+		## Implement grabbing pixels from the FIFO.
 
-		#loc.FIFO_NOT_EMPTY = ~loc.fifo.bus().empty
-		#loc.START_GRAB_FROM_FIFO = loc.FIFO_NOT_EMPTY \
-		#	& (loc.clk_cnt == (self.CLK_CNT_WIDTH() - 3))
-		#loc.END_GRAB_FROM_FIFO = loc.FIFO_NOT_EMPTY \
-		#	& (loc.clk_cnt == (self.CLK_CNT_WIDTH() - 1))
+		##loc.FIFO_NOT_EMPTY = ~loc.fifo.bus().empty
+		##loc.START_GRAB_FROM_FIFO = loc.FIFO_NOT_EMPTY \
+		##	& (loc.clk_cnt == (self.CLK_CNT_WIDTH() - 3))
+		##loc.END_GRAB_FROM_FIFO = loc.FIFO_NOT_EMPTY \
+		##	& (loc.clk_cnt == (self.CLK_CNT_WIDTH() - 1))
 
-		#with m.If(loc.START_GRAB_FROM_FIFO):
-		#	m.d.sync += loc.fifo.bus().rd_en.eq(0b1)
-		#with m.Elif(loc.END_GRAB_FROM_FIFO):
-		#	m.d.sync += loc.col.eq(loc.fifo.bus().rd_data)
+		##with m.If(loc.START_GRAB_FROM_FIFO):
+		##	m.d.sync += loc.fifo.bus().rd_en.eq(0b1)
+		##with m.Elif(loc.END_GRAB_FROM_FIFO):
+		##	m.d.sync += loc.col.eq(loc.fifo.bus().rd_data)
+		##with m.Else():
+		##	m.d.sync \
+		##	+= [
+		##		loc.fifo.bus().rd_en.eq(0b0),
+		##		loc.col.r.eq(0xf),
+		##		loc.col.g.eq(0xf),
+		##		loc.col.b.eq(0x0),
+		##	]
+
+		with m.If(bus.pixel_en & bus.visib & (~fifo.bus().empty)):
+			m.d.comb += fifo.bus().rd_en.eq(0b1)
+		with m.Else():
+			m.d.comb += fifo.bus().rd_en.eq(0b0)
+		#with m.If((loc.clk_cnt_p_1 == bus.SIZE()) & bus.next_visib
+		#	& (~fifo.bus().empty)):
+		#	m.d.sync += fifo.bus().rd_en.eq(0b1)
 		#with m.Else():
-		#	m.d.sync \
-		#	+= [
-		#		loc.fifo.bus().rd_en.eq(0b0),
-		#		loc.col.r.eq(0xf),
-		#		loc.col.g.eq(0xf),
-		#		loc.col.b.eq(0x0),
-		#	]
+		#	m.d.sync += fifo.bus().rd_en.eq(0b0)
 
-
-		#m.d.comb \
-		#+= [
-		#	bus.dbg_fifo_empty.eq(loc.fifo.bus().empty),
-		#	bus.dbg_fifo_full.eq(loc.fifo.bus().full),
-		#]
+		m.d.comb \
+		+= [
+			loc.col.eq(fifo.bus().rd_data),
+			bus.dbg_fifo_empty.eq(fifo.bus().empty),
+			bus.dbg_fifo_full.eq(fifo.bus().full),
+		]
 
 		#with m.If(bus.buf.prep):
 		#	m.d.sync \
@@ -273,89 +291,92 @@ class VgaDriver(Elaboratable):
 		#	]
 
 
-		loc.fifo = Blank()
-		loc.fifo.PTR_WIDTH = width_from_len(self.FIFO_SIZE())
+		#loc.fifo = Blank()
+		#loc.fifo.PTR_WIDTH = width_from_len(self.FIFO_SIZE())
 
-		loc.fifo.arr = Array([VgaColors()
-			for _ in range(self.FIFO_SIZE())])
+		#loc.fifo.arr = Array([VgaColor()
+		#	for _ in range(self.FIFO_SIZE())])
 
-		loc.fifo.head = Signal(loc.fifo.PTR_WIDTH)
-		loc.fifo.tail = Signal(loc.fifo.PTR_WIDTH)
-		loc.fifo.next_head = Signal(loc.fifo.PTR_WIDTH)
-		loc.fifo.next_tail = Signal(loc.fifo.PTR_WIDTH)
-		loc.fifo.incr_next_head = Signal(loc.fifo.PTR_WIDTH)
+		#loc.fifo.head = Signal(loc.fifo.PTR_WIDTH)
+		#loc.fifo.tail = Signal(loc.fifo.PTR_WIDTH)
+		#loc.fifo.next_head = Signal(loc.fifo.PTR_WIDTH)
+		#loc.fifo.next_tail = Signal(loc.fifo.PTR_WIDTH)
+		#loc.fifo.incr_next_head = Signal(loc.fifo.PTR_WIDTH)
 
-		loc.fifo.empty = Signal()
-		loc.fifo.full = Signal()
-		loc.fifo.next_empty = Signal()
-		loc.fifo.next_full = Signal()
+		#loc.fifo.empty = Signal()
+		#loc.fifo.full = Signal()
+		#loc.fifo.next_empty = Signal()
+		#loc.fifo.next_full = Signal()
 
-		m.d.comb \
-		+= [
-			bus.buf.can_prep.eq(~loc.fifo.full),
-		]
-		m.d.sync \
-		+= [
-			loc.fifo.head.eq(loc.fifo.next_head),
-			loc.fifo.tail.eq(loc.fifo.next_tail),
-			loc.fifo.empty.eq(loc.fifo.next_empty),
-			loc.fifo.full.eq(loc.fifo.next_full)
-		]
+		#m.d.comb \
+		#+= [
+		#	bus.buf.can_prep.eq(~loc.fifo.full),
+		#]
+		#m.d.sync \
+		#+= [
+		#	loc.fifo.head.eq(loc.fifo.next_head),
+		#	loc.fifo.tail.eq(loc.fifo.next_tail),
+		#	loc.fifo.empty.eq(loc.fifo.next_empty),
+		#	loc.fifo.full.eq(loc.fifo.next_full)
+		#]
 
-		with m.If(~loc.fifo.empty):
-			m.d.comb += loc.col.eq(loc.fifo.arr[loc.fifo.tail])
-		with m.Else(): # If(loc.fifo.empty)
-			m.d.comb \
-			+= [
-				loc.col.r.eq(0xf),
-				loc.col.g.eq(0xf),
-				loc.col.f.eq(0x0),
-			]
+		#with m.If(~loc.fifo.empty):
+		#	m.d.comb += loc.col.eq(loc.fifo.arr[loc.fifo.tail])
+		#with m.Else(): # If(loc.fifo.empty)
+		#	m.d.comb \
+		#	+= [
+		#		loc.col.r.eq(0xf),
+		#		loc.col.g.eq(0xf),
+		#		loc.col.f.eq(0x0),
+		#	]
 
-		# Compute `loc.fifo.next_head` and write into the FIFO if it's not
-		# full
-		with m.If((~loc.fifo.full) & bus.buf.prep):
-			m.d.sync += loc.fifo.arr[loc.fifo.head].eq(bus.buf.col)
-			with m.If((loc.fifo.head + 1) >= self.FIFO_SIZE()):
-				m.d.comb += loc.fifo.next_head.eq(0)
-			with m.Else():
-				m.d.comb += loc.fifo.next_head.eq(loc.fifo.head + 1)
-		with m.Else():
-			m.d.comb += loc.fifo.next_head.eq(loc.fifo.head)
+		## Compute `loc.fifo.next_head` and write into the FIFO if it's not
+		## full
+		#with m.If((~loc.fifo.full) & bus.buf.prep):
+		#	m.d.sync += loc.fifo.arr[loc.fifo.head].eq(bus.buf.col)
+		#	with m.If((loc.fifo.head + 1) >= self.FIFO_SIZE()):
+		#		m.d.comb += loc.fifo.next_head.eq(0)
+		#	with m.Else():
+		#		m.d.comb += loc.fifo.next_head.eq(loc.fifo.head + 1)
+		#with m.Else():
+		#	m.d.comb += loc.fifo.next_head.eq(loc.fifo.head)
 
-		# Compute `loc.fifo.next_tail`
-		with m.If((~loc.fifo.empty) & loc.visib & bus.pixel_en):
-			with m.If((loc.fifo.tail + 1) >= self.FIFO_SIZE()):
-				m.d.comb += loc.fifo.next_tail.eq(0)
-			with m.Else():
-				m.d.comb += loc.fifo.next_tail.eq(loc.fifo.tail + 1)
-		with m.Else():
-			m.d.comb += loc.fifo.next_tail.eq(loc.fifo.tail)
+		## Compute `loc.fifo.next_tail`
+		#with m.If((~loc.fifo.empty) & loc.visib & bus.pixel_en):
+		#	with m.If((loc.fifo.tail + 1) >= self.FIFO_SIZE()):
+		#		m.d.comb += loc.fifo.next_tail.eq(0)
+		#	with m.Else():
+		#		m.d.comb += loc.fifo.next_tail.eq(loc.fifo.tail + 1)
+		#with m.Else():
+		#	m.d.comb += loc.fifo.next_tail.eq(loc.fifo.tail)
 
-		# Compute `loc.fifo.next_empty` and `loc.fifo.next_full`
-		with m.If((loc.fifo.next_head + 1) >= self.FIFO_SIZE()):
-			m.d.comb += loc.fifo.incr_next_head.eq(0)
-		with m.Else():
-			m.d.comb + loc.fifo.incr_next_head.eq(loc.fifo.next_head + 1)
+		## Compute `loc.fifo.next_empty` and `loc.fifo.next_full`
+		#with m.If((loc.fifo.next_head + 1) >= self.FIFO_SIZE()):
+		#	m.d.comb += loc.fifo.incr_next_head.eq(0)
+		#with m.Else():
+		#	m.d.comb + loc.fifo.incr_next_head.eq(loc.fifo.next_head + 1)
 
-		with m.If(loc.fifo.incr_next_head == loc.fifo.next_tail):
-			m.d.comb \
-			+= [
-				loc.fifo.next_empty.eq(0b0),
-				loc.fifo.next_full.eq(0b1),
-			]
-		with m.Elif(loc.fifo.next_head == loc.fifo.next_tail):
-			m.d.comb \
-			+= [
-				loc.fifo.next_empty.eq(0b1),
-				loc.fifo.next_full.eq(0b0),
-			]
-		with m.Else():
-			m.d.comb \
-			+= [
-				loc.fifo.next_empty.eq(0b0),
-				loc.fifo.next_full.eq(0b0),
-			]
+		#with m.If(loc.fifo.incr_next_head == loc.fifo.next_tail):
+		#	m.d.comb \
+		#	+= [
+		#		loc.fifo.next_empty.eq(0b0),
+		#		loc.fifo.next_full.eq(0b1),
+		#	]
+		#with m.Elif(loc.fifo.next_head == loc.fifo.next_tail):
+		#	m.d.comb \
+		#	+= [
+		#		loc.fifo.next_empty.eq(0b1),
+		#		loc.fifo.next_full.eq(0b0),
+		#	]
+		#with m.Else():
+		#	m.d.comb \
+		#	+= [
+		#		loc.fifo.next_empty.eq(0b0),
+		#		loc.fifo.next_full.eq(0b0),
+		#	]
+		#--------
+
+		#--------
 		#--------
 
 		#--------

@@ -3,7 +3,7 @@
 import sys
 
 from misc_util import *
-#from top_mod import *
+from top_mod import *
 from fifo_mods import *
 
 
