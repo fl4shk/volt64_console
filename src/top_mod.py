@@ -143,44 +143,37 @@ class Top(Elaboratable):
 		#		vga.drbus.buf.prep.eq(0b1)
 		#	]
 		m.d.comb += vga.drbus.buf.prep.eq(0b1)
+		#m.d.comb \
+		#+= [
+		#	vga.col.r.eq(0xf),
+		#	vga.col.g.eq(0x0),
+		#	vga.col.b.eq(0x0),
+		#]
 
-		#vga.last_pos = Vec2(vga.drbus.pos.CoordShapeT())
 		with m.If(vga.drbus.pixel_en & vga.drbus.visib):
 			#m.d.dom += vga.drbus.past_draw_pos.eq(vga.drbus.draw_pos)
 
-			with m.If(vga.drbus.draw_pos.x == 0x0):
-				m.d.dom += vga.col.r.eq(0x0)
-			with m.Elif(vga.drbus.past_draw_pos.x != vga.drbus.draw_pos.x):
+			#with m.If(vga.drbus.draw_pos.x == 0x0):
+			#	m.d.dom += vga.col.r.eq(0x0)
+			#with m.Elif(vga.drbus.past_draw_pos.x != vga.drbus.draw_pos.x):
+			#	m.d.dom += vga.col.r.eq(vga.col.r + 0x1)
+
+			#with m.If(vga.drbus.draw_pos.y == 0x0):
+			#	m.d.dom += vga.col.g.eq(0x0)
+			#with m.Elif(vga.drbus.past_draw_pos.y != vga.drbus.draw_pos.y):
+			#	m.d.dom += vga.col.g.eq(vga.col.g + 0x1)
+
+			#m.d.dom \
+			#+= [
+			#	vga.col.b.eq(0x0),
+			#]
+			#m.d.dom += vga.col.r.eq(vga.col.r + 0x1)
+			with m.If(vga.drbus.draw_pos.x >= 0x10):
 				m.d.dom += vga.col.r.eq(vga.col.r + 0x1)
-
-			with m.If(vga.drbus.draw_pos.y == 0x0):
-				m.d.dom += vga.col.g.eq(0x0)
-			with m.Elif(vga.drbus.past_draw_pos.y != vga.drbus.draw_pos.y):
-				m.d.dom += vga.col.g.eq(vga.col.g + 0x1)
-
-			m.d.dom \
-			+= [
-				vga.col.b.eq(0x0),
-			]
-
-		#with m.If(loc.dom_rst):
-		#	m.d.dom \
-		#	+= [
-		#		vga.col.r.eq(0x0),
-		#		vga.col.g.eq(0x0),
-		#		vga.col.b.eq(0xf),
-		#	]
-		#with m.Elif(vga.drbus.en):
-		#	m.d.dom \
-		#	+= [
-		#		vga.drbus.buf.prep.eq(0b1),
-		#		#vga.col.r.eq(0xf),
-		#		#vga.col.g.eq(0x8),
-		#		#vga.col.b.eq(0x0),
-		#	]
-		#with m.Else():
-		#	m.d.dom += vga.drbus.buf.prep.eq(0b0)
-		#m.d.dom += vga.drbus.buf.prep.eq(io.switch[1])
+			with m.Else():
+				m.d.dom += vga.col.r.eq(0x0)
+			m.d.dom += vga.col.g.eq(0x0)
+			m.d.dom += vga.col.b.eq(0x0)
 		#--------
 
 		#--------

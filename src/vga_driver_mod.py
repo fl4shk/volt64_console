@@ -241,24 +241,6 @@ class VgaDriver(Elaboratable):
 		#--------
 		## Implement grabbing pixels from the FIFO.
 
-		##loc.FIFO_NOT_EMPTY = ~loc.fifo.bus().empty
-		##loc.START_GRAB_FROM_FIFO = loc.FIFO_NOT_EMPTY \
-		##	& (loc.clk_cnt == (self.CLK_CNT_WIDTH() - 3))
-		##loc.END_GRAB_FROM_FIFO = loc.FIFO_NOT_EMPTY \
-		##	& (loc.clk_cnt == (self.CLK_CNT_WIDTH() - 1))
-
-		##with m.If(loc.START_GRAB_FROM_FIFO):
-		##	m.d.sync += loc.fifo.bus().rd_en.eq(0b1)
-		##with m.Elif(loc.END_GRAB_FROM_FIFO):
-		##	m.d.sync += loc.col.eq(loc.fifo.bus().rd_data)
-		##with m.Else():
-		##	m.d.sync \
-		##	+= [
-		##		loc.fifo.bus().rd_en.eq(0b0),
-		##		loc.col.r.eq(0xf),
-		##		loc.col.g.eq(0xf),
-		##		loc.col.b.eq(0x0),
-		##	]
 
 		with m.If(bus.pixel_en & bus.visib & (~fifo.bus().empty)):
 			m.d.comb += fifo.bus().rd_en.eq(0b1)
