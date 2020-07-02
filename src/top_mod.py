@@ -95,7 +95,7 @@ class Top(Elaboratable):
 		# VGA
 		vga = Blank()
 		vga.TIMING_INFO = VGA_TIMING_INFO_DICT["640x480@60"]
-		vga.FIFO_SIZE = 80
+		vga.FIFO_SIZE = 16
 
 		vga.driver = m.submodules.vga_driver \
 			= DomainRenamer({"sync": "dom"}) \
@@ -130,18 +130,38 @@ class Top(Elaboratable):
 		#	vga.col.b.eq(0x0),
 		#]
 
-		with m.If(vga.drbus.pixel_en & vga.drbus.next_visib
+		with m.If(vga.drbus.pixel_en & vga.drbus.visib
 			& vga.drbus.buf.can_prep):
 			m.d.dom += vga.drbus.buf.prep.eq(0b1)
 
-			with m.If(vga.drbus.draw_pos.x >= 0x10):
-				m.d.dom += vga.col.r.eq(vga.col.r + 0x1)
+			#with m.If(vga.drbus.draw_pos.x >= 0x10):
+			#	m.d.comb += vga.col.r.eq(vga.col.r + 0x1)
+			#with m.Else():
+			#	m.d.comb += vga.col.r.eq(0x0)
+			m.d.dom += vga.col.r.eq(vga.col.r + 0x1)
+
+			#with m.If(vga.drbus.draw_pos.y > vga.drbus.past_draw_pos.y):
+			#	m.d.dom += vga.col.g.eq(vga.col.g + 0x1)
+
+			#with m.If(vga.drbus.draw_pos.y > 0x10):
+			#	m.d.dom += vga.col.g.eq(vga.col.g + 0x1)
+			#with m.Else():
+			#	m.d.dom += vga.col.g.eq(0x0)
+
+			with m.If((vga.drbus.draw_pos.x == 0x10)
+				& (vga.drbus.draw_pos.y == 0x10)):
+				m.d.dom += vga.col.g.eq(0xf)
+			with m.Elif((vga.drbus.draw_pos.x == 0x0)
+				& (vga.drbus.draw_pos.y == 0x10)):
+				m.d.dom += vga.col.g.eq(0x8)
 			with m.Else():
-				m.d.dom += vga.col.r.eq(0x0)
-			m.d.dom += vga.col.g.eq(0x0)
+				m.d.dom += vga.col.g.eq(0x0)
 			m.d.dom += vga.col.b.eq(0x0)
 		with m.Else():
-			m.d.dom += vga.drbus.buf.prep.eq(0b0)
+			m.d.dom \
+			+= [
+				vga.drbus.buf.prep.eq(0b0)
+			]
 		#--------
 
 		#--------
