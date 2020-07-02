@@ -73,13 +73,12 @@ class VgaDriverBus(Record):
 		super().__init__(VgaDriverBusLayout())
 
 class VgaDriver(Elaboratable):
-	def __init__(self, CLK_RATE, TIMING_INFO, FIFO_SIZE):
+	def __init__(self, CLK_RATE, TIMING_INFO, NUM_BUF_SCANLINES):
 		self.__bus = VgaDriverBus()
 
 		self.__CLK_RATE = CLK_RATE
 		self.__TIMING_INFO = TIMING_INFO
-		#self.__NUM_BUF_SCANLINES = NUM_BUF_SCANLINES
-		self.__FIFO_SIZE = FIFO_SIZE
+		self.__NUM_BUF_SCANLINES = NUM_BUF_SCANLINES
 
 	def bus(self):
 		return self.__bus
@@ -93,12 +92,10 @@ class VgaDriver(Elaboratable):
 		return self.TIMING_INFO().HTIMING()
 	def VTIMING(self):
 		return self.TIMING_INFO().VTIMING()
-	#def NUM_BUF_SCANLINES(self):
-	#	return self.__NUM_BUF_SCANLINES
-	#def FIFO_SIZE(self):
-	#	return (self.FB_SIZE().x * self.NUM_BUF_SCANLINES())
+	def NUM_BUF_SCANLINES(self):
+		return self.__NUM_BUF_SCANLINES
 	def FIFO_SIZE(self):
-		return self.__FIFO_SIZE
+		return (self.FB_SIZE().x * self.NUM_BUF_SCANLINES())
 	def FB_SIZE(self):
 		ret = Blank()
 		ret.x, ret.y = self.HTIMING().visib(), self.VTIMING().visib()

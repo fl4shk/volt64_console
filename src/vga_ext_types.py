@@ -47,14 +47,31 @@ class VgaTiming:
 	#--------
 
 	#--------
+	def no_change_update_next_s(self, m, state_cnt):
+		m.d.comb += state_cnt["next_s"].eq(state_cnt["s"])
 	def update_state_cnt(self, m, state_cnt):
 		def mk_case(m, state_cnt, state_size, next_state):
+			#counter_p_1 = state_cnt["c"] + 0x1
+			#with m.If(counter_p_1 >= state_size):
+			#	m.d.sync += state_cnt["c"].eq(0x0),
+			#	m.d.comb += state_cnt["next_s"].eq(next_state)
+			#with m.Else():
+			#	m.d.sync += state_cnt["c"].eq(counter_p_1)
+			#	m.d.comb += state_cnt["next_s"].eq(state_cnt["s"])
+			#m.d.sync += state_cnt["s"].eq(state_cnt["next_s"])
 			counter_p_1 = state_cnt["c"] + 0x1
 			with m.If(counter_p_1 >= state_size):
-				m.d.dom += state_cnt["s"].eq(next_state)
-				m.d.dom += state_cnt["c"].eq(0x0)
+				m.d.sync += state_cnt["s"].eq(next_state)
+				m.d.sync += state_cnt["c"].eq(0x0)
+				#m.d.comb += state_cnt["next_s"].eq(next_state)
 			with m.Else():
-				m.d.dom += state_cnt["c"].eq(counter_p_1)
+				m.d.sync += state_cnt["c"].eq(counter_p_1)
+				#self.no_change_update_next_s(m, state_cnt)
+
+			with m.If((state_cnt["c"] + 0x2) >= state_size):
+				m.d.comb += state_cnt["next_s"].eq(next_state)
+			with m.Else():
+				m.d.comb += state_cnt["next_s"].eq(state_cnt["s"])
 
 		State = VgaTiming.State
 		with m.Switch(state_cnt["s"]):

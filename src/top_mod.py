@@ -95,7 +95,7 @@ class Top(Elaboratable):
 		# VGA
 		vga = Blank()
 		vga.TIMING_INFO = VGA_TIMING_INFO_DICT["640x480@60"]
-		vga.NUM_BUF_SCANLINES = 2
+		vga.FIFO_SIZE = 80
 
 		vga.driver = m.submodules.vga_driver \
 			= DomainRenamer({"sync": "dom"}) \
@@ -104,7 +104,8 @@ class Top(Elaboratable):
 				(
 					CLK_RATE=self.MAIN_CLK_RATE(),
 					TIMING_INFO=vga.TIMING_INFO,
-					NUM_BUF_SCANLINES=vga.NUM_BUF_SCANLINES,
+					#NUM_BUF_SCANLINES=vga.NUM_BUF_SCANLINES,
+					FIFO_SIZE=vga.FIFO_SIZE,
 				)
 			)
 		vga.drbus = vga.driver.bus()
@@ -121,28 +122,7 @@ class Top(Elaboratable):
 			self.vga().vs.eq(vga.drbus.vsync),
 		]
 
-		#with m.If(loc.past_dom_rst):
-		#	with m.If(vga.drbus.dbg_fifo_empty):
-		#		m.d.dom += io.led[0].eq(0b0)
-		#	with m.Else(): # If(~vga.drbus.dbg_fifo_empty):
-		#		m.d.dom += io.led[0].eq(0b1)
-
-		#m.d.dom \
-		#+= [
-		#	io.led[1].eq(~vga.drbus.dbg_fifo_empty),
-		#	io.led[2].eq(~vga.drbus.dbg_fifo_full),
-		#]
-		#for i in range(3, len(io.led)):
-		#	m.d.dom += io.led[i].eq(0b1)
-
-		#m.d.sync \
-		#	+= [
-		#		vga.col.r.eq(vga.col.r + 0x1),
-		#		vga.col.g.eq(0x0),
-		#		vga.col.b.eq(0x0),
-		#		vga.drbus.buf.prep.eq(0b1)
-		#	]
-		m.d.comb += vga.drbus.buf.prep.eq(0b1)
+		#m.d.comb += vga.drbus.buf.prep.eq(0b1)
 		#m.d.comb \
 		#+= [
 		#	vga.col.r.eq(0xf),
@@ -150,30 +130,18 @@ class Top(Elaboratable):
 		#	vga.col.b.eq(0x0),
 		#]
 
-		with m.If(vga.drbus.pixel_en & vga.drbus.visib):
-			#m.d.dom += vga.drbus.past_draw_pos.eq(vga.drbus.draw_pos)
+		with m.If(vga.drbus.pixel_en & vga.drbus.next_visib
+			& vga.drbus.buf.can_prep):
+			m.d.dom += vga.drbus.buf.prep.eq(0b1)
 
-			#with m.If(vga.drbus.draw_pos.x == 0x0):
-			#	m.d.dom += vga.col.r.eq(0x0)
-			#with m.Elif(vga.drbus.past_draw_pos.x != vga.drbus.draw_pos.x):
-			#	m.d.dom += vga.col.r.eq(vga.col.r + 0x1)
-
-			#with m.If(vga.drbus.draw_pos.y == 0x0):
-			#	m.d.dom += vga.col.g.eq(0x0)
-			#with m.Elif(vga.drbus.past_draw_pos.y != vga.drbus.draw_pos.y):
-			#	m.d.dom += vga.col.g.eq(vga.col.g + 0x1)
-
-			#m.d.dom \
-			#+= [
-			#	vga.col.b.eq(0x0),
-			#]
-			#m.d.dom += vga.col.r.eq(vga.col.r + 0x1)
 			with m.If(vga.drbus.draw_pos.x >= 0x10):
 				m.d.dom += vga.col.r.eq(vga.col.r + 0x1)
 			with m.Else():
 				m.d.dom += vga.col.r.eq(0x0)
 			m.d.dom += vga.col.g.eq(0x0)
 			m.d.dom += vga.col.b.eq(0x0)
+		with m.Else():
+			m.d.dom += vga.drbus.buf.prep.eq(0b0)
 		#--------
 
 		#--------
