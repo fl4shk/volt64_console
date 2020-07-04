@@ -157,10 +157,9 @@ class Top(Elaboratable):
 				vga.dibus.en.eq(0b1),
 			]
 
-			#with m.If(vga.dibus.pos.x > vga.dibus.past_pos.x):
-			with m.If(vga.dibus.pos.x == 0x0):
+			with m.If(vga.dibus.next_pos.x == 0x0):
 				m.d.dom += vga.col.r.eq(0x0)
-			with m.Else(): # If(vga.dibus.pos.x > 0x0)
+			with m.Else(): # If(vga.dibus.next_pos.x > 0x0)
 				m.d.dom += vga.col.r.eq(vga.col.r + 0x1)
 			#m.d.dom += vga.col.r.eq(vga.col.r + 0x1)
 

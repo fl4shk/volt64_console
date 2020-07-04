@@ -16,6 +16,7 @@ class VideoDithererBus:
 		self.col_in = RgbColor(CHAN_WIDTH=self.CHAN_WIDTH())
 
 		self.frame_cnt = Signal(self.DITHER_DELTA_WIDTH())
+		self.next_pos = self.CoordT()
 		self.pos = self.CoordT()
 		self.past_pos = self.CoordT()
 
@@ -109,31 +110,70 @@ class VideoDitherer(Elaboratable):
 			# Update `bus.pos` and `bus.frame_cnt`
 			loc.POS_PLUS_1 = {"x": bus.pos.x + 0x1, "y": bus.pos.y + 0x1}
 			with m.If(loc.POS_PLUS_1["x"] < bus.FB_SIZE().x):
-				m.d.sync += bus.pos.x.eq(loc.POS_PLUS_1["x"])
+				#m.d.sync += bus.pos.x.eq(loc.POS_PLUS_1["x"])
+				m.d.comb \
+				+= [
+					bus.next_pos.x.eq(loc.POS_PLUS_1["x"]),
+					bus.next_pos.y.eq(bus.pos.y),
+				]
 			with m.Else(): # If(loc.POS_PLUS_1["x"] >= bus.FB_SIZE().x):
-				m.d.sync += bus.pos.x.eq(0x0)
+				#m.d.sync += bus.pos.x.eq(0x0)
+				m.d.comb += bus.next_pos.x.eq(0x0),
 				with m.If(loc.POS_PLUS_1["y"] < bus.FB_SIZE().y):
-					m.d.sync += bus.pos.y.eq(loc.POS_PLUS_1["y"])
+					m.d.comb += bus.next_pos.y.eq(loc.POS_PLUS_1["y"])
 				with m.Else():
 					# If(loc.POS_PLUS_1["y"] >= bus.FB_SIZE().y):
-
-					m.d.sync += bus.pos.y.eq(0x0)
+					m.d.comb += bus.next_pos.y.eq(0x0)
 
 					# This wraps around to zero automatically due to
 					# modular arithmetic, so we don't need another mux just
 					# for this.
-					bus.frame_cnt.eq(bus.frame_cnt + 0x1)
+					m.d.sync += bus.frame_cnt.eq(bus.frame_cnt + 0x1)
+			m.d.sync \
+			+= [
+				bus.pos.eq(bus.next_pos)
+			]
 
 			# Perform dithering
 			loc.dicol = RgbColor(CHAN_WIDTH=bus.CHAN_WIDTH())
 			loc.CHAN_DELTA \
 				= self.PATTERN()[bus.frame_cnt][bus.pos.y[0]][bus.pos.x[0]]
+			loc.col_in_plus_delta \
+				= RgbColor(CHAN_WIDTH=bus.CHAN_WIDTH() + 1)
 
 			m.d.comb \
 			+= [
-				#loc.dicol.r.eq(bus.col_in.r + loc.CHAN_DELTA),
-				#loc.dicol.g.eq(bus.col_in.g + loc.CHAN_DELTA),
-				#loc.dicol.b.eq(bus.col_in.b + loc.CHAN_DELTA),
+				loc.col_in_plus_delta.r.eq(bus.col_in.r + loc.CHAN_DELTA),
+				loc.col_in_plus_delta.g.eq(bus.col_in.g + loc.CHAN_DELTA),
+				loc.col_in_plus_delta.b.eq(bus.col_in.b + loc.CHAN_DELTA),
+			]
+
+			# Saturating arithmetic to prevent an artifact
+			with m.If(loc.col_in_plus_delta.r
+				[len(loc.col_in_plus_delta.r) - 1]):
+				m.d.comb += loc.dicol.r.eq(-1)
+			with m.Else():
+				m.d.comb += loc.dicol.r.eq(loc.col_in_plus_delta.r
+					[:len(loc.dicol.r)])
+			with m.If(loc.col_in_plus_delta.g
+				[len(loc.col_in_plus_delta.g) - 1]):
+				m.d.comb += loc.dicol.g.eq(-1)
+			with m.Else():
+				m.d.comb += loc.dicol.g.eq(loc.col_in_plus_delta.g
+					[:len(loc.dicol.g)])
+			with m.If(loc.col_in_plus_delta.b
+				[len(loc.col_in_plus_delta.b) - 1]):
+				m.d.comb += loc.dicol.b.eq(-1)
+			with m.Else():
+				m.d.comb += loc.dicol.b.eq(loc.col_in_plus_delta.b
+					[:len(loc.dicol.b)])
+
+
+			m.d.comb \
+			+= [
+				#loc.dicol.r.eq(loc.COL_IN_PLUS_DELTA["r"]),
+				#loc.dicol.g.eq(loc.COL_IN_PLUS_DELTA["g"]),
+				#loc.dicol.b.eq(loc.COL_IN_PLUS_DELTA["b"]),
 
 				bus.col_out.r.eq(loc.dicol.r[bus.CHAN_WIDTH_DELTA():]),
 				bus.col_out.g.eq(loc.dicol.g[bus.CHAN_WIDTH_DELTA():]),
@@ -143,7 +183,8 @@ class VideoDitherer(Elaboratable):
 		with m.Else(): # If(~bus.en):
 			m.d.comb \
 			+= [
-				bus.col_out.eq(loc.past_col_out)
+				bus.col_out.eq(loc.past_col_out),
+				bus.next_pos.eq(bus.pos),
 			]
 		#--------
 
