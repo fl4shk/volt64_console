@@ -6,6 +6,8 @@ from nmigen.hdl.rec import *
 
 from vga_ext_types import *
 from vga_driver_mod import *
+from video_ditherer_mod import *
+from sdram_ctrl_mod import *
 #from bram_mod import *
 
 class Top(Elaboratable):
@@ -19,6 +21,7 @@ class Top(Elaboratable):
 		self.__ps2_kb = self.platform().request("ps2_host", 0)
 		self.__ps2_mouse = self.platform().request("ps2_host", 1)
 		self.__sd_card = self.platform().request("sd_card_spi", 0)
+		self.__sdram = self.platform().request("sdram", 0)
 	#--------
 
 	#--------
@@ -39,6 +42,8 @@ class Top(Elaboratable):
 		return self.__ps2_mouse
 	def sd_card(self):
 		return self.__sd_card
+	def sdram(self):
+		return self.__sdram
 	#--------
 
 	#--------
@@ -94,10 +99,12 @@ class Top(Elaboratable):
 		#--------
 		# VGA
 		vga = Blank()
+		vga.m = Blank()
+
 		vga.TIMING_INFO = VGA_TIMING_INFO_DICT["640x480@60"]
 		vga.FIFO_SIZE = 16
 
-		vga.driver = m.submodules.vga_driver \
+		vga.m.driver = m.submodules.vga_driver \
 			= DomainRenamer({"sync": "dom"}) \
 			(
 				VgaDriver \
@@ -108,12 +115,29 @@ class Top(Elaboratable):
 					FIFO_SIZE=vga.FIFO_SIZE,
 				)
 			)
-		vga.drbus = vga.driver.bus()
-		vga.col = VgaColor()
+		vga.drbus = vga.m.driver.bus()
+		#vga.col = RgbColor()
+
+		vga.m.ditherer = m.submodules.video_ditherer \
+			= DomainRenamer({"sync": "dom"}) \
+			(
+				VideoDitherer \
+				(
+					FB_SIZE=vga.m.driver.FB_SIZE(),
+					#drbus=vga.drbus,
+					#col=vga.col,
+				)
+			)
+		vga.dibus = vga.m.ditherer.bus()
+
+		vga.col = vga.dibus.col_in
+
 		m.d.comb \
 		+= [
 			vga.drbus.en.eq(io.switch[0]),
-			vga.drbus.buf.col.eq(vga.col),
+			vga.drbus.buf.col.eq(vga.dibus.col_out),
+
+			#vga.dibus.en.eq(0b1),
 
 			self.vga().r.eq(vga.drbus.col.r),
 			self.vga().g.eq(vga.drbus.col.g),
@@ -122,46 +146,53 @@ class Top(Elaboratable):
 			self.vga().vs.eq(vga.drbus.vsync),
 		]
 
-		#m.d.comb += vga.drbus.buf.prep.eq(0b1)
 		#m.d.comb \
 		#+= [
-		#	vga.col.r.eq(0xf),
-		#	vga.col.g.eq(0x0),
-		#	vga.col.b.eq(0x0),
 		#]
 
-		with m.If(vga.drbus.pixel_en & vga.drbus.visib
-			& vga.drbus.buf.can_prep):
-			m.d.dom += vga.drbus.buf.prep.eq(0b1)
-
-			#with m.If(vga.drbus.draw_pos.x >= 0x10):
-			#	m.d.comb += vga.col.r.eq(vga.col.r + 0x1)
-			#with m.Else():
-			#	m.d.comb += vga.col.r.eq(0x0)
-			m.d.dom += vga.col.r.eq(vga.col.r + 0x1)
-
-			#with m.If(vga.drbus.draw_pos.y > vga.drbus.past_draw_pos.y):
-			#	m.d.dom += vga.col.g.eq(vga.col.g + 0x1)
-
-			#with m.If(vga.drbus.draw_pos.y > 0x10):
-			#	m.d.dom += vga.col.g.eq(vga.col.g + 0x1)
-			#with m.Else():
-			#	m.d.dom += vga.col.g.eq(0x0)
-
-			with m.If((vga.drbus.draw_pos.x == 0x10)
-				& (vga.drbus.draw_pos.y == 0x10)):
-				m.d.dom += vga.col.g.eq(0xf)
-			with m.Elif((vga.drbus.draw_pos.x == 0x0)
-				& (vga.drbus.draw_pos.y == 0x10)):
-				m.d.dom += vga.col.g.eq(0x8)
-			with m.Else():
-				m.d.dom += vga.col.g.eq(0x0)
-			m.d.dom += vga.col.b.eq(0x0)
-		with m.Else():
+		with m.If(vga.drbus.buf.can_prep):
 			m.d.dom \
 			+= [
-				vga.drbus.buf.prep.eq(0b0)
+				vga.drbus.buf.prep.eq(0b1),
+				vga.dibus.en.eq(0b1),
 			]
+
+			#with m.If(vga.dibus.pos.x > vga.dibus.past_pos.x):
+			with m.If(vga.dibus.pos.x == 0x0):
+				m.d.dom += vga.col.r.eq(0x0)
+			with m.Else(): # If(vga.dibus.pos.x > 0x0)
+				m.d.dom += vga.col.r.eq(vga.col.r + 0x1)
+			#m.d.dom += vga.col.r.eq(vga.col.r + 0x1)
+
+			m.d.dom += vga.col.g.eq(0x0)
+			m.d.dom += vga.col.b.eq(0x0)
+		with m.Else(): # If(~vga.drbus.buf.can_prep):
+			m.d.dom \
+			+= [
+				#vga.drbus.buf.prep.eq(0b0),
+				vga.dibus.en.eq(0b0),
+			]
+
+		#with m.If(vga.drbus.pixel_en & vga.drbus.visib
+		#	& vga.drbus.buf.can_prep):
+
+		#	#m.d.dom += vga.past_col.eq(vga.col)
+
+		#	m.d.dom += vga.drbus.buf.prep.eq(0b1)
+
+		#	with m.If(vga.drbus.draw_pos.x >= 0x10):
+		#		m.d.dom += vga.col.r.eq(vga.col.r + 0x1)
+
+		#	with m.If(vga.drbus.draw_pos.y >= 0x10):
+		#		m.d.dom += vga.col.g.eq(vga.col.g + 0x1)
+
+		#	m.d.dom += vga.col.b.eq(0x0)
+		#with m.Else():
+		#	m.d.dom \
+		#	+= [
+		#		vga.drbus.buf.prep.eq(0b0)
+		#	]
+
 		#--------
 
 		#--------

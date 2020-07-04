@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from misc_util import *
 from nmigen import *
@@ -43,7 +43,7 @@ class VgaDriverBusLayout(Layout):
 			("en", unsigned(1)),
 
 			# VGA physical pins
-			("col", VgaColorLayout()),
+			("col", RgbColorLayout()),
 			("hsync", unsigned(1)),
 			("vsync", unsigned(1)),
 
@@ -73,13 +73,15 @@ class VgaDriverBus(Record):
 		super().__init__(VgaDriverBusLayout())
 
 class VgaDriver(Elaboratable):
-	def __init__(self, CLK_RATE, TIMING_INFO, FIFO_SIZE):
+	def __init__(self, CLK_RATE, TIMING_INFO, FIFO_SIZE,
+		ColorT=RgbColor):
 		self.__bus = VgaDriverBus()
 
 		self.__CLK_RATE = CLK_RATE
 		self.__TIMING_INFO = TIMING_INFO
 		#self.__NUM_BUF_SCANLINES = NUM_BUF_SCANLINES
 		self.__FIFO_SIZE = FIFO_SIZE
+		self.__ColorT = ColorT
 
 	def bus(self):
 		return self.__bus
@@ -105,6 +107,8 @@ class VgaDriver(Elaboratable):
 		return ret
 	def CLK_CNT_WIDTH(self):
 		return width_from_arg(self.CPP())
+	def ColorT(self):
+		return self.__ColorT
 
 	def elaborate(self, platform: str):
 		#--------
@@ -121,8 +125,8 @@ class VgaDriver(Elaboratable):
 		fifo = m.submodules.fifo \
 			= FwftFifo \
 			(
-				ShapeT=rec_to_shape(VgaColor()),
-				SIZE=self.FIFO_SIZE()
+				ShapeT=rec_to_shape(self.ColorT()()),
+				SIZE=self.FIFO_SIZE(),
 			)
 
 		##loc.fifo_rst = Signal(reset=0b1)
@@ -134,8 +138,7 @@ class VgaDriver(Elaboratable):
 		#--------
 
 		#--------
-		loc.col = VgaColor()
-		loc.next_col = VgaColor()
+		loc.col = self.ColorT()()
 		#--------
 
 		#--------

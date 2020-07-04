@@ -43,7 +43,7 @@ class VgaDriverBusLayout(Layout):
 			("en", unsigned(1)),
 
 			# VGA physical pins
-			("col", VgaColorLayout()),
+			("col", RgbColorLayout()),
 			("hsync", unsigned(1)),
 			("vsync", unsigned(1)),
 
@@ -118,7 +118,7 @@ class VgaDriver(Elaboratable):
 		fifo = m.submodules.fifo \
 			= FwftFifo \
 			(
-				ShapeT=rec_to_shape(VgaColor()),
+				ShapeT=rec_to_shape(RgbColor()),
 				SIZE=self.FIFO_SIZE()
 			)
 
@@ -131,8 +131,8 @@ class VgaDriver(Elaboratable):
 		#--------
 
 		#--------
-		loc.col = VgaColor()
-		loc.next_col = VgaColor()
+		loc.col = RgbColor()
+		loc.next_col = RgbColor()
 		#--------
 
 		#--------

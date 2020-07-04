@@ -7,44 +7,32 @@ from nmigen.asserts import Assert, Assume, Cover
 from nmigen.asserts import Past, Rose, Fell, Stable
 
 #--------
-class FifoBusLayout(Layout):
+class FifoBus:
 	def __init__(self, ShapeT, SIZE):
 		self.__ShapeT, self.__SIZE = ShapeT, SIZE
 
-		super().__init__ \
-		([
-			##--------
-			#("clk", 1),
-			#("rst", 1),
-			##--------
+		#--------
+		#self.clk = Signal()
+		#self.rst = Signal()
+		#--------
 
-			#--------
-			("wr_en", 1),
-			("wr_data", self.ShapeT()),
+		#--------
+		self.wr_en = Signal()
+		self.wr_data = Signal(self.ShapeT())
 
-			("rd_en", 1),
-			("rd_data", self.ShapeT()),
-			#--------
+		self.rd_en = Signal()
+		self.rd_data = Signal(self.ShapeT())
+		#--------
 
-			#--------
-			("empty", 1),
-			("full", 1),
-			#--------
-		])
+		#--------
+		self.empty = Signal()
+		self.full = Signal()
+		#--------
 
 	def ShapeT(self):
 		return self.__ShapeT
 	def SIZE(self):
 		return self.__SIZE
-
-class FifoBus(Record):
-	def __init__(self, ShapeT, SIZE):
-		super().__init__(FifoBusLayout(ShapeT, SIZE))
-
-	def ShapeT(self):
-		return self.layout.ShapeT()
-	def SIZE(self):
-		return self.layout.SIZE()
 
 	def ports(self):
 		#return [self.clk, self.rst, self.wr_en, self.wr_data, self.rd_en,
@@ -56,7 +44,7 @@ class FifoBus(Record):
 #--------
 class Fifo(Elaboratable):
 	def __init__(self, ShapeT, SIZE, FORMAL=False):
-		self.__bus = FifoBus(ShapeT, SIZE)
+		self.__bus = FifoBus(ShapeT=ShapeT, SIZE=SIZE)
 		self.__FORMAL = FORMAL
 
 	def bus(self):

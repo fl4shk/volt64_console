@@ -97,9 +97,10 @@ class VgaTimingInfo:
 		return self.__VTIMING
 
 
-class VgaColorLayout(Layout):
-	def __init__(self, COLOR_WIDTH=4):
-		self.__COLOR_WIDTH = COLOR_WIDTH
+class RgbColorLayout(Layout):
+	def __init__(self, CHAN_WIDTH=None):
+		self.__CHAN_WIDTH = CHAN_WIDTH if CHAN_WIDTH != None \
+			else RgbColor.DEF_CHAN_WIDTH()
 		super().__init__ \
 		([
 			("r", self.__unsgn_color()),
@@ -107,29 +108,34 @@ class VgaColorLayout(Layout):
 			("b", self.__unsgn_color()),
 		])
 
-	def COLOR_WIDTH(self):
-		return self.__COLOR_WIDTH
+	def CHAN_WIDTH(self):
+		return self.__CHAN_WIDTH
 	def __unsgn_color(self):
-		return unsigned(self.COLOR_WIDTH())
+		return unsigned(self.CHAN_WIDTH())
 
 	def drive(self, other):
 		return Cat(self.r, self.g, self.b) \
 			.eq(Cat(other.r, other.g, other.b))
 
-class VgaColor(Record):
-	def __init__(self):
-		super().__init__(VgaColorLayout())
+class RgbColor(Record):
+	def __init__(self, CHAN_WIDTH=None):
+		REAL_CHAN_WIDTH = CHAN_WIDTH if CHAN_WIDTH != None \
+			else RgbColor.DEF_CHAN_WIDTH()
+		super().__init__(RgbColorLayout(CHAN_WIDTH=REAL_CHAN_WIDTH))
 
-	def COLOR_WIDTH(self):
-		return self.layout.COLOR_WIDTH()
+	def DEF_CHAN_WIDTH():
+		return 4
+
+	def CHAN_WIDTH(self):
+		return self.layout.CHAN_WIDTH()
 	def drive(self, other):
 		self.layout.drive(other)
 
 class VgaDriverBufLayout(Layout):
-	def __init__(self):
+	def __init__(self, CHAN_WIDTH=RgbColor.DEF_CHAN_WIDTH()):
 		super().__init__ \
 		([
 			("can_prep", unsigned(1)),
 			("prep", unsigned(1)),
-			("col", VgaColorLayout()),
+			("col", RgbColorLayout(CHAN_WIDTH=CHAN_WIDTH)),
 		])

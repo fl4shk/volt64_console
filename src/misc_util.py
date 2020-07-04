@@ -84,6 +84,6 @@ class Vec2Layout(Layout):
 		return self.__ShapeT
 class Vec2(Record):
 	def __init__(self, ShapeT):
-		super().__init__(Vec2Layout(shape_t))
+		super().__init__(Vec2Layout(ShapeT=ShapeT))
 	def ShapeT(self):
 		return self.layout.ShapeT()
