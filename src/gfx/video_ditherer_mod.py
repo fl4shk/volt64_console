@@ -4,7 +4,7 @@ from misc_util import *
 from nmigen import *
 from nmigen.hdl.rec import *
 
-from vga_ext_types import *
+from gfx.vga_ext_types import *
 
 class VideoDithererBus:
 	def __init__(self, FB_SIZE, CHAN_WIDTH):

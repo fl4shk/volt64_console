@@ -4,10 +4,10 @@ from misc_util import *
 from nmigen import *
 from nmigen.hdl.rec import *
 
-from vga_ext_types import *
-from vga_driver_mod import *
-from video_ditherer_mod import *
-from sdram_ctrl_mod import *
+from gfx.vga_ext_types import *
+from gfx.vga_driver_mod import *
+from gfx.video_ditherer_mod import *
+from general.sdram_ctrl_mod import *
 #from bram_mod import *
 
 class Top(Elaboratable):

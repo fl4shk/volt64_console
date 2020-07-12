@@ -4,7 +4,7 @@ import sys
 
 from misc_util import *
 from top_mod import *
-from fifo_mods import *
+from general.fifo_mods import *
 
 
 from nmigen import *
@@ -41,7 +41,20 @@ def program(mod_name, **kw_args):
 	mod = mod_name(platform=DE0CVPlatform(), **kw_args)
 	mod.platform().build(mod, do_program=True)
 
-if __name__ == "__main__":
-	#formal(Fifo, ShapeT=unsigned(8), SIZE=4)
-	#formal(FwftFifo, ShapeT=unsigned(8), SIZE=4)
-	program(Top)
+#if __name__ == "__main__":
+#	#formal(Fifo, ShapeT=unsigned(8), SIZE=4)
+#	#formal(FwftFifo, ShapeT=unsigned(8), SIZE=4)
+#	program(Top)
+
+
+#temp = [enc_simm(x, 5) for x in [-0xa, 0xa, 0x0, 0xff, -0x1f]]
+#for t in temp:
+#	#print("{}, {}, {}".format(t.top, t.bot, hex(t.dbg)))
+#	#print(hex(t.dbg))
+#	print(t.wont_fit,
+#		t.bot_list[::-1], t.top_list[::-1], hex(t.bot), hex(t.top),
+#		hex(t.dbg))
+
+#print([(x, ltoi(itol(x, 8))) for x in list(range(-4, 5))])
+#print(itol(-3, 8), ltoi(itol(-3, 8)))
+#print(itol(3, 8), ltoi(itol(3, 8)))

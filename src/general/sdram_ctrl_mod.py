@@ -7,7 +7,7 @@ from misc_util import *
 from nmigen import *
 from nmigen.hdl.rec import *
 
-from fifo_mods import *
+from general.fifo_mods import *
 
 #--------
 class SdramParams:

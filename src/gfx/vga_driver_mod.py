@@ -4,8 +4,8 @@ from misc_util import *
 from nmigen import *
 from nmigen.hdl.rec import *
 
-from vga_ext_types import *
-from fifo_mods import *
+from gfx.vga_ext_types import *
+from general.fifo_mods import *
 #from bram_mod import *
 
 
