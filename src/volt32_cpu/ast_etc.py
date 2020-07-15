@@ -3,6 +3,7 @@
 from misc_util import *
 
 from enum import Enum, auto
+import math
 
 from volt32_cpu.asm_misc import *
 
@@ -32,11 +33,16 @@ class Ast:
 		Cmple = auto()
 		Cmpge = auto()
 
-		Unsigned = auto()
-		Signed = auto()
+		Int = auto()
+		Float = auto()
+		Log2 = auto()
 
 	def __init__(self, op, left, right):
 		self.__op, self.__left, self.__right = op, left, right
+
+	Int = lambda left: Ast(op=Ast.Op.Int, left=left, right=None)
+	Float = lambda left: Ast(op=Ast.Op.Float, left=left, right=None)
+	Log2 = lambda left: Ast(op=Ast.Op.Log2, left=left, right=None)
 
 	def op(self):
 		return self.__op
@@ -46,10 +52,146 @@ class Ast:
 		return self.__right
 
 	def elab(self):
+		Op = Ast.Op
 
-	Unsigned = lambda left: Ast(op=Ast.Op.Unsigned, left=left, right=None)
-	Signed = lambda left: Ast(op=Ast.Op.Signed, left=left, right=None)
+		left, right = self.left(), self.right()
 
+		left_sym = False
+		if type(left) == Symbol:
+			left = left.val()
+			left_sym = True
+		elif type(left) == Ast:
+			left = left.elab()
+
+		if (type(left) != int) and (type(left) != float):
+			if not left_sym:
+				printerr("Error:  Ast.elab():  ",
+					"Invalid type `{}`".format(type(left)),
+					" for `left`!\n")
+			else: # if left_sym
+				printerr("Error:  Ast.elab():  ",
+					"Invalid type `{}`".format(type(left)),
+					" for `left` symbol called `{}`!\n" \
+					.format(self.left().name()))
+			exit(1)
+
+		right_sym = False
+		if type(right) == Symbol:
+			right = right.val()
+			right_sym = True
+		elif type(right) == Ast:
+			right = right.elab()
+
+		if (type(right) != int) and (type(right) != float):
+			if not right_sym:
+				printerr("Error:  Ast.elab():  ",
+					"Invalid type `{}`".format(type(right)),
+					" for `right`!\n")
+			else: # if right_sym
+				printerr("Error:  Ast.elab():  ",
+					"Invalid type `{}`".format(type(right)),
+					" for `right` symbol called `{}`!\n" \
+					.format(self.right().name()))
+			exit(1)
+
+		ret = None
+
+		if self.op() == Op.Plus:
+			ret = left + right
+		elif self.op() == Op.Minus:
+			ret = left - right
+
+		elif self.op() == Op.Mul:
+			ret = left * right
+		elif self.op() == Op.Div:
+			ret = left // right
+		elif self.op() == Op.Mod:
+			ret = left % right
+
+		elif self.op() == Op.Pow:
+			ret = left ** right
+
+		elif self.op() == Op.Lshift:
+			if (type(left) == int) and (type(right) == int):
+				ret = left << right
+			else:
+				printerr("Error:  Ast.elab():  left shift of type `{}` " \
+					.format(type(left)),
+					"by type `{}`!\n".format(type(right)))
+				exit(1)
+		elif self.op() == Op.Rshift:
+			if (type(left) == int) and (type(right) == int):
+				ret = left >> right
+			else:
+				printerr("Error:  Ast.elab():  right shift of type `{}` " \
+					.format(type(left)),
+					"by type `{}`!\n".format(type(right)))
+				exit(1)
+
+		elif self.op() == Op.Bitand:
+			if (type(left) == int) and (type(right) == int):
+				ret = left & right
+			else:
+				printerr("Error:  Ast.elab():  bitwise AND of type `{}` " \
+					.format(type(left)),
+					"by type `{}`!\n".format(type(right)))
+				exit(1)
+		elif self.op() == Op.Bitor:
+			if (type(left) == int) and (type(right) == int):
+				ret = left | right
+			else:
+				printerr("Error:  Ast.elab():  bitwise OR of type `{}` " \
+					.format(type(left)),
+					"by type `{}`!\n".format(type(right)))
+				exit(1)
+		elif self.op() == Op.Bitxor:
+			if (type(left) == int) and (type(right) == int):
+				ret = left ^ right
+			else:
+				printerr("Error:  Ast.elab():  bitwise XOR of type `{}` " \
+					.format(type(left)),
+					"by type `{}`!\n".format(type(right)))
+				exit(1)
+		elif self.op() == Op.Bitnot:
+			if type(left) == int:
+				ret = ~left
+			else:
+				printerr("Error:  Ast.elab():  bitwise NOT of type `{}`" \
+					.format(type(left)),
+					"!\n")
+				exit(1)
+
+		elif self.op() == Op.Cmpeq:
+			ret = 1 if left == right else 0
+		elif self.op() == Op.Cmpne:
+			ret = 1 if left != right else 0
+		elif self.op() == Op.Cmplt:
+			ret = 1 if left < right else 0
+		elif self.op() == Op.Cmpgt:
+			ret = 1 if left > right else 0
+		elif self.op() == Op.Cmple:
+			ret = 1 if left <= right else 0
+		elif self.op() == Op.Cmpge:
+			ret = 1 if left >= right else 0
+
+		elif self.op() == Op.Int:
+			ret = int(left)
+		elif self.op() == Op.Float:
+			ret = float(left)
+		elif self.op == Op.Log2:
+			ret = math.log2(left)
+
+		else:
+			printerr("Error:  Ast.elab():  Invalid opcode ``!\n" \
+				.format(self.op()))
+			exit(1)
+
+		return ret
+#--------
+
+
+
+#--------
 class UseAst:
 	#--------
 	def __init__(self):
@@ -178,7 +320,6 @@ class Symbol(UseAst):
 	def set_found(self, found):
 		self.__found = found
 
-
 class SymbolTable:
 	def __init__(self, parent=None):
 		self.__parent = parent
@@ -228,7 +369,9 @@ class SymbolTable:
 
 	#def mk_child(self):
 	#	self.__children.append(SymbolTable(parent=self))
+#--------
 
+#--------
 class Instr:
 	def __init__(self, op=Op.Add, ra=0, rb=0, rc=0, rd=0, simm=0):
 		self.__op = op
@@ -286,43 +429,46 @@ class Instr:
 
 		HAS \
 		= {
-			Op.Add: {"regs": {"rA", "rB", "rC"}, "simm": 12},
-			Op.Sub: {"regs": {"rA", "rB", "rC"}, "simm": 12},
+			Op.Add: {"regs": {"rA", "rB", "rC"}},
+			Op.Sub: {"regs": {"rA", "rB", "rC"}},
+			Op.Addsi: {"regs": {"rA", "rB"}, "simm": 16},
 			Op.Sltu: {"regs": {"rA", "rB", "rC"}},
-			Op.Mulu: {"regs": {"rA", "rB", "rC", "rD"}},
 
+			Op.Slts: {"regs": {"rA", "rB", "rC"}},
+			Op.Mulu: {"regs": {"rA", "rB", "rC", "rD"}},
 			Op.Divu: {"regs": {"rA", "rB", "rC", "rD"}},
 			Op.And: {"regs", {"rA", "rB", "rC"}},
+
 			Op.Or: {"regs", {"rA", "rB", "rC"}},
 			Op.Xor: {"regs", {"rA", "rB", "rC"}},
-
 			Op.Lsl: {"regs", {"rA", "rB", "rC"}},
 			Op.Lsr: {"regs", {"rA", "rB", "rC"}},
+
 			Op.Asr: {"regs", {"rA", "rB", "rC"}},
 			Op.Pre: {"simm": 24},
+			Op.AddsiPc: {"regs": {"rA"}, "simm": 20},
+			Op.Jl: {"regs": {"rA"}, "simm": 20},
 
-			Op.AddPc: {"regs": {"rA"}, "simm": 20},
-			Op.Bl: {"regs": {"rA"}, "simm": 20},
-			Op.Jmp: {"regs": {"rA", "rB"}, "simm": 16},
+			Op.Jmp: {"regs": {"rA"}, "simm": 20},
 			Op.Bz: {"regs": {"rA"}, "simm": 20}
-
 			Op.Bnz: {"regs": {"rA"}, "simm": 20}
-			Op.Ldr: {"regs": {"rA", "rB", "rC"}, "simm": 12}
-			Op.Str: {"regs": {"rA", "rB", "rC"}, "simm": 12}
-			Op.Ldh: {"regs": {"rA", "rB", "rC"}, "simm": 12}
+			Op.Ld: {"regs": {"rA", "rB"}, "simm": 16}
 
-			Op.Ldsh: {"regs": {"rA", "rB", "rC"}, "simm": 12}
-			Op.Sth: {"regs": {"rA", "rB", "rC"}, "simm": 12}
-			Op.Ldb: {"regs": {"rA", "rB", "rC"}, "simm": 12}
-			Op.Ldsb: {"regs": {"rA", "rB", "rC"}, "simm": 12}
+			Op.St: {"regs": {"rA", "rB"}, "simm": 16}
+			Op.Ldh: {"regs": {"rA", "rB"}, "simm": 16}
+			Op.Ldsh: {"regs": {"rA", "rB"}, "simm": 16}
+			Op.Sth: {"regs": {"rA", "rB"}, "simm": 16}
 
-			Op.Stb: {"regs": {"rA", "rB", "rC"}, "simm": 12}
+			Op.Ldb: {"regs": {"rA", "rB"}, "simm": 16}
+			Op.Ldsb: {"regs": {"rA", "rB"}, "simm": 16}
+			Op.Stb: {"regs": {"rA", "rB"}, "simm": 16}
 			Op.Zeh: {"regs": {"rA", "rB"}}
+
 			Op.Zeb: {"regs": {"rA", "rB"}}
 			Op.Seh: {"regs": {"rA", "rB"}}
-
 			Op.Seb: {"regs": {"rA", "rB"}}
 			Op.Ei: set(),
+
 			Op.Di: set(),
 			Op.Reti: set(),
 		}
@@ -334,40 +480,465 @@ class Instr:
 			exit(1)
 
 		return ret
+#--------
 
-class Begin:
+
+#--------
+def Add(ra, rb, rc):
+	return \
+	{
+		"instr": Instr(op=Op.Add, ra=ra, rb=rb, rc=rc),
+		"enc": [],
+	}
+def Sub(ra, rb, rc):
+	return \
+	{
+		"instr": Instr(op=Op.Sub, ra=ra, rb=rb, rc=rc),
+		"enc": [],
+	}
+def Addsi(ra, rb, simm):
+	return \
+	{
+		"instr": Instr(op=Op.Addsi, ra=ra, rb=rb, simm=simm),
+		"enc": [],
+	}
+def Sltu(ra, rb, rc):
+	return \
+	{
+		"instr": Instr(op=Op.Sltu, ra=ra, rb=rb, rc=rc),
+		"enc": [],
+	}
+
+def Slts(ra, rb, rc):
+	return \
+	{
+		"instr": Instr(op=Op.Slts, ra=ra, rb=rb, rc=rc),
+		"enc": [],
+	}
+def Mulu(ra, rb, rc, rd):
+	return \
+	{
+		"instr": Instr(op=Op.Mulu, ra=ra, rb=rb, rc=rc, rd=rd),
+		"enc": [],
+	}
+def Divu(ra, rb, rc, rd):
+	return \
+	{
+		"instr": Instr(op=Op.Divu, ra=ra, rb=rb, rc=rc, rd=rd),
+		"enc": [],
+	}
+def And(ra, rb, rc):
+	return \
+	{
+		"instr": Instr(op=Op.And, ra=ra, rb=rb, rc=rc),
+		"enc": [],
+	}
+
+def Or(ra, rb, rc):
+	return \
+	{
+		"instr": Instr(op=Op.Or, ra=ra, rb=rb, rc=rc),
+		"enc": [],
+	}
+def Xor(ra, rb, rc):
+	return \
+	{
+		"instr": Instr(op=Op.Xor, ra=ra, rb=rb, rc=rc),
+		"enc": [],
+	}
+def Lsl(ra, rb, rc):
+	return \
+	{
+		"instr": Instr(op=Op.Lsl, ra=ra, rb=rb, rc=rc),
+		"enc": [],
+	}
+def Lsr(ra, rb, rc):
+	return \
+	{
+		"instr": Instr(op=Op.Lsr, ra=ra, rb=rb, rc=rc),
+		"enc": [],
+	}
+
+def Asr(ra, rb, rc):
+	return \
+	{
+		"instr": Instr(op=Op.Asr, ra=ra, rb=rb, rc=rc),
+		"enc": [],
+	}
+
+def AddsiPc(ra, simm):
+	return \
+	{
+		"instr": Instr(op=Op.AddsiPc, ra=ra, simm=simm),
+		"enc": [],
+	}
+def Jl(ra, simm):
+	return \
+	{
+		"instr": Instr(op=Op.Jl, ra=ra, simm=simm),
+		"enc": [],
+	}
+
+def Jmp(ra, simm):
+	return \
+	{
+		"instr": Instr(op=Op.Jmp, ra=ra, simm=simm),
+		"enc": [],
+	}
+def Bz(ra, simm):
+	return \
+	{
+		"instr": Instr(op=Op.Bz, ra=ra, simm=simm),
+		"enc": [],
+	}
+def Bnz(ra, simm):
+	return \
+	{
+		"instr": Instr(op=Op.Bnz, ra=ra, simm=simm),
+		"enc": [],
+	}
+def Ld(ra, rb, simm):
+	return \
+	{
+		"instr": Instr(op=Op.Ld, ra=ra, rb=rb, simm=simm),
+		"enc": [],
+	}
+
+def St(ra, rb, simm):
+	return \
+	{
+		"instr": Instr(op=Op.St, ra=ra, rb=rb, simm=simm),
+		"enc": [],
+	}
+def Ldh(ra, rb, simm):
+	return \
+	{
+		"instr": Instr(op=Op.Ldh, ra=ra, rb=rb, simm=simm),
+		"enc": [],
+	}
+def Ldsh(ra, rb, simm):
+	return \
+	{
+		"instr": Instr(op=Op.Ldsh, ra=ra, rb=rb, simm=simm),
+		"enc": [],
+	}
+def Sth(ra, rb, simm):
+	return \
+	{
+		"instr": Instr(op=Op.Sth, ra=ra, rb=rb, simm=simm),
+		"enc": [],
+	}
+
+def Ldb(ra, rb, simm):
+	return \
+	{
+		"instr": Instr(op=Op.Ldb, ra=ra, rb=rb, simm=simm),
+		"enc": [],
+	}
+def Ldsb(ra, rb, simm):
+	return \
+	{
+		"instr": Instr(op=Op.Ldsb, ra=ra, rb=rb, simm=simm),
+		"enc": [],
+	}
+def Stb(ra, rb, simm):
+	return \
+	{
+		"instr": Instr(op=Op.Stb, ra=ra, rb=rb, simm=simm),
+		"enc": [],
+	}
+def Zeh(ra, rb):
+	return \
+	{
+		"instr": Instr(op=Op.Zeh, ra=ra, rb=rb),
+		"enc": [],
+	}
+
+def Zeb(ra, rb):
+	return \
+	{
+		"instr": Instr(op=Op.Zeb, ra=ra, rb=rb),
+		"enc": [],
+	}
+def Seh(ra, rb):
+	return \
+	{
+		"instr": Instr(op=Op.Seh, ra=ra, rb=rb),
+		"enc": [],
+	}
+def Seb(ra, rb):
+	return \
+	{
+		"instr": Instr(op=Op.Seb, ra=ra, rb=rb),
+		"enc": [],
+	}
+def Ei():
+	return \
+	{
+		"instr": Instr(op=Op.Ei),
+		"enc": [],
+	}
+
+def Di():
+	return \
+	{
+		"instr": Instr(op=Op.Di),
+		"enc": [],
+	}
+def Reti():
+	return \
+	{
+		"instr": Instr(op=Op.Reti),
+		"enc": [],
+	}
+#--------
+
+#--------
+# Scope begin
+class ScopeBegin:
 	pass
-class End:
+
+# Scope end
+class ScopeEnd:
 	pass
+
+# Label
 class L:
-	def __init__(self, name):
+	def __init__(self, name: str):
 		self.__name = name
-	def name(self):
+	def name(self) -> str:
 		return self.__name
+
+# Set the current program counter
+class Org:
+	def __init__(self, addr: int):
+		self.__addr = addr
+	def addr(self):
+		return self.__addr
+
+# Align code/data
+class Align:
+	def __init__(self, amount: int):
+		self.__amount = amount
+	def amount(self):
+		return self.__amount
+
+# Literal byte
+class Lbyte:
+	def __init__(self, lst: list):
+		self.__lst = lst
+	def lst(self):
+		return self.__lst
+
+# Literal half word
+class Lhword(Lbyte):
+	def __init__(self, lst: list):
+		super().__init__(lst=lst)
+
+# Literal word
+class Lword(Lbyte):
+	def __init__(self, lst: list):
+		super().__init__(lst=lst)
+#--------
+
+#--------
+# Stack frame data
+class FrameInfo:
+	#--------
+	def __init__(self, reg_set=None, var_dict=None, REG_SIZE=4,
+		NUM_REGS=NumRegs):
+		self.__reg_set = reg_set
+		self.__var_dict = var_dict,
+		self.__REG_SIZE = REG_SIZE
+		self.__NUM_REGS = NUM_REGS
+
+		self.__REG_ALLOC_SIZE = 0
+		self.__VAR_ALLOC_SIZE = 0
+
+		reg_set = self.reg_set()
+		var_dict = self.var_dict()
+
+		self.__reg_save_list = []
+		if reg_set != None:
+			assert type(reg_set) == set
+
+			NUM_SAVED_REGS = len(reg_set)
+			assert NUM_SAVED_REGS < NUM_REGS
+			regs_list = list(reg_set)
+
+			self.__REG_ALLOC_SIZE = NUM_SAVED_REGS * self.REG_SIZE()
+
+			for i in range(NUM_SAVED_REGS):
+				reg = regs_list[i]
+				assert reg < self.NUM_REGS()
+				#assert reg != Zero
+				#assert reg != Sp
+
+				self.__reg_save_list \
+					+= [{
+						"reg": regs_list[i],
+						"index": i * self.REG_SIZE()
+					}]
+				reg_save = self.__reg_save_list[-1]
+				reg_save["ld"] = Ld(reg_save["reg"], Fp,
+					-(self.REG_BASE() + reg_save["index"]))
+				reg_save["st"] = St(reg_save["reg"], Fp,
+					-(self.REG_BASE() + reg_save["index"]))
+
+		if var_dict != None:
+			assert type(var_dict) == dict
+
+		self.__INITIAL_ALLOC_SIZE = self.REG_ALLOC_SIZE() \
+			+ self.VAR_ALLOC_SIZE()
+	#--------
+
+	#--------
+	# Saved parameters
+	def reg_set(self):
+		return self.__reg_set
+	def var_dict(self):
+		return self.__var_dict
+	def REG_SIZE(self):
+		return self.__REG_SIZE
+	def NUM_REGS(self):
+		return self.__NUM_REGS
+	#--------
+
+	#--------
+	# Members
+	def reg_save_list(self):
+		return self.__reg_save_list
+	#--------
+
+	#--------
+	# Sizes of storage
+	def REG_ALLOC_SIZE(self):
+		return self.__REG_ALLOC_SIZE
+	def VAR_ALLOC_SIZE(self):
+		return self.__VAR_ALLOC_SIZE
+	def INITIAL_ALLOC_SIZE(self):
+		return self.__INITIAL_ALLOC_SIZE
+	#--------
+
+	#--------
+	# Offsets from frame pointer to specific things in the frame
+
+	# The start of storage for saved registers
+	def REG_BASE(self):
+		return 0
+
+	# The start of storage for local variables
+	def VAR_BASE(self):
+		return self.REG_BASE() + self.REG_ALLOC_SIZE()
+
+	# The initial stack pointer of the scope
+	def STACK_BASE(self):
+		return self.VAR_BASE() + self.VAR_ALLOC_SIZE()
+	#--------
 
 class ScopeGen:
 	def __init__(self, lst: SymbolTable):
 		self.__lst = lst
 
 	class ScopeCtxMgr:
-		def __init__(self, parent: ScopeGen):
+		## TODO:  Add in support for constructor and destructor calling
+		#def __init__(self, parent, stack_data=None, REG_SIZE=4,
+		#	NUM_REGS=NumRegs):
+		#	self.__parent = parent
+		#	self.__stack_data = stack_data
+
+		#	sd = self.__stack_data
+
+		#	if sd != None:
+		#		assert type(sd) == dict
+
+		#		VARS_ALLOC_SIZE = 0
+		#		STACK_ALLOC_SIZE = 0
+
+		#		if "vars" in sd:
+		#			assert type(sd["vars"]) == dict
+		#			VARS_ALLOC_SIZE = sum([sd["vars"][name]["size"]
+		#				for name in sd["vars"]])
+		#			STACK_ALLOC_SIZE += VARS_ALLOC_SIZE
+
+		#		if "regs" in sd:
+		#			assert type(sd["regs"]) == set
+
+		#			NUM_SD_REGS = len(sd["regs"])
+		#			assert NUM_SD_REGS < NUM_REGS
+		#			regs_list = list(sd["regs"])
+
+		#			STACK_ALLOC_SIZE += -(NUM_SD_REGS * REG_SIZE)
+
+		#			self.__reg_save_list = []
+		#			for i in range(NUM_SD_REGS):
+		#				reg = regs_list[i]
+		#				assert reg < NUM_REGS
+		#				assert reg != Zero
+		#				assert reg != Sp
+		#				self.__reg_save_list \
+		#					+= [{
+		#						"reg": regs_list[i],
+
+		#						# `+ REG_SIZE` because `sp` points
+		#						# to the *next* offset
+		#						"index": ((i * REG_SIZE) + REG_SIZE 
+		#							+ VARS_ALLOC_SIZE),
+		#					}]
+		#				self.__reg_save_list[-1]["ld"] \
+		#					= Ld(self.__reg_save_list[-1]["reg"], Sp,
+		#						self.__reg_save_list[-1]["index"])
+		#				self.__reg_save_list[-1]["st"] \
+		#					= St(self.__reg_save_list[-1]["reg"], Sp,
+		#						self.__reg_save_list[-1]["index"])
+
+		#		self.__stack_alloc_instr \
+		#			= Addsi(Sp, Sp, -STACK_ALLOC_SIZE)
+		#		self.__stack_dealloc_instr \
+		#			= Addsi(Sp, Sp, STACK_ALLOC_SIZE)
+
+		#def __enter__(self):
+		#	lst = self.__parent.lst()
+		#	lst.append(ScopeBegin())
+
+		#	sd = self.__stack_data
+
+		#	if sd != None:
+		#		assert type(sd) == dict
+
+		#		lst += [self.__stack_alloc_instr]
+		#		if "regs" in sd:
+		#			for reg_save in self.__reg_save_list:
+		#				lst += [reg_save["st"]]
+
+		#def __exit__(self, exc_type, exc_val, exc_tb):
+		#	lst = self.__parent.lst()
+		#	sd = self.__stack_data
+
+		#	if sd != None:
+		#		if "regs" in sd:
+		#			for reg_save in self.__reg_save_list:
+		#				lst += [reg_save["ld"]]
+		#		lst += [self.__stack_dealloc_instr]
+
+		#	lst.append(ScopeEnd())
+		def __init__(self, parent, frame_info=None):
 			self.__parent = parent
+			self.__frame_info = frame_info
 
-		def __enter__(self):
-			#self.__parent.tbl = SymbolTable(parent=self.tbl())
-			#self.tbl().children().append(self.tbl())
-			self.__parent.lst().append(Begin())
+			fd = self.__frame_info
 
-		def __exit__(self, exc_type, exc_val, exc_tb):
-			#self.__parent.tbl = self.tbl().parent()
-			self.__parent.lst().append(End())
+			if fd != None:
+				assert type(fd) == FrameInfo
+				pass
 
 	def lst(self):
 		return self.__lst
-	def scope(self):
-		return ScopeCtxMgr(parent=self)
+	def scope(self, frame_info=None):
+		return ScopeCtxMgr(parent=self, frame_info=frame_info)
+#--------
 
-
+#--------
 class ProgData:
 	def __init__(self):
 		self.__sym_tbl = SymbolTable()
@@ -382,6 +953,6 @@ class ProgData:
 
 prog_data = ProgData()
 
-def scope():
-	return prog_data.scope_gen().scope()
-
+def scope(frame_info=None):
+	return prog_data.scope_gen().scope(frame_info=frame_info)
+#--------

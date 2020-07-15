@@ -12,22 +12,28 @@ class Op(Enum):
 	# due to the loads and stores, so we might as well make it possible
 	# to do so for `add` and `sub` instructions
 
-	# add rA, rB, rC, simm12
+	# add rA, rB, rC
 	Add = 0
 
-	# sub rA, rB, rC, simm12
+	# sub rA, rB, rC
 	Sub = auto()
+
+	# addsi rA, rB, simm16
+	Addsi = auto()
 
 	# sltu rA, rB, rC
 	Sltu = auto()
-
-	# mulu rA, rB, rC, rD
-	# multiply, unsigned full product, high in `rA`, low in `rB`
-	Mulu = auto()
 	#--------
 
 	#--------
 	# 4 .. 7
+
+	# slts rA, rB, rC
+	Slts = auto()
+
+	# mulu rA, rB, rC, rD
+	# multiply, unsigned full product, high in `rA`, low in `rB`
+	Mulu = auto()
 
 	# divu rA, rB, rC, rD
 	# divmod unsigned, quotient in `rA`, remainder in `rB`
@@ -35,102 +41,107 @@ class Op(Enum):
 
 	# and rA, rB, rC
 	And = auto()
+	#--------
+
+	#--------
+	# 8 .. 11
 
 	# or rA, rB, rC
 	Or = auto()
 
 	# xor rA, rB, rC
 	Xor = auto()
-	#--------
-
-	#--------
-	# 8 .. 11
 
 	# lsl rA, rB, rC
 	Lsl = auto()
 
 	# lsr rA, rB, rC
 	Lsr = auto()
+	#--------
 
+	#--------
+	# 12 .. 15
 	# asr rA, rB, rC
 	Asr = auto()
 
 	# pre simm24
 	Pre = auto()
-	#--------
 
-	#--------
-	# 12 .. 15
-	# add rA, pc, simm20
-	AddPc = auto()
+	# addsi rA, pc, simm20
+	AddsiPc = auto()
 
-	# bl rA, simm20
-	# Branch and link, jumping to location `rA + to_s32(simm20)`
-	Bl = auto()
-
-	# jmp rA, rB, simm16
-	# Jump to location `rA + rB + to_s32(simm16)`
-	Jmp = auto()
-
-	# bz rA, simm20
-	Bz = auto()
+	# jl rA, simm20
+	# Jump and link, jumping to location `rA + to_s32(simm20)`
+	Jl = auto()
 	#--------
 
 	#--------
 	# 16 .. 19
 
+	# jmp rA, simm20
+	# Jump to location `rA + to_s32(simm20)`
+	Jmp = auto()
+
+	# bz rA, simm20
+	Bz = auto()
+
 	# bnz rA, simm20
 	Bnz = auto()
 
-	# ldr rA, [rB, rC, simm12]
-	Ldr = auto()
-
-	# str rA, [rB, rC, simm12]
-	Str = auto()
-
-	# ldh rA, [rB, rC, simm12]
-	Ldh = auto()
+	# ld rA, [rB, simm16]
+	Ld = auto()
 	#--------
 
 	#--------
 	# 20 .. 23
 
-	# ldsh rA, [rB, rC, simm12]
+	# st rA, [rB, simm16]
+	St = auto()
+
+	# ldh rA, [rB, simm16]
+	Ldh = auto()
+
+	# ldsh rA, [rB, simm16]
 	Ldsh = auto()
 
-	# sth rA, [rB, rC, simm12]
+	# sth rA, [rB, simm16]
 	Sth = auto()
-
-	# ldb rA, [rB, rC, simm12]
-	Ldb = auto()
-
-	# ldsb rA, [rB, rC, simm12]
-	Ldsb = auto()
 	#--------
 
 	#--------
 	# 24 .. 27
 
-	# stb rA, [rB, rC, simm12]
+	# ldb rA, [rB, simm16]
+	Ldb = auto()
+
+	# ldsb rA, [rB, simm16]
+	Ldsb = auto()
+
+	# stb rA, [rB, simm16]
 	Stb = auto()
 
 	# zeh rA, rB
 	Zeh = auto()
+	#--------
+
+	#--------
+	# 28 .. 31
 
 	# zeb rA, rB
 	Zeb = auto()
 
 	# seh rA, rB
 	Seh = auto()
-	#--------
 
-	#--------
-	# 28 .. 31
 	# seb rA, rB
 	Seb = auto()
 
 	# ei
 	Ei = auto()
+	#--------
+
+	#--------
+	# 32 .. 35
 
 	# di
 	Di = auto()
@@ -139,25 +150,26 @@ class Op(Enum):
 	Reti = auto()
 	#--------
 
+# Registers
 #--------
 Zero = 0
-Ua = 1
-Ub = 2
-Uc = 3
+A0 = 1
+A1 = 2
+A2 = 3
 #--------
 
 #--------
-Ud = 4
-Ue = 5
-Uf = 6
-Ug = 7
+A3 = 4
+R0 = 5
+R1 = 6
+U0 = 7
 #--------
 
 #--------
-Uh = 8
-Ui = 9
-Uj = 10
-Uk = 11
+U1 = 8
+U2 = 9
+U3 = 10
+U4 = 11
 #--------
 
 #--------
@@ -167,3 +179,6 @@ Fp = 14
 Sp = 15
 #--------
 
+#--------
+NumRegs = 16
+#--------
