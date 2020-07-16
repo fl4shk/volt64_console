@@ -182,7 +182,7 @@ class Ast:
 			ret = math.log2(left)
 
 		else:
-			printerr("Error:  Ast.elab():  Invalid opcode ``!\n" \
+			printerr("Error:  Ast.elab():  Invalid opcode `{}`!\n" \
 				.format(self.op()))
 			exit(1)
 
@@ -373,7 +373,8 @@ class SymbolTable:
 
 #--------
 class Instr:
-	def __init__(self, op=Op.Add, ra=0, rb=0, rc=0, rd=0, simm=0):
+	def __init__(self, op=None, ra=None, rb=None, rc=None, rd=None,
+		simm=None):
 		self.__op = op
 		self.__ra = ra
 		self.__rb = rb
@@ -383,7 +384,73 @@ class Instr:
 
 		#assert (self.__op != Op.Pre)
 
-	def enc(self) -> list:
+	#--------
+	def op(self):
+		return self.__op
+	def ra(self):
+		return self.__ra
+	def rb(self):
+		return self.__rb
+	def rc(self):
+		return self.__rc
+	def rd(self):
+		return self.__rd
+	def simm(self):
+		return self.__simm
+	#--------
+
+	#--------
+	def HAS(self):
+		return \
+		{
+			Op.Add: {"regs": {"rA", "rB", "rC"}},
+			Op.Sub: {"regs": {"rA", "rB", "rC"}},
+			Op.Addsi: {"regs": {"rA", "rB"}, "simm": 16},
+			Op.Sltu: {"regs": {"rA", "rB", "rC"}},
+
+			Op.Slts: {"regs": {"rA", "rB", "rC"}},
+			Op.Mulu: {"regs": {"rA", "rB", "rC", "rD"}},
+			Op.Divu: {"regs": {"rA", "rB", "rC", "rD"}},
+			Op.And: {"regs", {"rA", "rB", "rC"}},
+
+			Op.Or: {"regs", {"rA", "rB", "rC"}},
+			Op.Xor: {"regs", {"rA", "rB", "rC"}},
+			Op.Lsl: {"regs", {"rA", "rB", "rC"}},
+			Op.Lsr: {"regs", {"rA", "rB", "rC"}},
+
+			Op.Asr: {"regs", {"rA", "rB", "rC"}},
+			Op.Pre: {"simm": 24},
+			Op.AddsiPc: {"regs": {"rA"}, "simm": 20},
+			Op.Jl: {"regs": {"rA"}, "simm": 20},
+
+			Op.Jmp: {"regs": {"rA"}, "simm": 20},
+			Op.Bz: {"regs": {"rA"}, "simm": 20}
+			Op.Bnz: {"regs": {"rA"}, "simm": 20}
+			Op.Ld: {"regs": {"rA", "rB"}, "simm": 16}
+
+			Op.St: {"regs": {"rA", "rB"}, "simm": 16}
+			Op.Ldh: {"regs": {"rA", "rB"}, "simm": 16}
+			Op.Ldsh: {"regs": {"rA", "rB"}, "simm": 16}
+			Op.Sth: {"regs": {"rA", "rB"}, "simm": 16}
+
+			Op.Ldb: {"regs": {"rA", "rB"}, "simm": 16}
+			Op.Ldsb: {"regs": {"rA", "rB"}, "simm": 16}
+			Op.Stb: {"regs": {"rA", "rB"}, "simm": 16}
+			Op.Zeh: {"regs": {"rA", "rB"}}
+
+			Op.Zeb: {"regs": {"rA", "rB"}}
+			Op.Seh: {"regs": {"rA", "rB"}}
+			Op.Seb: {"regs": {"rA", "rB"}}
+			Op.Ei: {},
+
+			Op.Di: {},
+			Op.Reti: {},
+		}
+	#--------
+
+	#--------
+	def expand(self, sym_tbl) -> list:
+		#--------
 		def enc_simm(simm: int, SIMM_WIDTH: int) -> Blank:
 			ret = Blank()
 
@@ -424,62 +491,51 @@ class Instr:
 			ret.dbg = ltoi(ret.bot_list + ret.top_list)
 
 			return ret
+		#--------
 
-		ret = []
-
-		HAS \
+		#--------
+		ret \
 		= {
-			Op.Add: {"regs": {"rA", "rB", "rC"}},
-			Op.Sub: {"regs": {"rA", "rB", "rC"}},
-			Op.Addsi: {"regs": {"rA", "rB"}, "simm": 16},
-			Op.Sltu: {"regs": {"rA", "rB", "rC"}},
-
-			Op.Slts: {"regs": {"rA", "rB", "rC"}},
-			Op.Mulu: {"regs": {"rA", "rB", "rC", "rD"}},
-			Op.Divu: {"regs": {"rA", "rB", "rC", "rD"}},
-			Op.And: {"regs", {"rA", "rB", "rC"}},
-
-			Op.Or: {"regs", {"rA", "rB", "rC"}},
-			Op.Xor: {"regs", {"rA", "rB", "rC"}},
-			Op.Lsl: {"regs", {"rA", "rB", "rC"}},
-			Op.Lsr: {"regs", {"rA", "rB", "rC"}},
-
-			Op.Asr: {"regs", {"rA", "rB", "rC"}},
-			Op.Pre: {"simm": 24},
-			Op.AddsiPc: {"regs": {"rA"}, "simm": 20},
-			Op.Jl: {"regs": {"rA"}, "simm": 20},
-
-			Op.Jmp: {"regs": {"rA"}, "simm": 20},
-			Op.Bz: {"regs": {"rA"}, "simm": 20}
-			Op.Bnz: {"regs": {"rA"}, "simm": 20}
-			Op.Ld: {"regs": {"rA", "rB"}, "simm": 16}
-
-			Op.St: {"regs": {"rA", "rB"}, "simm": 16}
-			Op.Ldh: {"regs": {"rA", "rB"}, "simm": 16}
-			Op.Ldsh: {"regs": {"rA", "rB"}, "simm": 16}
-			Op.Sth: {"regs": {"rA", "rB"}, "simm": 16}
-
-			Op.Ldb: {"regs": {"rA", "rB"}, "simm": 16}
-			Op.Ldsb: {"regs": {"rA", "rB"}, "simm": 16}
-			Op.Stb: {"regs": {"rA", "rB"}, "simm": 16}
-			Op.Zeh: {"regs": {"rA", "rB"}}
-
-			Op.Zeb: {"regs": {"rA", "rB"}}
-			Op.Seh: {"regs": {"rA", "rB"}}
-			Op.Seb: {"regs": {"rA", "rB"}}
-			Op.Ei: set(),
-
-			Op.Di: set(),
-			Op.Reti: set(),
+			"warn": "",
+			"lst": []
 		}
+		#--------
 
-		if op not in HAS:
+		#--------
+		HAS = self.HAS()
+		op = self.op()
+		ra = self.ra()
+		rb = self.rb()
+		rc = self.rc()
+		rd = self.rd()
+		simm = self.simm()
+
+		if op in HAS:
+			if "regs" in HAS[op]:
+				if "rA" in HAS[op]["regs"]:
+					assert type(ra) == int
+				if "rB" in HAS[op]["regs"]:
+					assert type(rb) == int
+				if "rC" in HAS[op]["regs"]:
+					assert type(rc) == int
+				if "rD" in HAS[op]["regs"]:
+					assert type(rd) == int
+			if "simm" in HAS[op]:
+				assert (type(simm) == Ast) or (type(simm) == Symbol) \
+					or (type(simm) == str) or (type(simm) == int) \
+					or (type(simm) == float)
+
+		else: # if op not in HAS:
 			printerr("Error:  Volt32CpuAssembler.Instr.enc():  ",
 				"Invalid instruction with opcode {}.\n"
 				.format(hex(int(op))))
 			exit(1)
+		#--------
 
+		#--------
 		return ret
+		#--------
+	#--------
 #--------
 
 
@@ -777,7 +833,7 @@ class FrameInfo:
 				self.__reg_save_list \
 					+= [{
 						"reg": regs_list[i],
-						"index": i * self.REG_SIZE()
+						"index": i * self.REG_SIZE(),
 					}]
 				reg_save = self.__reg_save_list[-1]
 				reg_save["ld"] = Ld(reg_save["reg"], Fp,
@@ -787,9 +843,16 @@ class FrameInfo:
 
 		if var_dict != None:
 			assert type(var_dict) == dict
+			self.__VAR_ALLOC_SIZE = sum([var_dict[name]["size"]
+				for name in var_dict])
 
 		self.__INITIAL_ALLOC_SIZE = self.REG_ALLOC_SIZE() \
 			+ self.VAR_ALLOC_SIZE()
+
+		self.__stack_alloc_instr \
+			= Addsi(Sp, Sp, -self.INITIAL_ALLOC_SIZE())
+		self.__stack_dealloc_instr \
+			= Addsi(Sp, Sp, self.INITIAL_ALLOC_SIZE())
 	#--------
 
 	#--------
@@ -805,9 +868,13 @@ class FrameInfo:
 	#--------
 
 	#--------
-	# Members
+	# Other Members
 	def reg_save_list(self):
 		return self.__reg_save_list
+	def stack_alloc_instr(self):
+		return self.__stack_alloc_instr
+	def stack_dealloc_instr(self):
+		return self.__stack_dealloc_instr
 	#--------
 
 	#--------
@@ -837,7 +904,7 @@ class FrameInfo:
 	#--------
 
 class ScopeGen:
-	def __init__(self, lst: SymbolTable):
+	def __init__(self, lst):
 		self.__lst = lst
 
 	class ScopeCtxMgr:
@@ -926,11 +993,37 @@ class ScopeGen:
 			self.__parent = parent
 			self.__frame_info = frame_info
 
-			fd = self.__frame_info
+			fi = self.__frame_info
 
-			if fd != None:
-				assert type(fd) == FrameInfo
-				pass
+			if fi != None:
+				assert type(fi) == FrameInfo
+
+		def __enter__(self):
+			lst = self.__parent.lst()
+			lst += [ScopeBegin()]
+
+			fi = self.__frame_info
+
+			if fi != None:
+				if fi.INITIAL_ALLOC_SIZE() != 0:
+					lst += [fi.stack_alloc_instr()]
+				if fi.REG_ALLOC_SIZE() != 0:
+					for reg_save in fi.reg_save_list():
+						lst += [reg_save["st"]]
+
+		def __exit__(self, exc_type, exc_val, exc_tb):
+			lst = self.__parent.lst()
+
+			fi = self.__frame_info
+
+			if fi != None:
+				if fi.REG_ALLOC_SIZE() != 0:
+					for reg_save in fi.reg_save_list():
+						lst += [reg_save["ld"]]
+				if fi.INITIAL_ALLOC_SIZE() != 0:
+					lst += [fi.stack_dealloc_instr()]
+
+			lst += [ScopeEnd()]
 
 	def lst(self):
 		return self.__lst
