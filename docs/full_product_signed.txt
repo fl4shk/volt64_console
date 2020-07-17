@@ -1,0 +1,6 @@
+high -= (a >> (BITS - 1)) * b + (b >> (BITS - 1)) * a
+
+make it += if the shift is arithmetic
+
+again, foo >> (BITS - 1) is just foo's high bit, so that's completely trivial in hardware
+so is multiplying anything by it

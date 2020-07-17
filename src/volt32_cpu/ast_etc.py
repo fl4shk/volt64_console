@@ -410,39 +410,41 @@ class Instr:
 
 			Op.Slts: {"regs": {"rA", "rB", "rC"}},
 			Op.Mulu: {"regs": {"rA", "rB", "rC", "rD"}},
+			Op.Muls: {"regs": {"rA", "rB", "rC", "rD"}},
 			Op.Divu: {"regs": {"rA", "rB", "rC", "rD"}},
-			Op.And: {"regs", {"rA", "rB", "rC"}},
 
+			Op.Divs: {"regs": {"rA", "rB", "rC", "rD"}},
+			Op.And: {"regs", {"rA", "rB", "rC"}},
 			Op.Or: {"regs", {"rA", "rB", "rC"}},
 			Op.Xor: {"regs", {"rA", "rB", "rC"}},
+
 			Op.Lsl: {"regs", {"rA", "rB", "rC"}},
 			Op.Lsr: {"regs", {"rA", "rB", "rC"}},
-
 			Op.Asr: {"regs", {"rA", "rB", "rC"}},
 			Op.Pre: {"simm": 24},
+
 			Op.AddsiPc: {"regs": {"rA"}, "simm": 20},
 			Op.Jl: {"regs": {"rA"}, "simm": 20},
-
 			Op.Jmp: {"regs": {"rA"}, "simm": 20},
 			Op.Bz: {"regs": {"rA"}, "simm": 20}
+
 			Op.Bnz: {"regs": {"rA"}, "simm": 20}
 			Op.Ld: {"regs": {"rA", "rB"}, "simm": 16}
-
 			Op.St: {"regs": {"rA", "rB"}, "simm": 16}
 			Op.Ldh: {"regs": {"rA", "rB"}, "simm": 16}
+
 			Op.Ldsh: {"regs": {"rA", "rB"}, "simm": 16}
 			Op.Sth: {"regs": {"rA", "rB"}, "simm": 16}
-
 			Op.Ldb: {"regs": {"rA", "rB"}, "simm": 16}
 			Op.Ldsb: {"regs": {"rA", "rB"}, "simm": 16}
+
 			Op.Stb: {"regs": {"rA", "rB"}, "simm": 16}
 			Op.Zeh: {"regs": {"rA", "rB"}}
-
 			Op.Zeb: {"regs": {"rA", "rB"}}
 			Op.Seh: {"regs": {"rA", "rB"}}
+
 			Op.Seb: {"regs": {"rA", "rB"}}
 			Op.Ei: {},
-
 			Op.Di: {},
 			Op.Reti: {},
 		}
@@ -543,208 +545,219 @@ class Instr:
 def Add(ra, rb, rc):
 	return \
 	{
-		"instr": Instr(op=Op.Add, ra=ra, rb=rb, rc=rc),
+		"instr": [Instr(op=Op.Add, ra=ra, rb=rb, rc=rc)],
 		"enc": [],
 	}
 def Sub(ra, rb, rc):
 	return \
 	{
-		"instr": Instr(op=Op.Sub, ra=ra, rb=rb, rc=rc),
+		"instr": [Instr(op=Op.Sub, ra=ra, rb=rb, rc=rc)],
 		"enc": [],
 	}
 def Addsi(ra, rb, simm):
 	return \
 	{
-		"instr": Instr(op=Op.Addsi, ra=ra, rb=rb, simm=simm),
+		"instr": [Instr(op=Op.Addsi, ra=ra, rb=rb, simm=simm)],
 		"enc": [],
 	}
 def Sltu(ra, rb, rc):
 	return \
 	{
-		"instr": Instr(op=Op.Sltu, ra=ra, rb=rb, rc=rc),
+		"instr": [Instr(op=Op.Sltu, ra=ra, rb=rb, rc=rc)],
 		"enc": [],
 	}
 
 def Slts(ra, rb, rc):
 	return \
 	{
-		"instr": Instr(op=Op.Slts, ra=ra, rb=rb, rc=rc),
+		"instr": [Instr(op=Op.Slts, ra=ra, rb=rb, rc=rc)],
 		"enc": [],
 	}
 def Mulu(ra, rb, rc, rd):
 	return \
 	{
-		"instr": Instr(op=Op.Mulu, ra=ra, rb=rb, rc=rc, rd=rd),
+		"instr": [Instr(op=Op.Mulu, ra=ra, rb=rb, rc=rc, rd=rd)],
+		"enc": [],
+	}
+def Muls(ra, rb, rc, rd):
+	return \
+	{
+		"instr": [Instr(op=Op.Muls, ra=ra, rb=rb, rc=rc, rd=rd)],
 		"enc": [],
 	}
 def Divu(ra, rb, rc, rd):
 	return \
 	{
-		"instr": Instr(op=Op.Divu, ra=ra, rb=rb, rc=rc, rd=rd),
+		"instr": [Instr(op=Op.Divu, ra=ra, rb=rb, rc=rc, rd=rd)],
+		"enc": [],
+	}
+
+def Divs(ra, rb, rc, rd):
+	return \
+	{
+		"instr": [Instr(op=Op.Divs, ra=ra, rb=rb, rc=rc, rd=rd)],
 		"enc": [],
 	}
 def And(ra, rb, rc):
 	return \
 	{
-		"instr": Instr(op=Op.And, ra=ra, rb=rb, rc=rc),
+		"instr": [Instr(op=Op.And, ra=ra, rb=rb, rc=rc)],
 		"enc": [],
 	}
-
 def Or(ra, rb, rc):
 	return \
 	{
-		"instr": Instr(op=Op.Or, ra=ra, rb=rb, rc=rc),
+		"instr": [Instr(op=Op.Or, ra=ra, rb=rb, rc=rc)],
 		"enc": [],
 	}
 def Xor(ra, rb, rc):
 	return \
 	{
-		"instr": Instr(op=Op.Xor, ra=ra, rb=rb, rc=rc),
+		"instr": [Instr(op=Op.Xor, ra=ra, rb=rb, rc=rc)],
 		"enc": [],
 	}
+
 def Lsl(ra, rb, rc):
 	return \
 	{
-		"instr": Instr(op=Op.Lsl, ra=ra, rb=rb, rc=rc),
+		"instr": [Instr(op=Op.Lsl, ra=ra, rb=rb, rc=rc)],
 		"enc": [],
 	}
 def Lsr(ra, rb, rc):
 	return \
 	{
-		"instr": Instr(op=Op.Lsr, ra=ra, rb=rb, rc=rc),
+		"instr": [Instr(op=Op.Lsr, ra=ra, rb=rb, rc=rc)],
 		"enc": [],
 	}
-
 def Asr(ra, rb, rc):
 	return \
 	{
-		"instr": Instr(op=Op.Asr, ra=ra, rb=rb, rc=rc),
+		"instr": [Instr(op=Op.Asr, ra=ra, rb=rb, rc=rc)],
 		"enc": [],
 	}
 
 def AddsiPc(ra, simm):
 	return \
 	{
-		"instr": Instr(op=Op.AddsiPc, ra=ra, simm=simm),
+		"instr": [Instr(op=Op.AddsiPc, ra=ra, simm=simm)],
 		"enc": [],
 	}
 def Jl(ra, simm):
 	return \
 	{
-		"instr": Instr(op=Op.Jl, ra=ra, simm=simm),
+		"instr": [Instr(op=Op.Jl, ra=ra, simm=simm)],
 		"enc": [],
 	}
-
 def Jmp(ra, simm):
 	return \
 	{
-		"instr": Instr(op=Op.Jmp, ra=ra, simm=simm),
+		"instr": [Instr(op=Op.Jmp, ra=ra, simm=simm)],
 		"enc": [],
 	}
 def Bz(ra, simm):
 	return \
 	{
-		"instr": Instr(op=Op.Bz, ra=ra, simm=simm),
+		"instr": [Instr(op=Op.Bz, ra=ra, simm=simm)],
 		"enc": [],
 	}
+
 def Bnz(ra, simm):
 	return \
 	{
-		"instr": Instr(op=Op.Bnz, ra=ra, simm=simm),
+		"instr": [Instr(op=Op.Bnz, ra=ra, simm=simm)],
 		"enc": [],
 	}
 def Ld(ra, rb, simm):
 	return \
 	{
-		"instr": Instr(op=Op.Ld, ra=ra, rb=rb, simm=simm),
+		"instr": [Instr(op=Op.Ld, ra=ra, rb=rb, simm=simm)],
 		"enc": [],
 	}
-
 def St(ra, rb, simm):
 	return \
 	{
-		"instr": Instr(op=Op.St, ra=ra, rb=rb, simm=simm),
+		"instr": [Instr(op=Op.St, ra=ra, rb=rb, simm=simm)],
 		"enc": [],
 	}
 def Ldh(ra, rb, simm):
 	return \
 	{
-		"instr": Instr(op=Op.Ldh, ra=ra, rb=rb, simm=simm),
+		"instr": [Instr(op=Op.Ldh, ra=ra, rb=rb, simm=simm)],
 		"enc": [],
 	}
+
 def Ldsh(ra, rb, simm):
 	return \
 	{
-		"instr": Instr(op=Op.Ldsh, ra=ra, rb=rb, simm=simm),
+		"instr": [Instr(op=Op.Ldsh, ra=ra, rb=rb, simm=simm)],
 		"enc": [],
 	}
 def Sth(ra, rb, simm):
 	return \
 	{
-		"instr": Instr(op=Op.Sth, ra=ra, rb=rb, simm=simm),
+		"instr": [Instr(op=Op.Sth, ra=ra, rb=rb, simm=simm)],
 		"enc": [],
 	}
-
 def Ldb(ra, rb, simm):
 	return \
 	{
-		"instr": Instr(op=Op.Ldb, ra=ra, rb=rb, simm=simm),
+		"instr": [Instr(op=Op.Ldb, ra=ra, rb=rb, simm=simm)],
 		"enc": [],
 	}
 def Ldsb(ra, rb, simm):
 	return \
 	{
-		"instr": Instr(op=Op.Ldsb, ra=ra, rb=rb, simm=simm),
+		"instr": [Instr(op=Op.Ldsb, ra=ra, rb=rb, simm=simm)],
 		"enc": [],
 	}
+
 def Stb(ra, rb, simm):
 	return \
 	{
-		"instr": Instr(op=Op.Stb, ra=ra, rb=rb, simm=simm),
+		"instr": [Instr(op=Op.Stb, ra=ra, rb=rb, simm=simm)],
 		"enc": [],
 	}
 def Zeh(ra, rb):
 	return \
 	{
-		"instr": Instr(op=Op.Zeh, ra=ra, rb=rb),
+		"instr": [Instr(op=Op.Zeh, ra=ra, rb=rb)],
 		"enc": [],
 	}
-
 def Zeb(ra, rb):
 	return \
 	{
-		"instr": Instr(op=Op.Zeb, ra=ra, rb=rb),
+		"instr": [Instr(op=Op.Zeb, ra=ra, rb=rb)],
 		"enc": [],
 	}
 def Seh(ra, rb):
 	return \
 	{
-		"instr": Instr(op=Op.Seh, ra=ra, rb=rb),
+		"instr": [Instr(op=Op.Seh, ra=ra, rb=rb)],
 		"enc": [],
 	}
+
 def Seb(ra, rb):
 	return \
 	{
-		"instr": Instr(op=Op.Seb, ra=ra, rb=rb),
+		"instr": [Instr(op=Op.Seb, ra=ra, rb=rb)],
 		"enc": [],
 	}
 def Ei():
 	return \
 	{
-		"instr": Instr(op=Op.Ei),
+		"instr": [Instr(op=Op.Ei)],
 		"enc": [],
 	}
-
 def Di():
 	return \
 	{
-		"instr": Instr(op=Op.Di),
+		"instr": [Instr(op=Op.Di)],
 		"enc": [],
 	}
 def Reti():
 	return \
 	{
-		"instr": Instr(op=Op.Reti),
+		"instr": [Instr(op=Op.Reti)],
 		"enc": [],
 	}
 #--------
@@ -785,25 +798,31 @@ class Lbyte:
 		self.__lst = lst
 	def lst(self):
 		return self.__lst
+	def __len__(self):
+		return len(self.lst())
 
 # Literal half word
 class Lhword(Lbyte):
 	def __init__(self, lst: list):
 		super().__init__(lst=lst)
+	def __len__(self):
+		return (len(self.lst()) * 2)
 
 # Literal word
 class Lword(Lbyte):
 	def __init__(self, lst: list):
 		super().__init__(lst=lst)
+	def __len__(self):
+		return (len(self.lst()) * 4)
 #--------
 
 #--------
 # Stack frame info
 class FrameInfo:
 	#--------
-	# TODO:  Add in support for constructor and destructor calling
 	def __init__(self, reg_set=None, var_dict=None, REG_SIZE=4,
 		NUM_REGS=NumRegs):
+		# TODO:  Add in support for constructor and destructor calling
 		self.__reg_set = reg_set
 		self.__var_dict = var_dict,
 		self.__REG_SIZE = REG_SIZE
@@ -828,19 +847,18 @@ class FrameInfo:
 			for i in range(NUM_SAVED_REGS):
 				reg = regs_list[i]
 				assert reg < self.NUM_REGS()
-				#assert reg != Zero
-				#assert reg != Sp
 
 				self.__reg_save_list \
 					+= [{
 						"reg": regs_list[i],
-						"index": i * self.REG_SIZE(),
+						"offset": -(self.REG_BASE()
+							+ (i * self.REG_SIZE())),
 					}]
-				reg_save = self.__reg_save_list[-1]
-				reg_save["ld"] = Ld(reg_save["reg"], Fp,
-					-(self.REG_BASE() + reg_save["index"]))
-				reg_save["st"] = St(reg_save["reg"], Fp,
-					-(self.REG_BASE() + reg_save["index"]))
+				#reg_save = self.__reg_save_list[-1]
+				#reg_save["ld"] = Ld(reg_save["reg"], Fp,
+				#	-(self.REG_BASE() + reg_save["index"]))
+				#reg_save["st"] = St(reg_save["reg"], Fp,
+				#	-(self.REG_BASE() + reg_save["index"]))
 
 		if var_dict != None:
 			assert type(var_dict) == dict
@@ -857,10 +875,10 @@ class FrameInfo:
 		self.__INITIAL_ALLOC_SIZE = self.REG_ALLOC_SIZE() \
 			+ self.VAR_ALLOC_SIZE()
 
-		self.__stack_alloc_instr \
-			= Addsi(Sp, Sp, -self.INITIAL_ALLOC_SIZE())
-		self.__stack_dealloc_instr \
-			= Addsi(Sp, Sp, self.INITIAL_ALLOC_SIZE())
+		#self.__stack_alloc_instr \
+		#	= Addsi(Sp, Sp, -self.INITIAL_ALLOC_SIZE())
+		#self.__stack_dealloc_instr \
+		#	= Addsi(Sp, Sp, self.INITIAL_ALLOC_SIZE())
 	#--------
 
 	#--------
@@ -879,10 +897,10 @@ class FrameInfo:
 	# Other Members
 	def reg_save_list(self):
 		return self.__reg_save_list
-	def stack_alloc_instr(self):
-		return self.__stack_alloc_instr
-	def stack_dealloc_instr(self):
-		return self.__stack_dealloc_instr
+	#def stack_alloc_instr(self):
+	#	return self.__stack_alloc_instr
+	#def stack_dealloc_instr(self):
+	#	return self.__stack_dealloc_instr
 	#--------
 
 	#--------
@@ -933,9 +951,9 @@ class ScopeGen:
 
 			if fi != None:
 				if fi.INITIAL_ALLOC_SIZE() != 0:
-					lst += [fi.stack_alloc_instr()]
+					lst += [Addsi(Sp, Sp, -fi.INITIAL_ALLOC_SIZE())]
 				for reg_save in fi.reg_save_list():
-					lst += [reg_save["st"]]
+					lst += [St(reg_save["reg"], Fp, reg_save["offset"])]
 
 		def __exit__(self, exc_type, exc_val, exc_tb):
 			lst = self.__parent.lst()
@@ -944,9 +962,10 @@ class ScopeGen:
 
 			if fi != None:
 				for reg_save in fi.reg_save_list():
-					lst += [reg_save["ld"]]
+					lst += [Ld(reg_save["reg"], Fp, reg_save["offset"])]
 				if fi.INITIAL_ALLOC_SIZE() != 0:
-					lst += [fi.stack_dealloc_instr()]
+					#lst += [fi.INITIAL_ALLOC_SIZE()]
+					lst += [Add(Sp, Zero, Fp)]
 
 			lst += [ScopeEnd()]
 
