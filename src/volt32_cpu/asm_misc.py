@@ -8,10 +8,6 @@ class Op(Enum):
 	#--------
 	# 0 .. 3
 
-	# We already have provisions for doing two adds in one instruction
-	# due to the loads and stores, so we might as well make it possible
-	# to do so for `add` and `sub` instructions
-
 	# add rA, rB, rC
 	Add = 0
 
