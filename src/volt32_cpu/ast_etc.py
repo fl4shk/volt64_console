@@ -798,9 +798,10 @@ class Lword(Lbyte):
 #--------
 
 #--------
-# Stack frame data
+# Stack frame info
 class FrameInfo:
 	#--------
+	# TODO:  Add in support for constructor and destructor calling
 	def __init__(self, reg_set=None, var_dict=None, REG_SIZE=4,
 		NUM_REGS=NumRegs):
 		self.__reg_set = reg_set
@@ -845,6 +846,13 @@ class FrameInfo:
 			assert type(var_dict) == dict
 			self.__VAR_ALLOC_SIZE = sum([var_dict[name]["size"]
 				for name in var_dict])
+
+			offset = 0
+			for name in var_dict:
+				var = self.var_dict()[name]
+				assert "offset" not in var
+				var["offset"] = offset
+				offset += var["size"]
 
 		self.__INITIAL_ALLOC_SIZE = self.REG_ALLOC_SIZE() \
 			+ self.VAR_ALLOC_SIZE()
@@ -908,87 +916,6 @@ class ScopeGen:
 		self.__lst = lst
 
 	class ScopeCtxMgr:
-		## TODO:  Add in support for constructor and destructor calling
-		#def __init__(self, parent, stack_data=None, REG_SIZE=4,
-		#	NUM_REGS=NumRegs):
-		#	self.__parent = parent
-		#	self.__stack_data = stack_data
-
-		#	sd = self.__stack_data
-
-		#	if sd != None:
-		#		assert type(sd) == dict
-
-		#		VARS_ALLOC_SIZE = 0
-		#		STACK_ALLOC_SIZE = 0
-
-		#		if "vars" in sd:
-		#			assert type(sd["vars"]) == dict
-		#			VARS_ALLOC_SIZE = sum([sd["vars"][name]["size"]
-		#				for name in sd["vars"]])
-		#			STACK_ALLOC_SIZE += VARS_ALLOC_SIZE
-
-		#		if "regs" in sd:
-		#			assert type(sd["regs"]) == set
-
-		#			NUM_SD_REGS = len(sd["regs"])
-		#			assert NUM_SD_REGS < NUM_REGS
-		#			regs_list = list(sd["regs"])
-
-		#			STACK_ALLOC_SIZE += -(NUM_SD_REGS * REG_SIZE)
-
-		#			self.__reg_save_list = []
-		#			for i in range(NUM_SD_REGS):
-		#				reg = regs_list[i]
-		#				assert reg < NUM_REGS
-		#				assert reg != Zero
-		#				assert reg != Sp
-		#				self.__reg_save_list \
-		#					+= [{
-		#						"reg": regs_list[i],
-
-		#						# `+ REG_SIZE` because `sp` points
-		#						# to the *next* offset
-		#						"index": ((i * REG_SIZE) + REG_SIZE 
-		#							+ VARS_ALLOC_SIZE),
-		#					}]
-		#				self.__reg_save_list[-1]["ld"] \
-		#					= Ld(self.__reg_save_list[-1]["reg"], Sp,
-		#						self.__reg_save_list[-1]["index"])
-		#				self.__reg_save_list[-1]["st"] \
-		#					= St(self.__reg_save_list[-1]["reg"], Sp,
-		#						self.__reg_save_list[-1]["index"])
-
-		#		self.__stack_alloc_instr \
-		#			= Addsi(Sp, Sp, -STACK_ALLOC_SIZE)
-		#		self.__stack_dealloc_instr \
-		#			= Addsi(Sp, Sp, STACK_ALLOC_SIZE)
-
-		#def __enter__(self):
-		#	lst = self.__parent.lst()
-		#	lst.append(ScopeBegin())
-
-		#	sd = self.__stack_data
-
-		#	if sd != None:
-		#		assert type(sd) == dict
-
-		#		lst += [self.__stack_alloc_instr]
-		#		if "regs" in sd:
-		#			for reg_save in self.__reg_save_list:
-		#				lst += [reg_save["st"]]
-
-		#def __exit__(self, exc_type, exc_val, exc_tb):
-		#	lst = self.__parent.lst()
-		#	sd = self.__stack_data
-
-		#	if sd != None:
-		#		if "regs" in sd:
-		#			for reg_save in self.__reg_save_list:
-		#				lst += [reg_save["ld"]]
-		#		lst += [self.__stack_dealloc_instr]
-
-		#	lst.append(ScopeEnd())
 		def __init__(self, parent, frame_info=None):
 			self.__parent = parent
 			self.__frame_info = frame_info
@@ -1007,9 +934,8 @@ class ScopeGen:
 			if fi != None:
 				if fi.INITIAL_ALLOC_SIZE() != 0:
 					lst += [fi.stack_alloc_instr()]
-				if fi.REG_ALLOC_SIZE() != 0:
-					for reg_save in fi.reg_save_list():
-						lst += [reg_save["st"]]
+				for reg_save in fi.reg_save_list():
+					lst += [reg_save["st"]]
 
 		def __exit__(self, exc_type, exc_val, exc_tb):
 			lst = self.__parent.lst()
@@ -1017,9 +943,8 @@ class ScopeGen:
 			fi = self.__frame_info
 
 			if fi != None:
-				if fi.REG_ALLOC_SIZE() != 0:
-					for reg_save in fi.reg_save_list():
-						lst += [reg_save["ld"]]
+				for reg_save in fi.reg_save_list():
+					lst += [reg_save["ld"]]
 				if fi.INITIAL_ALLOC_SIZE() != 0:
 					lst += [fi.stack_dealloc_instr()]
 
