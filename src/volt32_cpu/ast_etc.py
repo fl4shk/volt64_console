@@ -399,143 +399,170 @@ class Instr:
 		return self.__simm
 	#--------
 
+class InstrFrag:
+	#--------
+	def __init__(self, orig):
+		# Original
+		self.__orig = orig
+
+		# Expanded
+		self.__exp = {"pre": None, "reg": None}
+
+		# Encoded
+		self.__enc = {"pre": None, "reg": None}
+	#--------
+
+	#--------
+	def orig(self):
+		return self.__orig
+	def exp(self):
+		return self.__exp
+	def enc(self):
+		return self.__enc
+	#--------
+
 	#--------
 	def HAS(self):
 		return \
 		{
-			Op.Add: {"regs": {"rA", "rB", "rC"}},
-			Op.Sub: {"regs": {"rA", "rB", "rC"}},
-			Op.Addsi: {"regs": {"rA", "rB"}, "simm": 16},
-			Op.Sltu: {"regs": {"rA", "rB", "rC"}},
+			Op.Add: {"regs": 3, "simm": False},
+			Op.Sub: {"regs": 3, "simm": False},
+			Op.Addsi: {"regs": 2, "simm": True},
+			Op.Sltu: {"regs": 3, "simm": False},
 
-			Op.Slts: {"regs": {"rA", "rB", "rC"}},
-			Op.Mulu: {"regs": {"rA", "rB", "rC", "rD"}},
-			Op.Muls: {"regs": {"rA", "rB", "rC", "rD"}},
-			Op.Divu: {"regs": {"rA", "rB", "rC", "rD"}},
+			Op.Slts: {"regs": 3, "simm": False},
+			Op.Mulu: {"regs": 4, "simm": False},
+			Op.Muls: {"regs": 4, "simm": False},
+			Op.Divu: {"regs": 4, "simm": False},
 
-			Op.Divs: {"regs": {"rA", "rB", "rC", "rD"}},
-			Op.And: {"regs", {"rA", "rB", "rC"}},
-			Op.Or: {"regs", {"rA", "rB", "rC"}},
-			Op.Xor: {"regs", {"rA", "rB", "rC"}},
+			Op.Divs: {"regs": 4, "simm": False},
+			Op.And: {"regs": 3, "simm": False},
+			Op.Or: {"regs": 3, "simm": False},
+			Op.Xor: {"regs": 3, "simm": False},
 
-			Op.Lsl: {"regs", {"rA", "rB", "rC"}},
-			Op.Lsr: {"regs", {"rA", "rB", "rC"}},
-			Op.Asr: {"regs", {"rA", "rB", "rC"}},
-			Op.Pre: {"simm": 24},
+			Op.Lsl: {"regs": 3, "simm": False},
+			Op.Lsr: {"regs": 3, "simm": False},
+			Op.Asr: {"regs": 3, "simm": False},
+			Op.Pre: {"regs": 0, "simm": True},
 
-			Op.AddsiPc: {"regs": {"rA"}, "simm": 20},
-			Op.Jl: {"regs": {"rA"}, "simm": 20},
-			Op.Jmp: {"regs": {"rA"}, "simm": 20},
-			Op.Bz: {"regs": {"rA"}, "simm": 20}
+			Op.AddsiPc: {"regs": 1, "simm": True},
+			Op.Jl: {"regs": 1, "simm": True},
+			Op.Jmp: {"regs": 1, "simm": True},
+			Op.Bz: {"regs": 1, "simm": True},
 
-			Op.Bnz: {"regs": {"rA"}, "simm": 20}
-			Op.Ld: {"regs": {"rA", "rB"}, "simm": 16}
-			Op.St: {"regs": {"rA", "rB"}, "simm": 16}
-			Op.Ldh: {"regs": {"rA", "rB"}, "simm": 16}
+			Op.Bnz: {"regs": 1, "simm": True},
+			Op.Ld: {"regs": 2, "simm": True},
+			Op.St: {"regs": 2, "simm": True},
+			Op.Ldh: {"regs": 2, "simm": True},
 
-			Op.Ldsh: {"regs": {"rA", "rB"}, "simm": 16}
-			Op.Sth: {"regs": {"rA", "rB"}, "simm": 16}
-			Op.Ldb: {"regs": {"rA", "rB"}, "simm": 16}
-			Op.Ldsb: {"regs": {"rA", "rB"}, "simm": 16}
+			Op.Ldsh: {"regs": 2, "simm": True},
+			Op.Sth: {"regs": 2, "simm": True},
+			Op.Ldb: {"regs": 2, "simm": True},
+			Op.Ldsb: {"regs": 2, "simm": True},
 
-			Op.Stb: {"regs": {"rA", "rB"}, "simm": 16}
-			Op.Zeh: {"regs": {"rA", "rB"}}
-			Op.Zeb: {"regs": {"rA", "rB"}}
-			Op.Seh: {"regs": {"rA", "rB"}}
+			Op.Stb: {"regs": 2, "simm": True},
+			Op.Zeh: {"regs": 2, "simm": False},
+			Op.Zeb: {"regs": 2, "simm": False},
+			Op.Seh: {"regs": 2, "simm": False},
 
-			Op.Seb: {"regs": {"rA", "rB"}}
-			Op.Ei: {},
-			Op.Di: {},
-			Op.Reti: {},
+			Op.Seb: {"regs": 2, "simm": False},
+			Op.Ei: set(),
+			Op.Di: set(),
+			Op.Reti: set(),
 		}
 	#--------
 
 	#--------
-	def expand(self, sym_tbl) -> list:
-		#--------
-		def enc_simm(simm: int, SIMM_WIDTH: int) -> Blank:
-			ret = Blank()
+	def enc_simm(self, simm: int, SIMM_WIDTH: int) -> Blank:
+		ret = Blank()
 
-			def itol(x: int, MIN_WIDTH: int) -> list:
-				bit_str = bin(abs(x))[2:][::-1]
-				if x < 0:
-					XOR_VAL = (1 << max(len(bit_str), MIN_WIDTH)) - 1
-					bit_str = bin((abs(x) ^ XOR_VAL) + 1)[2:][::-1]
-				else: # if x >= 0:
-					while len(bit_str) < MIN_WIDTH:
-						bit_str += "0"
-				return [int(bit) for bit in bit_str]
+		def itol(x: int, MIN_WIDTH: int) -> list:
+			bit_str = bin(abs(x))[2:][::-1]
+			if x < 0:
+				XOR_VAL = (1 << max(len(bit_str), MIN_WIDTH)) - 1
+				bit_str = bin((abs(x) ^ XOR_VAL) + 1)[2:][::-1]
+			else: # if x >= 0:
+				while len(bit_str) < MIN_WIDTH:
+					bit_str += "0"
+			return [int(bit) for bit in bit_str]
 
-			def ltoui(x: list) -> int:
-				bit_str = "0b" + "".join([str(bit) for bit in x[::-1]])
-				return int(bit_str, 2)
-			def ltoi(x: list) -> list:
-				ret = ltoui(x)
+		def ltoui(x: list) -> int:
+			bit_str = "0b" + "".join([str(bit) for bit in x[::-1]])
+			return int(bit_str, 2)
+		def ltoi(x: list) -> list:
+			ret = ltoui(x)
 
-				# if x is negative
-				if x[-1] == 1:
-					XOR_VAL = (1 << len(x)) - 1
-					ret = -((ret ^ XOR_VAL) + 1)
-				return ret
-
-			TOP_WIDTH = 3
-			SIMM_MAX_WIDTH = 8
-
-			simm_list = itol(simm, SIMM_MAX_WIDTH)
-			ret.wont_fit = len(simm_list) > (SIMM_MAX_WIDTH - 1)
-
-			ret.bot_list = simm_list[:SIMM_WIDTH]
-			ret.top_list = simm_list[SIMM_WIDTH:]
-
-			ret.bot = ltoui(ret.bot_list)
-			ret.top = ltoui(ret.top_list)
-
-			ret.dbg = ltoi(ret.bot_list + ret.top_list)
-
+			# if x is negative
+			if x[-1] == 1:
+				XOR_VAL = (1 << len(x)) - 1
+				ret = -((ret ^ XOR_VAL) + 1)
 			return ret
-		#--------
 
-		#--------
-		ret \
-		= {
-			"warn": "",
-			"lst": []
-		}
-		#--------
+		TOP_WIDTH = 3
+		SIMM_MAX_WIDTH = 8
 
+		simm_list = itol(simm, SIMM_MAX_WIDTH)
+		ret.wont_fit = len(simm_list) > (SIMM_MAX_WIDTH - 1)
+
+		ret.bot_list = simm_list[:SIMM_WIDTH]
+		ret.top_list = simm_list[SIMM_WIDTH:]
+
+		ret.bot = ltoui(ret.bot_list)
+		ret.top = ltoui(ret.top_list)
+
+		ret.dbg = ltoi(ret.bot_list + ret.top_list)
+
+		return ret
+	#--------
+
+	#--------
+	def expand(self, sym_tbl):
 		#--------
 		HAS = self.HAS()
-		op = self.op()
-		ra = self.ra()
-		rb = self.rb()
-		rc = self.rc()
-		rd = self.rd()
-		simm = self.simm()
+		orig = self.orig()
+		exp = self.exp()
+		enc = self.enc()
+		op = orig.op()
+		ra = orig.ra()
+		rb = orig.rb()
+		rc = orig.rc()
+		rd = orig.rd()
+		simm = orig.simm()
 
 		if op in HAS:
-			if "regs" in HAS[op]:
-				if "rA" in HAS[op]["regs"]:
-					assert type(ra) == int
-				if "rB" in HAS[op]["regs"]:
-					assert type(rb) == int
-				if "rC" in HAS[op]["regs"]:
-					assert type(rc) == int
-				if "rD" in HAS[op]["regs"]:
-					assert type(rd) == int
-			if "simm" in HAS[op]:
+			RA_IN_HAS = HAS[op]["regs"] >= 1
+			RB_IN_HAS = HAS[op]["regs"] >= 2
+			RC_IN_HAS = HAS[op]["regs"] >= 3
+			RD_IN_HAS = HAS[op]["regs"] >= 4
+			SIMM_IN_HAS = HAS[op]["simm"]
+
+			# Opcodes are 8-bit
+			SIMM_SIZE = 32 - 8
+
+			REG_INDEX_SIZE = 4
+
+			if RA_IN_HAS:
+				assert type(ra) == int
+				SIMM_SIZE -= REG_INDEX_SIZE
+			if RB_IN_HAS:
+				assert type(rb) == int
+				SIMM_SIZE -= REG_INDEX_SIZE
+			if RC_IN_HAS:
+				assert type(rc) == int
+				SIMM_SIZE -= REG_INDEX_SIZE
+			if RD_IN_HAS:
+				assert type(rd) == int
+				SIMM_SIZE -= REG_INDEX_SIZE
+			if SIMM_IN_HAS:
 				assert (type(simm) == Ast) or (type(simm) == Symbol) \
 					or (type(simm) == str) or (type(simm) == int) \
 					or (type(simm) == float)
 
 		else: # if op not in HAS:
-			printerr("Error:  Volt32CpuAssembler.Instr.enc():  ",
+			printerr("Error:  InstrFrag.encode():  ",
 				"Invalid instruction with opcode {}.\n"
 				.format(hex(int(op))))
 			exit(1)
-		#--------
-
-		#--------
-		return ret
 		#--------
 	#--------
 #--------
@@ -543,223 +570,114 @@ class Instr:
 
 #--------
 def Add(ra, rb, rc):
-	return \
-	{
-		"instr": [Instr(op=Op.Add, ra=ra, rb=rb, rc=rc)],
-		"enc": [],
-	}
+	return InstrFrag(Instr(op=Op.Add, ra=ra, rb=rb, rc=rc))
+
+# Pseudo instruction
+def Cpy(ra, rc):
+	return Add(ra=ra, rb=Zero, rc=rc)
+
 def Sub(ra, rb, rc):
-	return \
-	{
-		"instr": [Instr(op=Op.Sub, ra=ra, rb=rb, rc=rc)],
-		"enc": [],
-	}
+	return InstrFrag(Instr(op=Op.Sub, ra=ra, rb=rb, rc=rc)),
 def Addsi(ra, rb, simm):
-	return \
-	{
-		"instr": [Instr(op=Op.Addsi, ra=ra, rb=rb, simm=simm)],
-		"enc": [],
-	}
+	if rb != Pc:
+		return InstrFrag(Instr(op=Op.Addsi, ra=ra, rb=rb, simm=simm))
+	else: # if rb == Pc:
+		return InstrFrag(Instr(op=Op.AddsiPc, ra=ra, simm=simm))
+
+# Pseudo instruction
+def Cpysi(ra, simm):
+	return Addsi(ra=ra, rb=Zero, simm=simm)
+
 def Sltu(ra, rb, rc):
-	return \
-	{
-		"instr": [Instr(op=Op.Sltu, ra=ra, rb=rb, rc=rc)],
-		"enc": [],
-	}
+	return InstrFrag(Instr(op=Op.Sltu, ra=ra, rb=rb, rc=rc))
 
 def Slts(ra, rb, rc):
-	return \
-	{
-		"instr": [Instr(op=Op.Slts, ra=ra, rb=rb, rc=rc)],
-		"enc": [],
-	}
+	return InstrFrag(Instr(op=Op.Slts, ra=ra, rb=rb, rc=rc))
 def Mulu(ra, rb, rc, rd):
-	return \
-	{
-		"instr": [Instr(op=Op.Mulu, ra=ra, rb=rb, rc=rc, rd=rd)],
-		"enc": [],
-	}
+	return InstrFrag(Instr(op=Op.Mulu, ra=ra, rb=rb, rc=rc, rd=rd))
 def Muls(ra, rb, rc, rd):
-	return \
-	{
-		"instr": [Instr(op=Op.Muls, ra=ra, rb=rb, rc=rc, rd=rd)],
-		"enc": [],
-	}
+	return InstrFrag(Instr(op=Op.Muls, ra=ra, rb=rb, rc=rc, rd=rd))
 def Divu(ra, rb, rc, rd):
-	return \
-	{
-		"instr": [Instr(op=Op.Divu, ra=ra, rb=rb, rc=rc, rd=rd)],
-		"enc": [],
-	}
+	return InstrFrag(Instr(op=Op.Divu, ra=ra, rb=rb, rc=rc, rd=rd))
 
 def Divs(ra, rb, rc, rd):
-	return \
-	{
-		"instr": [Instr(op=Op.Divs, ra=ra, rb=rb, rc=rc, rd=rd)],
-		"enc": [],
-	}
+	return InstrFrag(Instr(op=Op.Divs, ra=ra, rb=rb, rc=rc, rd=rd))
 def And(ra, rb, rc):
-	return \
-	{
-		"instr": [Instr(op=Op.And, ra=ra, rb=rb, rc=rc)],
-		"enc": [],
-	}
+	return InstrFrag(Instr(op=Op.And, ra=ra, rb=rb, rc=rc))
 def Or(ra, rb, rc):
-	return \
-	{
-		"instr": [Instr(op=Op.Or, ra=ra, rb=rb, rc=rc)],
-		"enc": [],
-	}
+	return InstrFrag(Instr(op=Op.Or, ra=ra, rb=rb, rc=rc))
 def Xor(ra, rb, rc):
-	return \
-	{
-		"instr": [Instr(op=Op.Xor, ra=ra, rb=rb, rc=rc)],
-		"enc": [],
-	}
+	return InstrFrag(Instr(op=Op.Xor, ra=ra, rb=rb, rc=rc))
 
 def Lsl(ra, rb, rc):
-	return \
-	{
-		"instr": [Instr(op=Op.Lsl, ra=ra, rb=rb, rc=rc)],
-		"enc": [],
-	}
+	return InstrFrag(Instr(op=Op.Lsl, ra=ra, rb=rb, rc=rc))
 def Lsr(ra, rb, rc):
-	return \
-	{
-		"instr": [Instr(op=Op.Lsr, ra=ra, rb=rb, rc=rc)],
-		"enc": [],
-	}
+	return InstrFrag(Instr(op=Op.Lsr, ra=ra, rb=rb, rc=rc))
 def Asr(ra, rb, rc):
-	return \
-	{
-		"instr": [Instr(op=Op.Asr, ra=ra, rb=rb, rc=rc)],
-		"enc": [],
-	}
+	return InstrFrag(Instr(op=Op.Asr, ra=ra, rb=rb, rc=rc))
 
-def AddsiPc(ra, simm):
-	return \
-	{
-		"instr": [Instr(op=Op.AddsiPc, ra=ra, simm=simm)],
-		"enc": [],
-	}
+#def AddsiPc(ra, simm):
+#	return InstrFrag(Instr(op=Op.AddsiPc, ra=ra, simm=simm))
 def Jl(ra, simm):
-	return \
-	{
-		"instr": [Instr(op=Op.Jl, ra=ra, simm=simm)],
-		"enc": [],
-	}
+	return InstrFrag(Instr(op=Op.Jl, ra=ra, simm=simm))
+
+# Pseudo instruction
+def Jli(simm):
+	return Jl(ra=Zero, simm=simm)
+# Pseudo instruction
+def Jlr(ra):
+	return Jl(ra=ra, simm=0)
+
 def Jmp(ra, simm):
-	return \
-	{
-		"instr": [Instr(op=Op.Jmp, ra=ra, simm=simm)],
-		"enc": [],
-	}
+	return InstrFrag(Instr(op=Op.Jmp, ra=ra, simm=simm))
+# Pseudo instruction
+def Jmpi(simm):
+	return Jmp(ra=Zero, simm=simm)
+# Pseudo instruction
+def Jmpr(ra):
+	return Jmp(ra=ra, simm=0)
+
 def Bz(ra, simm):
-	return \
-	{
-		"instr": [Instr(op=Op.Bz, ra=ra, simm=simm)],
-		"enc": [],
-	}
+	return InstrFrag(Instr(op=Op.Bz, ra=ra, simm=simm))
+# Pseudo instruction
+def B(simm):
+	return Bz(ra=Zero, simm=simm)
 
 def Bnz(ra, simm):
-	return \
-	{
-		"instr": [Instr(op=Op.Bnz, ra=ra, simm=simm)],
-		"enc": [],
-	}
+	return InstrFrag(Instr(op=Op.Bnz, ra=ra, simm=simm))
 def Ld(ra, rb, simm):
-	return \
-	{
-		"instr": [Instr(op=Op.Ld, ra=ra, rb=rb, simm=simm)],
-		"enc": [],
-	}
+	return InstrFrag(Instr(op=Op.Ld, ra=ra, rb=rb, simm=simm))
 def St(ra, rb, simm):
-	return \
-	{
-		"instr": [Instr(op=Op.St, ra=ra, rb=rb, simm=simm)],
-		"enc": [],
-	}
+	return InstrFrag(Instr(op=Op.St, ra=ra, rb=rb, simm=simm))
 def Ldh(ra, rb, simm):
-	return \
-	{
-		"instr": [Instr(op=Op.Ldh, ra=ra, rb=rb, simm=simm)],
-		"enc": [],
-	}
+	return InstrFrag(Instr(op=Op.Ldh, ra=ra, rb=rb, simm=simm))
 
 def Ldsh(ra, rb, simm):
-	return \
-	{
-		"instr": [Instr(op=Op.Ldsh, ra=ra, rb=rb, simm=simm)],
-		"enc": [],
-	}
+	return InstrFrag(Instr(op=Op.Ldsh, ra=ra, rb=rb, simm=simm))
 def Sth(ra, rb, simm):
-	return \
-	{
-		"instr": [Instr(op=Op.Sth, ra=ra, rb=rb, simm=simm)],
-		"enc": [],
-	}
+	return InstrFrag(Instr(op=Op.Sth, ra=ra, rb=rb, simm=simm))
 def Ldb(ra, rb, simm):
-	return \
-	{
-		"instr": [Instr(op=Op.Ldb, ra=ra, rb=rb, simm=simm)],
-		"enc": [],
-	}
+	return InstrFrag(Instr(op=Op.Ldb, ra=ra, rb=rb, simm=simm))
 def Ldsb(ra, rb, simm):
-	return \
-	{
-		"instr": [Instr(op=Op.Ldsb, ra=ra, rb=rb, simm=simm)],
-		"enc": [],
-	}
+	return InstrFrag(Instr(op=Op.Ldsb, ra=ra, rb=rb, simm=simm))
 
 def Stb(ra, rb, simm):
-	return \
-	{
-		"instr": [Instr(op=Op.Stb, ra=ra, rb=rb, simm=simm)],
-		"enc": [],
-	}
+	return InstrFrag(Instr(op=Op.Stb, ra=ra, rb=rb, simm=simm))
 def Zeh(ra, rb):
-	return \
-	{
-		"instr": [Instr(op=Op.Zeh, ra=ra, rb=rb)],
-		"enc": [],
-	}
+	return InstrFrag(Instr(op=Op.Zeh, ra=ra, rb=rb))
 def Zeb(ra, rb):
-	return \
-	{
-		"instr": [Instr(op=Op.Zeb, ra=ra, rb=rb)],
-		"enc": [],
-	}
+	return InstrFrag(Instr(op=Op.Zeb, ra=ra, rb=rb))
 def Seh(ra, rb):
-	return \
-	{
-		"instr": [Instr(op=Op.Seh, ra=ra, rb=rb)],
-		"enc": [],
-	}
+	return InstrFrag(Instr(op=Op.Seh, ra=ra, rb=rb))
 
 def Seb(ra, rb):
-	return \
-	{
-		"instr": [Instr(op=Op.Seb, ra=ra, rb=rb)],
-		"enc": [],
-	}
+	return InstrFrag(Instr(op=Op.Seb, ra=ra, rb=rb))
 def Ei():
-	return \
-	{
-		"instr": [Instr(op=Op.Ei)],
-		"enc": [],
-	}
+	return InstrFrag(Instr(op=Op.Ei))
 def Di():
-	return \
-	{
-		"instr": [Instr(op=Op.Di)],
-		"enc": [],
-	}
+	return InstrFrag(Instr(op=Op.Di))
 def Reti():
-	return \
-	{
-		"instr": [Instr(op=Op.Reti)],
-		"enc": [],
-	}
+	return InstrFrag(Instr(op=Op.Reti))
 #--------
 
 #--------
