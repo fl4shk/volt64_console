@@ -1,0 +1,8 @@
+let's say it's pqr = a * bc...
+pqr = signed(a * bc)
+if (a < 0) pq += bc
+if (b < 0) p += a
+you can obviously compute the addends in any order
+
+if you need 8 by 8 you only care about if (a < 0) q += c
+assuming you zero-extend for the 16-bit slot

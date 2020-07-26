@@ -1,0 +1,10 @@
+* Right now the idea is to convert src assembly to expanded, then to encoded
+* I think this isn't the best idea?
+* I think it makes more sense to go to partially encoded, necessitating
+some kind of representation for immediates.
+* Immediates that get too large will end up causing the instruction to get
+a `pre` before it.
+* The size of an instruction is either 32-bit or 64-bit.  Once an
+instruction becomes 64-bit, it *stays* 64-bit.  This is done even if the
+immediate could potentially be shrunk later.
+
