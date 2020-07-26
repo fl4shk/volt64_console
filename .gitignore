@@ -15,3 +15,4 @@ hw/src/*/*_prove
 *.tar
 *.gz
 *.tar.*
+*.zip
