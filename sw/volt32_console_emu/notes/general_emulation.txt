@@ -1,0 +1,3 @@
+But, if you would use the audio to sync to. Using SDL as an example, this gives a callback every X audio samples, X is configurable (by sample rates and buffer sizes), let's pick, every 10ms. Then, in that callback increase a counter with 10ms of GB CPU cycles. And in your "main loop" have a different counter for "executed CPU cycles", and simply you could do there while(executed_cycles < audio_cycles) executed_cycles += runCpu()
+[1:14 PM]
+And, yes, syncing to steady clock would be the best in C++
