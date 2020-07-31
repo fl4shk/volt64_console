@@ -1,0 +1,15 @@
+ok so. you have a fill rate requirement. you need to have one scanline worth of pixels (say 640) every hblank interval (say, idk, 10 kHz?). there are two things which disrupt your SDRAM timing - opening a new row and refreshing. you will hit refresh at most some fixed number of times in an hblank interval (say 3). a scanline is a fixed number of rows (say 2). so the time it takes to read out of SDRAM is (scanline size in bytes / bytes per sdram word) * (read cycle time) + (refreshes per scanline * refresh time) + (row activations per scanline * row activation time). read out an entire scanline every hblank interval, and draw to the screen from that buffer. sometimes your buffer will be filled sooner than others (because you didn't hit as many refresh intervals) but it doesn't matter as long as it's filled during the hblank interval.
+does that make sense?
+if you can't close the timing in an hblank interval (based on the actual values of all those parameters i assumed numbers for earlier), redo the analysis with a full frame and a vblank interval
+if you can't close timing then then you're probably screwed
+
+What is read cycle time?
+
+"how long it takes to read from the SDRAM, assuming the row is already open"
+i basically derived it by saying "ok what is the zero point of my cycle" and then "what quantities need to be conserved around the cycle". it's kind of like KCL, where you can't have current flowing into a node without having an equal amount flowing out. same for data.
+the rest is just dimensional analysis
+
+So what kind of SDRAM controller are we needing here?  One that does bursts?
+
+not necessarily. depends on whether you can fill a scanline of pixels in a single hblank without bursts
+bursts are basically a performance optimization

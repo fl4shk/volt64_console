@@ -1028,7 +1028,7 @@ case "${target}" in
     ;;
   volt32-*-*)
     noconfigdirs="$noconfigdirs gdb sim"
-    noconfigdirs="$noconfigdirs binutils opcodes gas ld gprof"
+    noconfigdirs="$noconfigdirs binutils gas ld gprof"
     ;;
   h8300*-*-*)
     noconfigdirs="$noconfigdirs target-libgloss"
