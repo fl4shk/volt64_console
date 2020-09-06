@@ -2694,6 +2694,14 @@ to compensate for the borrow when the low bits are added.  */
 /* Moxie ELF relocations.  */
   BFD_RELOC_MOXIE_10_PCREL,
 
+/* Volt32 ELF relocations. */
+  BFD_RELOC_VOLT32_16,
+  BFD_RELOC_VOLT32_20,
+  BFD_RELOC_VOLT32_20_PCREL,
+  BFD_RELOC_VOLT32_20_PCREL_AS_32,
+  BFD_RELOC_VOLT32_32,
+
+
 
 /* FT32 ELF relocations.  */
   BFD_RELOC_FT32_10,

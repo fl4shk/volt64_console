@@ -23,22 +23,25 @@
 #include "libbfd.h"
 
 
-const bfd_arch_info_type bfd_volt32_arch =
-{
-  32,		      /* Bits in a word.  */
-  32,		      /* Bits in an address.  */
-  8,		      /* Bits in a byte.  */
-  bfd_arch_volt32,     /* Architecture Number.  */
-  bfd_mach_volt32,     /* Machine number.  */
-  "volt32",	      /* Arch name.  */
-  "volt32",	      /* Printable name.  */
-  2,		      /* Section alignment power.  */
-  TRUE,	              /* The one and only.  */
-  bfd_default_compatible,   /* Function to call to determine if two */
-                            /* different architectures are compatible */
-  bfd_default_scan,         /* Function to call to determine if a given */
-                            /* string matches this architecture. */
-  bfd_arch_default_fill,
-  NULL,
-  0 /* Maximum offset of a reloc from the start of an insn.  */
+const bfd_arch_info_type bfd_volt32_arch
+= {
+	32,							/* Bits in a word.	*/
+	32,							/* Bits in an address.	*/
+	8,							/* Bits in a byte.	*/
+	bfd_arch_volt32,			/* Architecture Number.  */
+	bfd_mach_volt32,			/* Machine number.	*/
+	"volt32",					/* Arch name.  */
+	"volt32",					/* Printable name.	*/
+	2,							/* Section alignment power.  */
+	TRUE,						/* The one and only.  */
+	bfd_default_compatible,		/* Function to call to determine if two */
+								/* different architectures are */
+								/* compatible */
+	bfd_default_scan,			/* Function to call to determine if a */
+								/* given string matches this */
+								/* architecture. */
+	bfd_arch_default_fill,
+	NULL,
+	0							/* Maximum offset of a reloc from the */
+								/* start of an insn. */
 };

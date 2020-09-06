@@ -19,10 +19,12 @@
    Free Software Foundation, 51 Franklin Street - Fifth Floor, Boston,
    MA 02110-1301, USA.  */
 
-#include "sysdep.h"
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
+
+#include "sysdep.h"
 
 #define STATIC_TABLE
 #define DEFINE_TABLE
@@ -33,45 +35,20 @@
 static fprintf_ftype fpr;
 static void *stream;
 
-#define INSTR_WIDTH 32u
-#define OP_WIDTH 8u
-#define REG_WIDTH 4u
-#define REGS_SIZE (uint32_t)((INSTR_WIDTH - OP_WIDTH) / REG_WIDTH)
+//#define VOLT32_INSTR_WIDTH 32u
+//#define VOLT32_OP_WIDTH 8u
+//#define VOLT32_REG_WIDTH 4u
+//#define VOLT32_REGS_SIZE (uint32_t)((VOLT32_INSTR_WIDTH - VOLT32_OP_WIDTH) / VOLT32_REG_WIDTH)
 
-#define NUM_REGS 16u
+//#define VOLT32_NUM_REGS 16u
 
 #define REG(index) reg_names[main_dec_instr->regs[index]]
 
 /* Instructions are 32-bit */
 #define UNIT_INSTR_LENGTH ((uint32_t)sizeof(uint32_t))
 
-/* What type of signed immediate is it? */
-typedef enum which_simm_t
-{
-	WHICH_SIMM_NONE,
-	WHICH_SIMM_SIMM16,
-	WHICH_SIMM_SIMM20,
-	WHICH_SIMM_SIMM24,
-	WHICH_SIMM_BAD,
-} which_simm_t;
 
-/* A decoded instruction */
-typedef struct dec_instr_t
-{
-	uint32_t op: OP_WIDTH;
-
-	uint32_t regs[REGS_SIZE];
-
-	int32_t simm24: 24;
-	int32_t simm20: 20;
-	int32_t simm16: 16;
-
-	const volt32_opc_info_t * opc_info;
-
-	which_simm_t which_simm;
-} dec_instr_t;
-
-static const char * reg_names[NUM_REGS]
+const char *reg_names[VOLT32_NUM_REGS]
 = {
 	"zero", "a0", "a1", "a2",
 	"a3", "r0", "r1", "u0",
@@ -79,25 +56,38 @@ static const char * reg_names[NUM_REGS]
 	"ira", "lr", "fp", "sp"
 };
 
-static dec_instr_t
-decode_instr(uint32_t enc_instr)
+int reg_index(const char *name)
 {
-	dec_instr_t ret;
+	for (int i=0; i<(int)VOLT32_NUM_REGS; ++i)
+	{
+		if (strcmp(reg_names[i], name) == 0)
+		{
+			return i;
+		}
+	}
+
+	return -1;
+}
+
+volt32_dec_instr_t
+volt32_decode_instr(uint32_t enc_instr)
+{
+	volt32_dec_instr_t ret;
 
 	/* Most of this is pretty self-explanatory. */
 	ret.simm24 = enc_instr & ((1u << 24u) - 1u);
 	ret.simm20 = enc_instr & ((1u << 20u) - 1u);
 	ret.simm16 = enc_instr & ((1u << 16u) - 1u);
 
-	for (int32_t i=REGS_SIZE - 1; i>0; --i)
+	for (int32_t i=VOLT32_REGS_SIZE - 1; i>0; --i)
 	{
-		ret.regs[i] = enc_instr & ((1u << REG_WIDTH) - 1u);
-		enc_instr >>= REG_WIDTH;
+		ret.regs[i] = enc_instr & ((1u << VOLT32_REG_WIDTH) - 1u);
+		enc_instr >>= VOLT32_REG_WIDTH;
 	}
-	ret.op = enc_instr & ((1u << OP_WIDTH) - 1u);
+	ret.op = enc_instr & ((1u << VOLT32_OP_WIDTH) - 1u);
 
 	/* Default value. */
-	ret.which_simm = WHICH_SIMM_BAD;
+	ret.which_simm = VOLT32_WHICH_SIMM_BAD;
 
 	if (ret.op < VOLT32_NUM_OPCODES)
 	{
@@ -109,21 +99,20 @@ decode_instr(uint32_t enc_instr)
 		case VOLT32_ARGS_TWO_REGS:
 		case VOLT32_ARGS_THREE_REGS:
 		case VOLT32_ARGS_FOUR_REGS:
-			ret.which_simm = WHICH_SIMM_NONE;
+			ret.which_simm = VOLT32_WHICH_SIMM_NONE;
 			break;
 
 		case VOLT32_ARGS_TWO_REGS_SIMM16:
 		case VOLT32_ARGS_LDST:
-			ret.which_simm = WHICH_SIMM_SIMM16;
+			ret.which_simm = VOLT32_WHICH_SIMM_SIMM16;
 			break;
 
-		case VOLT32_ARGS_ONE_REG_PC_SIMM20:
 		case VOLT32_ARGS_ONE_REG_SIMM20:
-			ret.which_simm = WHICH_SIMM_SIMM20;
+			ret.which_simm = VOLT32_WHICH_SIMM_SIMM20;
 			break;
 
 		case VOLT32_ARGS_SIMM24:
-			ret.which_simm = WHICH_SIMM_SIMM24;
+			ret.which_simm = VOLT32_WHICH_SIMM_SIMM24;
 			break;
 		/* -------- */
 		}
@@ -160,7 +149,7 @@ print_insn_volt32(bfd_vma addr, struct disassemble_info * info)
 	}
 
 	dec_instr_t * main_dec_instr = &dec_instr[0];
-	dec_instr[0] = decode_instr((uint32_t)bfd_getb32(instr_buffer));
+	dec_instr[0] = volt32_decode_instr((uint32_t)bfd_getb32(instr_buffer));
 	int32_t full_simm = 0;
 
 	/* Handle `pre` specially. */
@@ -181,15 +170,15 @@ print_insn_volt32(bfd_vma addr, struct disassemble_info * info)
 	switch (main_dec_instr->which_simm)
 	{
 	/* -------- */
-	case WHICH_SIMM_NONE:
+	case VOLT32_WHICH_SIMM_NONE:
 		break;
-	case WHICH_SIMM_SIMM16:
+	case VOLT32_WHICH_SIMM_SIMM16:
 		full_simm = (full_simm << 16) | main_dec_instr->simm16;
 		break;
-	case WHICH_SIMM_SIMM20:
+	case VOLT32_WHICH_SIMM_SIMM20:
 		full_simm = (full_simm << 20) | main_dec_instr->simm20;
 		break;
-	case WHICH_SIMM_SIMM24:
+	case VOLT32_WHICH_SIMM_SIMM24:
 		full_simm = (full_simm << 24) | main_dec_instr->simm24;
 		break;
 	default:
@@ -255,18 +244,6 @@ print_insn_volt32(bfd_vma addr, struct disassemble_info * info)
 			}
 			break;
 
-		case VOLT32_ARGS_ONE_REG_PC_SIMM20:
-			fpr(stream, "%s\t%s, pc, ", opcode->name,
-				REG(0));
-			if (dec_instr[0].op == VOLT32_OP_PRE)
-			{
-				fpr(stream, "0x%x", full_simm);
-			}
-			else /* if (dec_instr[0].op != VOLT32_OP_PRE) */
-			{
-				info->print_address_func((bfd_vma)full_simm, info);
-			}
-			break;
 		case VOLT32_ARGS_ONE_REG_SIMM20:
 			fpr(stream, "%s\t%s, ", opcode->name,
 				REG(0));

@@ -95,8 +95,8 @@ const volt32_opc_info_t volt32_opc_info[VOLT32_NUM_OPCODES]
 	/* -------- */
 	/* 16 .. 19 */
 
-	/* addsi rA, pc, simm20 */
-	{VOLT32_OP_ADDSI_PC, VOLT32_ARGS_ONE_REG_PC_SIMM20, "addsi"},
+	/* addsipc rA, simm20 */
+	{VOLT32_OP_ADDSI_PC, VOLT32_ARGS_ONE_REG_SIMM20, "addsi.pc"},
 
 	/* jl rA, simm20 */
 	/* Jump and link, jumping to location `rA + to_s32(simm20)` */

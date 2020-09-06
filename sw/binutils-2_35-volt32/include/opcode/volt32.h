@@ -19,31 +19,28 @@
 
 typedef enum volt32_opc_args_type_t
 {
-	// instr
+	/* instr */
 	VOLT32_ARGS_NONE,
 
-	// instr rA, rB
+	/* instr rA, rB */
 	VOLT32_ARGS_TWO_REGS,
 
-	// instr rA, rB, rC
+	/* instr rA, rB, rC */
 	VOLT32_ARGS_THREE_REGS,
 
-	// instr rA, rB, rC, rD
+	/* instr rA, rB, rC, rD */
 	VOLT32_ARGS_FOUR_REGS,
 
-	// instr rA, rB, simm16
+	/* instr rA, rB, simm16 */
 	VOLT32_ARGS_TWO_REGS_SIMM16,
 
-	// instr simm24
+	/* instr simm24 */
 	VOLT32_ARGS_SIMM24,
 
-	// instr rA, pc, simm20
-	VOLT32_ARGS_ONE_REG_PC_SIMM20,
-
-	// instr rA, simm20
+	/* instr rA, simm20 */
 	VOLT32_ARGS_ONE_REG_SIMM20,
 
-	// instr rA, [rB, simm16]
+	/* instr rA, [rB, simm16] */
 	VOLT32_ARGS_LDST,
 } volt32_opc_args_type_t;
 
@@ -102,6 +99,53 @@ typedef struct volt32_opc_info_t
 	const char * name;
 } volt32_opc_info_t;
 
-#define VOLT32_NUM_OPCODES 36
+#define VOLT32_NUM_OPCODES 36u
+#define VOLT32_NUM_REGS 16u
 
 extern const volt32_opc_info_t volt32_opc_info[VOLT32_NUM_OPCODES];
+
+extern const char *reg_names[NUM_REGS];
+extern int reg_index(const char *name);
+
+/* 8 bytes for every frag.  The high 4 bytes are where immediates are
+ * stored. */
+#define VOLT32_FRAG_SIZE 8
+#define VOLT32_FRAG_INDEX_IMM_START 4
+#define VOLT32_FRAG_INDEX_IMM_END 7
+
+
+#define VOLT32_INSTR_WIDTH 32u
+#define VOLT32_OP_WIDTH 8u
+#define VOLT32_REG_WIDTH 4u
+#define VOLT32_REGS_SIZE \
+	(uint32_t)((VOLT32_INSTR_WIDTH - VOLT32_OP_WIDTH) / VOLT32_REG_WIDTH)
+
+/* What type of signed immediate is it? */
+typedef enum volt32_which_simm_t
+{
+	VOLT32_WHICH_SIMM_NONE,
+	VOLT32_WHICH_SIMM_SIMM16,
+	VOLT32_WHICH_SIMM_SIMM20,
+	VOLT32_WHICH_SIMM_SIMM24,
+	VOLT32_WHICH_SIMM_BAD,
+} volt32_which_simm_t;
+
+/* A decoded instruction */
+typedef struct volt32_dec_instr_t
+{
+	uint32_t op: VOLT32_OP_WIDTH;
+
+	uint32_t regs[VOLT32_REGS_SIZE];
+
+	int32_t simm24: 24;
+	int32_t simm20: 20;
+	int32_t simm16: 16;
+
+	const volt32_opc_info_t * opc_info;
+
+	volt32_which_simm_t which_simm;
+} volt32_dec_instr_t;
+
+extern volt32_dec_instr_t
+volt32_decode_instr(uint32_t enc_instr);
+
