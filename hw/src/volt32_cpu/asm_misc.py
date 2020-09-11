@@ -74,8 +74,16 @@ class Volt32EncGrp(Enum):
 	# * i:  `imm6`.  Unsigned 6-bit immediate indicating the number of
 	# consecutive user-mode LARs after the base.
 	Grp5 = auto()
+
+	# Encoding:  0110 aaaa aabb bbbb  oooo v000 0000 0000
+	# * a:  `dA`
+	# * b:  `dB`
+	# * o:  opcode
+	# * v:  1 if vector op, 0 if scalar op
+	Grp6 = auto()
 	#--------
 
+# Group 2 Instructions
 class Volt32Eg2Op(Enum):
 	#--------
 	# 0 .. 3
@@ -154,6 +162,7 @@ class Volt32Eg2Op(Enum):
 	Shr = auto()
 	#--------
 
+# Group 4 Instructions
 class Volt32Eg4Op(Enum):
 	#--------
 	# 0 .. 3
@@ -180,39 +189,30 @@ class Volt32Eg4Op(Enum):
 	# lds32 dA, dB, simm12
 	Lds32 = auto()
 
-	Reserved0 = auto()
-	Reserved1 = auto()
-	#--------
-
-	#--------
-	# 8 .. 11
-
 	# stu8 dA, dB, simm12 
 	Stu8 = auto()
 
 	# sts8 dA, dB, simm12
 	Sts8 = auto()
+	#--------
+
+	#--------
+	# 8 .. 11
 
 	# stu16 dA, dB, simm12
 	Stu16 = auto()
 
 	# sts16 dA, dB, simm12
 	Sts16 = auto()
-	#--------
-
-	#--------
-	# 12 .. 15
 
 	# stu32 dA, dB, simm12 
 	Stu32 = auto()
 
 	# sts32 dA, dB, simm12
 	Sts32 = auto()
-
-	Reserved2 = auto()
-	Reserved3 = auto()
 	#--------
 
+# Group 5 Instructions
 class Volt32Eg5Op(Enum):
 	#--------
 	# 0 .. 3
@@ -297,6 +297,73 @@ class Volt32Eg5Op(Enum):
 	Reti = auto()
 	#--------
 
+# Group 6 Instructions
+class Volt32Eg6Op(Enum):
+	#--------
+	# 0 .. 3
+
+	# inu8.s dA, dB
+	# inu8.v dA, dB
+	# Read 8-bit data from IO port indicated by the scalar data of `dB`
+	# into the scalar data or vector data of `dA`
+	# This instruction sets the type tag of `dA` to u8.
+	Inu8 = 0
+
+	# ins8.s dA, dB
+	# ins8.v dA, dB
+	Ins8 = auto()
+
+	# inu16.s dA, dB
+	# inu16.v dA, dB
+	Inu16 = auto()
+
+	# ins16.s dA, dB
+	# ins16.v dA, dB
+	Ins16 = auto()
+	#--------
+
+	#--------
+	# 4 .. 7
+
+	# inu32.s dA, dB
+	# inu32.v dA, dB
+	Inu32 = auto()
+
+	# ins32.s dA, dB
+	# ins32.v dA, dB
+	Ins32 = auto()
+
+	# outu8.s dA, dB
+	# outu8.v dA, dB
+	# Write 8-bit scalar data or vector data that's stored in `dA` to the IO
+	# port indicated by the scalar data of `dB` 
+	# This instruction does not affect the type tag of `dA`.
+	Outu8 = auto()
+
+	# outs8.s dA, dB
+	# outs8.v dA, dB
+	Outs8 = auto()
+	#--------
+
+	#--------
+	# 8 .. 11
+
+	# outu16.s dA, dB
+	# outu16.v dA, dB
+	Outu16 = auto()
+
+	# outs16.s dA, dB
+	# outs16.v dA, dB
+	Outs16 = auto()
+
+	# outu32.s dA, dB
+	# outu32.v dA, dB
+	Outu32 = auto()
+
+	# outs32.s dA, dB
+	# outs32.v dA, dB
+	Outs32 = auto()
+	#--------
 
 # DLARs
 # `dzero`, the always-zero DLAR, is DLAR 0
