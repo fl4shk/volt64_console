@@ -75,9 +75,10 @@ class Volt32EncGrp(Enum):
 	# consecutive user-mode LARs after the base.
 	Grp5 = auto()
 
-	# Encoding:  0110 aaaa aabb bbbb  oooo v000 0000 0000
+	# Encoding:  0110 aaaa aabb bbbb  cccc ccoo oov00 0000
 	# * a:  `dA`
 	# * b:  `dB`
+	# * c:  `dC`
 	# * o:  opcode
 	# * v:  1 if vector op, 0 if scalar op
 	Grp6 = auto()
@@ -363,6 +364,13 @@ class Volt32Eg6Op(Enum):
 	# outs32.s dA, dB
 	# outs32.v dA, dB
 	Outs32 = auto()
+	#--------
+
+	#--------
+	# 12 .. 15
+	# syscall dA
+	# System call with call number indicated by the scalar data of `dA`
+	Syscall = auto()
 	#--------
 
 # DLARs
