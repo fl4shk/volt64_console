@@ -68,8 +68,9 @@ class Volt32EncGrp(Enum):
 	Grp4 = auto()
 
 	# Encoding:  0101 aaaa aabb bbbb  oooo iiii ii00 0000
-	# * a:  `dA`.  Supervisor-mode base DLAR.
-	# * b:  `dB` or `iB`.  User-mode base DLAR or ILAR.
+	# * a:  `dA`.  For some instructions, supervisor-mode base DLAR.
+	# * b:  `dB` or `iB`.  For some instructions, user-mode base DLAR or
+	# ILAR.
 	# * o:  opcode
 	# * i:  `imm6`.  Unsigned 6-bit immediate indicating the number of
 	# consecutive user-mode LARs after the base.
@@ -296,6 +297,19 @@ class Volt32Eg5Op(Enum):
 	# Return from an interrupt, switching from supervisor-mode to user-mode
 	# and enabling interrupts in the process.
 	Reti = auto()
+
+	# syscall dA
+	# System call with call number indicated by the scalar data of `dA`
+	Syscall = auto()
+	#--------
+
+	#--------
+	# 12 .. 15
+
+	# jtbl dA
+	# Jump table jump instruction, with destination ILAR and offset into
+	# that ILAR obtained from the scalar data of `dA`.
+	Jtbl = auto()
 	#--------
 
 # Group 6 Instructions
@@ -364,13 +378,6 @@ class Volt32Eg6Op(Enum):
 	# outs32.s dA, dB
 	# outs32.v dA, dB
 	Outs32 = auto()
-	#--------
-
-	#--------
-	# 12 .. 15
-	# syscall dA
-	# System call with call number indicated by the scalar data of `dA`
-	Syscall = auto()
 	#--------
 
 # DLARs
