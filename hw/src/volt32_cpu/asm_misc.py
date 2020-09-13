@@ -8,41 +8,24 @@ class Volt32EncGrp(Enum):
 	#--------
 	# 0 .. 3
 
-	# Encoding:  0000 aaaa aabb bbbb  cccc ccii iiij jjjj
+	# Encoding:  0000 aaaa aabb bbbb  cccc ccoo iiii jjjj
 	# * a:  `dA`
 	# * b:  `iB`
 	# * c:  `iC`
-	# * i:  `imm5b`.  5-bit immediate indicating which instruction in `iB`
+	# * o:  opcode
+	# * i:  `imm4b`.  4-bit immediate indicating which instruction in `iB`
 	# to jump to
-	# * j:  `imm5c`.  5-bit immediate indicating which instruction in `iC`
+	# * j:  `imm4c`.  4-bit immediate indicating which instruction in `iC`
 	# to jump to
-
-	# Instruction:  jmp.s dA, iB, iC, imm5b, imm5c
-	# * This instruction jumps to iB (index given by imm5b) if `dA`'s
-	# scalar data is non-zero, else to iC (index given by imm5c)
 	Grp0 = 0
 
-	# Encoding:  0001 aaaa aabb bbbb  cccc ccii iiij jjjj
-	# * a:  `dA`
-	# * b:  `iB`
-	# * c:  `iC`
-	# * i:  `imm5b`.  5-bit immediate indicating which instruction in `iB`
-	# to jump to
-	# * j:  `imm5c`.  5-bit immediate indicating which instruction in `iC`
-	# to jump to
-
-	# Instruction:  jmp.v dA, iB, iC, imm5b, imm5c
-	# * This instruction jumps to iB (index given by imm5b) if `dA`'s
-	# entire vector data is non-zero, else to iC (index given by imm5c)
-	Grp1 = auto()
-
-	# Encoding:  0010 aaaa aabb bbbb  cccc ccoo oov0 0000
+	# Encoding:  0010 aaaa aabb bbbb  cccc ccoo ooov 0000
 	# * a:  `dA`
 	# * b:  `dB`
 	# * c:  `dC`
 	# * o:  opcode
 	# * v:  1 if vector op, 0 if scalar op
-	Grp2 = auto()
+	Grp1 = auto()
 
 	# Encoding:  0011 aaaa aajj jbbb  cccc ccii iiii iiii
 	# * a:  `iA`.  The first destination ILAR
@@ -54,18 +37,18 @@ class Volt32EncGrp(Enum):
 	# * i:  `simm10`.  Signed, 13-bit immediate
 
 	# Instruction:  fetch iA, imm3, dB, iC, simm10
-	Grp3 = auto()
-	#--------
-
-	#--------
-	# 4 .. 7
+	Grp2 = auto()
 
 	# Encoding:  0100 aaaa aabb bbbb  oooo iiii iiii iiii
 	# * a:  `dA`
 	# * b:  `dB`, used as `dB.scalar_data`
 	# * o:  `opcode`
 	# * i:  `simm12`
-	Grp4 = auto()
+	Grp3 = auto()
+	#--------
+
+	#--------
+	# 4 .. 7
 
 	# Encoding:  0101 aaaa aabb bbbb  oooo iiii ii00 0000
 	# * a:  `dA`.  For some instructions, supervisor-mode base DLAR.
@@ -74,7 +57,7 @@ class Volt32EncGrp(Enum):
 	# * o:  opcode
 	# * i:  `imm6`.  Unsigned 6-bit immediate indicating the number of
 	# consecutive user-mode LARs after the base.
-	Grp5 = auto()
+	Grp4 = auto()
 
 	# Encoding:  0110 aaaa aabb bbbb  cccc ccoo oov00 0000
 	# * a:  `dA`
@@ -82,11 +65,40 @@ class Volt32EncGrp(Enum):
 	# * c:  `dC`
 	# * o:  opcode
 	# * v:  1 if vector op, 0 if scalar op
-	Grp6 = auto()
+	Grp5 = auto()
+
+	## Encoding:  0111 aaaa aabb bbbb  oooo iiii ii00 0000
+	## * a:  `dA`
+	## * b:  `dB`
+	## * o:  opcode
+	## * i:  imm6, unsigned 6-bit immediate
+	#Grp6 = auto()
 	#--------
 
-# Group 2 Instructions
-class Volt32Eg2Op(Enum):
+# Group 0 Instructions
+class Volt32Grp0Op(Enum):
+
+	#--------
+	# 0 .. 3
+
+	# jmp.s dA, iB, iC, imm5b, imm5c
+	# * This instruction jumps to iB (index given by imm4b) if `dA`'s
+	# scalar data is non-zero, else to iC (index given by imm4c)
+	JmpS = 0
+	
+	# jmp.v dA, iB, iC, imm4b, imm4c
+	# This instruction jumps to iB (index given by imm4b) if `dA`'s
+	# entire vector data is non-zero, else to iC (index given by imm4c)
+	JmpV = auto()
+
+	# jtbl dA
+	# Jump table jump instruction, with destination ILAR and offset into
+	# that ILAR obtained from the scalar data of `dA`.
+	Jtbl = auto()
+	#--------
+
+# Group 1 Instructions
+class Volt32Grp1Op(Enum):
 	#--------
 	# 0 .. 3
 
@@ -100,43 +112,90 @@ class Volt32Eg2Op(Enum):
 	Slt = auto()
 
 	# mul dA, dB, dC
+	# This instruction forcibly treats all three DLARs as vectors of 32-bit
 	Mul = auto()
 	#--------
 
 	#--------
 	# 4 .. 7
 
-	# umull dA, dB, dC
-	# Unsigned full product
-	# This instruction forcibly treats `dA` as 64-bit, `dB` as 32-bit, and
-	# `dC` as 32-bit.
-	Umull = auto()
-
-	# smull dA, dB, dC
-	# Signed full product
-	# This instruction forcibly treats `dA` as 64-bit, `dB` as 32-bit, and
-	# `dC` as 32-bit.
-	Smull = auto()
-
 	# udiv dA, dB, dC
+	# This instruction forcibly treats all three DLAR arguments as vectors
+	# of `u32`
 	Udiv = auto()
 
 	# sdiv dA, dB, dC
+	# This instruction forcibly treats all three DLAR arguments as vectors
+	# of `s32`
 	Sdiv = auto()
+
+	# umull.hi dA, dB, dC
+	# Unsigned full product
+	# This instruction forcibly treats `dA` as a vector of `u64`, `dB` as a
+	# vector of `u32`, and `dC` as a vector of `u32`.
+	# The high-numbered 32-bit vector elements of `dB` and `dC` are used
+	# when this is a vector instruction.
+	UmullHi = auto()
+
+	# smull.hi dA, dB, dC
+	# Signed full product
+	# This instruction forcibly treats `dA` as a vector of `s64`, `dB` as a
+	# vector of `s32`, and `dC` as a vector of `s32`.
+	# The high-numbered 32-bit vector elements of `dB` and `dC` are used
+	# when this is a vector instruction.
+	SmullHi = auto()
 	#--------
 
 	#--------
 	# 8 .. 11
 
-	# udivl dA, dB, dC
-	# This instruction forcibly treats `dA` as 64-bit, `dB` as 64-bit, and
-	# `dC` as 32-bit
-	Udivl = auto()
+	# umull.lo dA, dB, dC
+	# Unsigned full product
+	# This instruction forcibly treats `dA` as a vector of `u64`, `dB` as a
+	# vector of `u32`, and `dC` as a vector of `u32`.
+	# The low-numbered 32-bit vector elements of `dB` and `dC` are used
+	# when this is a vector instruction.
+	UmullLo = auto()
 
-	# sdivl dA, dB, dC
-	# This instruction forcibly treats `dA` as 64-bit, `dB` as 64-bit, and
-	# `dC` as 32-bit
-	Sdivl = auto()
+	# smull.lo dA, dB, dC
+	# Signed full product
+	# This instruction forcibly treats `dA` as a vector of `s64`, `dB` as a
+	# vector of `s32`, and `dC` as a vector of `s32`.
+	# The low-numbered 32-bit vector elements of `dB` and `dC` are used
+	# when this is a vector instruction.
+	SmullLo = auto()
+
+	# udivl.hi dA, dB, dC
+	# This instruction forcibly treats `dA` as a vector of `u64`, `dB` as a
+	# vector of `u64`, and `dC` as a vector of `u32`.
+	# The high-numbered 32-bit vector elements of `dC` are used when this
+	# is a vector instruction.
+	UdivlHi = auto()
+
+	# sdivl.hi dA, dB, dC
+	# This instruction forcibly treats `dA` as a vector of `s64`, `dB` as a
+	# vector of `s64`, and `dC` as a vector of `s32`.
+	# The high-numbered 32-bit vector elements of `dC` are used when this
+	# is a vector instruction.
+	SdivlHi = auto()
+	#--------
+
+	#--------
+	# 12 .. 15
+
+	# udivl.lo dA, dB, dC
+	# This instruction forcibly treats `dA` as a vector of `u64`, `dB` as a
+	# vector of `u64`, and `dC` as a vector of `u32`.
+	# The low-numbered 32-bit vector elements of `dC` are used when this
+	# is a vector instruction.
+	UdivlLo = auto()
+
+	# sdivl.lo dA, dB, dC
+	# This instruction forcibly treats `dA` as a vector of `s64`, `dB` as a
+	# vector of `s64`, and `dC` as a vector of `s32`.
+	# The low-numbered 32-bit vector elements of `dC` are used when this
+	# is a vector instruction.
+	SdivlLo = auto()
 
 	# and dA, dB, dC
 	And = auto()
@@ -146,7 +205,8 @@ class Volt32Eg2Op(Enum):
 	#--------
 
 	#--------
-	# 12 .. 15
+	# 16 .. 19
+
 	# xor dA, dB, dC
 	Xor = auto()
 
@@ -164,8 +224,8 @@ class Volt32Eg2Op(Enum):
 	Shr = auto()
 	#--------
 
-# Group 4 Instructions
-class Volt32Eg4Op(Enum):
+# Group 3 Instructions
+class Volt32Grp3Op(Enum):
 	#--------
 	# 0 .. 3
 
@@ -214,8 +274,8 @@ class Volt32Eg4Op(Enum):
 	Sts32 = auto()
 	#--------
 
-# Group 5 Instructions
-class Volt32Eg5Op(Enum):
+# Group 4 Instructions
+class Volt32Grp4Op(Enum):
 	#--------
 	# 0 .. 3
 
@@ -303,17 +363,8 @@ class Volt32Eg5Op(Enum):
 	Syscall = auto()
 	#--------
 
-	#--------
-	# 12 .. 15
-
-	# jtbl dA
-	# Jump table jump instruction, with destination ILAR and offset into
-	# that ILAR obtained from the scalar data of `dA`.
-	Jtbl = auto()
-	#--------
-
-# Group 6 Instructions
-class Volt32Eg6Op(Enum):
+# Group 5 Instructions
+class Volt32Grp5Op(Enum):
 	#--------
 	# 0 .. 3
 
