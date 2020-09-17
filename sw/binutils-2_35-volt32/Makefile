@@ -45,7 +45,7 @@ target=volt32-unknown-elf
 
 program_transform_name = s&^&volt32-elf-&
 
-prefix = /usr/local
+prefix = /home/fl4shk/local
 exec_prefix = ${prefix}
 
 srcdir = .
@@ -91,7 +91,7 @@ MAINTAINER_MODE_TRUE = #
 # -------------------------------------------------
 
 # The gcc driver likes to know the arguments it was configured with.
-TOPLEVEL_CONFIGURE_ARGUMENTS=./configure --target=volt32-elf target_alias=volt32-elf --no-create --no-recursion
+TOPLEVEL_CONFIGURE_ARGUMENTS=./configure --target=volt32-elf --prefix=/home/fl4shk/local
 
 tooldir = ${exec_prefix}/volt32-elf
 build_tooldir = ${exec_prefix}/volt32-elf
@@ -109,7 +109,7 @@ GCC_SHLIB_SUBDIR =
 BUILD_SUBDIR = build-x86_64-pc-linux-gnu
 # This is set by the configure script to the arguments to use when configuring
 # directories built for the build system.
-BUILD_CONFIGARGS =  --cache-file=./config.cache  --program-transform-name='s&^&volt32-elf-&' --disable-option-checking --with-build-subdir="$(BUILD_SUBDIR)"
+BUILD_CONFIGARGS =  --cache-file=./config.cache '--prefix=/home/fl4shk/local' --program-transform-name='s&^&volt32-elf-&' --disable-option-checking --with-build-subdir="$(BUILD_SUBDIR)"
 
 # Linker flags to use on the host, for stage1 or when not
 # bootstrapping.
@@ -167,11 +167,11 @@ EXTRA_BUILD_FLAGS = \
 	LDFLAGS="$(LDFLAGS_FOR_BUILD)"
 
 # This is the list of directories to built for the host system.
-SUBDIRS =  intl libiberty opcodes bfd readline zlib libdecnumber libctf etc
+SUBDIRS =  intl libiberty bfd readline zlib libdecnumber libctf etc
 TARGET_CONFIGDIRS = 
 # This is set by the configure script to the arguments to use when configuring
 # directories built for the host system.
-HOST_CONFIGARGS =  --cache-file=./config.cache   --program-transform-name='s&^&volt32-elf-&' --disable-option-checking
+HOST_CONFIGARGS =  --cache-file=./config.cache  '--prefix=/home/fl4shk/local' --program-transform-name='s&^&volt32-elf-&' --disable-option-checking
 # Host programs are put under this directory, which is . except if building
 # with srcdir=..
 HOST_SUBDIR = .
@@ -243,7 +243,7 @@ POSTSTAGE1_HOST_EXPORTS = \
 TARGET_SUBDIR = volt32-elf
 # This is set by the configure script to the arguments to use when configuring
 # directories built for the target.
-TARGET_CONFIGARGS = --cache-file=./config.cache --enable-multilib --with-cross-host=x86_64-pc-linux-gnu   --program-transform-name='s&^&volt32-elf-&' --disable-option-checking --with-target-subdir="$(TARGET_SUBDIR)"
+TARGET_CONFIGARGS = --cache-file=./config.cache --enable-multilib --with-cross-host=x86_64-pc-linux-gnu   '--prefix=/home/fl4shk/local' --program-transform-name='s&^&volt32-elf-&' --disable-option-checking --with-target-subdir="$(TARGET_SUBDIR)"
 # This is the list of variables to export in the environment when
 # configuring subdirectories for the target system.
 BASE_TARGET_EXPORTS = \
@@ -376,8 +376,8 @@ STRIP = strip
 WINDRES = windres
 WINDMC = windmc
 
-GNATBIND = gnatbind
-GNATMAKE = gnatmake
+GNATBIND = no
+GNATMAKE = no
 
 CFLAGS = -g -O2
 LDFLAGS = 
@@ -868,7 +868,6 @@ all-build: maybe-all-build-libcpp
 .PHONY: all-host
 
 all-host: maybe-all-bfd
-all-host: maybe-all-opcodes
 all-host: maybe-all-bison
 all-host: maybe-all-cgen
 all-host: maybe-all-dejagnu
@@ -3152,27 +3151,6 @@ maintainer-clean-bfd:
 
 .PHONY: configure-opcodes maybe-configure-opcodes
 maybe-configure-opcodes:
-maybe-configure-opcodes: configure-opcodes
-configure-opcodes: 
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	test ! -f $(HOST_SUBDIR)/opcodes/Makefile || exit 0; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/opcodes; \
-	$(HOST_EXPORTS)  \
-	echo Configuring in $(HOST_SUBDIR)/opcodes; \
-	cd "$(HOST_SUBDIR)/opcodes" || exit 1; \
-	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(HOST_SUBDIR)/opcodes/ | \
-		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
-	esac; \
-	module_srcdir=opcodes; \
-	$(SHELL) \
-	  $$s/$$module_srcdir/configure \
-	  --srcdir=$${topdir}/$$module_srcdir \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias}  \
-	  || exit 1
 
 
 
@@ -3200,15 +3178,6 @@ maybe-configure-stagefeedback-opcodes:
 
 .PHONY: all-opcodes maybe-all-opcodes
 maybe-all-opcodes:
-TARGET-opcodes=all
-maybe-all-opcodes: all-opcodes
-all-opcodes: configure-opcodes
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS)  \
-	(cd $(HOST_SUBDIR)/opcodes && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
-		$(TARGET-opcodes))
 
 
 
@@ -3253,342 +3222,53 @@ maybe-clean-stagefeedback-opcodes:
 
 .PHONY: check-opcodes maybe-check-opcodes
 maybe-check-opcodes:
-maybe-check-opcodes: check-opcodes
-
-check-opcodes:
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) $(EXTRA_HOST_EXPORTS) \
-	(cd $(HOST_SUBDIR)/opcodes && \
-	  $(MAKE) $(FLAGS_TO_PASS)  $(EXTRA_BOOTSTRAP_FLAGS) check)
-
 
 .PHONY: install-opcodes maybe-install-opcodes
 maybe-install-opcodes:
-maybe-install-opcodes: install-opcodes
-
-install-opcodes: installdirs
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	(cd $(HOST_SUBDIR)/opcodes && \
-	  $(MAKE) $(FLAGS_TO_PASS)  install)
-
 
 .PHONY: install-strip-opcodes maybe-install-strip-opcodes
 maybe-install-strip-opcodes:
-maybe-install-strip-opcodes: install-strip-opcodes
-
-install-strip-opcodes: installdirs
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	(cd $(HOST_SUBDIR)/opcodes && \
-	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
-
 
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-opcodes info-opcodes
 maybe-info-opcodes:
-maybe-info-opcodes: info-opcodes
-
-info-opcodes: \
-    configure-opcodes 
-	@[ -f ./opcodes/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing info in opcodes"; \
-	(cd $(HOST_SUBDIR)/opcodes && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          info) \
-	  || exit 1
-
 
 .PHONY: maybe-dvi-opcodes dvi-opcodes
 maybe-dvi-opcodes:
-maybe-dvi-opcodes: dvi-opcodes
-
-dvi-opcodes: \
-    configure-opcodes 
-	@[ -f ./opcodes/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing dvi in opcodes"; \
-	(cd $(HOST_SUBDIR)/opcodes && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          dvi) \
-	  || exit 1
-
 
 .PHONY: maybe-pdf-opcodes pdf-opcodes
 maybe-pdf-opcodes:
-maybe-pdf-opcodes: pdf-opcodes
-
-pdf-opcodes: \
-    configure-opcodes 
-	@[ -f ./opcodes/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing pdf in opcodes"; \
-	(cd $(HOST_SUBDIR)/opcodes && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          pdf) \
-	  || exit 1
-
 
 .PHONY: maybe-html-opcodes html-opcodes
 maybe-html-opcodes:
-maybe-html-opcodes: html-opcodes
-
-html-opcodes: \
-    configure-opcodes 
-	@[ -f ./opcodes/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing html in opcodes"; \
-	(cd $(HOST_SUBDIR)/opcodes && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          html) \
-	  || exit 1
-
 
 .PHONY: maybe-TAGS-opcodes TAGS-opcodes
 maybe-TAGS-opcodes:
-maybe-TAGS-opcodes: TAGS-opcodes
-
-TAGS-opcodes: \
-    configure-opcodes 
-	@[ -f ./opcodes/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing TAGS in opcodes"; \
-	(cd $(HOST_SUBDIR)/opcodes && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          TAGS) \
-	  || exit 1
-
 
 .PHONY: maybe-install-info-opcodes install-info-opcodes
 maybe-install-info-opcodes:
-maybe-install-info-opcodes: install-info-opcodes
-
-install-info-opcodes: \
-    configure-opcodes \
-    info-opcodes 
-	@[ -f ./opcodes/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing install-info in opcodes"; \
-	(cd $(HOST_SUBDIR)/opcodes && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          install-info) \
-	  || exit 1
-
 
 .PHONY: maybe-install-pdf-opcodes install-pdf-opcodes
 maybe-install-pdf-opcodes:
-maybe-install-pdf-opcodes: install-pdf-opcodes
-
-install-pdf-opcodes: \
-    configure-opcodes \
-    pdf-opcodes 
-	@[ -f ./opcodes/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing install-pdf in opcodes"; \
-	(cd $(HOST_SUBDIR)/opcodes && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          install-pdf) \
-	  || exit 1
-
 
 .PHONY: maybe-install-html-opcodes install-html-opcodes
 maybe-install-html-opcodes:
-maybe-install-html-opcodes: install-html-opcodes
-
-install-html-opcodes: \
-    configure-opcodes \
-    html-opcodes 
-	@[ -f ./opcodes/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing install-html in opcodes"; \
-	(cd $(HOST_SUBDIR)/opcodes && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          install-html) \
-	  || exit 1
-
 
 .PHONY: maybe-installcheck-opcodes installcheck-opcodes
 maybe-installcheck-opcodes:
-maybe-installcheck-opcodes: installcheck-opcodes
-
-installcheck-opcodes: \
-    configure-opcodes 
-	@[ -f ./opcodes/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing installcheck in opcodes"; \
-	(cd $(HOST_SUBDIR)/opcodes && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          installcheck) \
-	  || exit 1
-
 
 .PHONY: maybe-mostlyclean-opcodes mostlyclean-opcodes
 maybe-mostlyclean-opcodes:
-maybe-mostlyclean-opcodes: mostlyclean-opcodes
-
-mostlyclean-opcodes: 
-	@[ -f ./opcodes/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing mostlyclean in opcodes"; \
-	(cd $(HOST_SUBDIR)/opcodes && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          mostlyclean) \
-	  || exit 1
-
 
 .PHONY: maybe-clean-opcodes clean-opcodes
 maybe-clean-opcodes:
-maybe-clean-opcodes: clean-opcodes
-
-clean-opcodes: 
-	@[ -f ./opcodes/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing clean in opcodes"; \
-	(cd $(HOST_SUBDIR)/opcodes && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          clean) \
-	  || exit 1
-
 
 .PHONY: maybe-distclean-opcodes distclean-opcodes
 maybe-distclean-opcodes:
-maybe-distclean-opcodes: distclean-opcodes
-
-distclean-opcodes: 
-	@[ -f ./opcodes/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing distclean in opcodes"; \
-	(cd $(HOST_SUBDIR)/opcodes && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          distclean) \
-	  || exit 1
-
 
 .PHONY: maybe-maintainer-clean-opcodes maintainer-clean-opcodes
 maybe-maintainer-clean-opcodes:
-maybe-maintainer-clean-opcodes: maintainer-clean-opcodes
-
-maintainer-clean-opcodes: 
-	@[ -f ./opcodes/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing maintainer-clean in opcodes"; \
-	(cd $(HOST_SUBDIR)/opcodes && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          maintainer-clean) \
-	  || exit 1
-
 
 
 
@@ -12218,9 +11898,6 @@ stage1-start::
 	@cd $(HOST_SUBDIR); [ -d stage1-bfd ] || \
 	  mkdir stage1-bfd; \
 	mv stage1-bfd bfd
-	@cd $(HOST_SUBDIR); [ -d stage1-opcodes ] || \
-	  mkdir stage1-opcodes; \
-	mv stage1-opcodes opcodes
 	@cd $(HOST_SUBDIR); [ -d stage1-intl ] || \
 	  mkdir stage1-intl; \
 	mv stage1-intl intl
@@ -12243,9 +11920,6 @@ stage1-start::
 stage1-end:: 
 	@if test -d $(HOST_SUBDIR)/bfd; then \
 	  cd $(HOST_SUBDIR); mv bfd stage1-bfd; \
-	fi
-	@if test -d $(HOST_SUBDIR)/opcodes; then \
-	  cd $(HOST_SUBDIR); mv opcodes stage1-opcodes; \
 	fi
 	@if test -d $(HOST_SUBDIR)/intl; then \
 	  cd $(HOST_SUBDIR); mv intl stage1-intl; \
@@ -12299,10 +11973,6 @@ stage2-start::
 	  mkdir stage2-bfd; \
 	mv stage2-bfd bfd; \
 	mv stage1-bfd prev-bfd || test -f stage1-lean 
-	@cd $(HOST_SUBDIR); [ -d stage2-opcodes ] || \
-	  mkdir stage2-opcodes; \
-	mv stage2-opcodes opcodes; \
-	mv stage1-opcodes prev-opcodes || test -f stage1-lean 
 	@cd $(HOST_SUBDIR); [ -d stage2-intl ] || \
 	  mkdir stage2-intl; \
 	mv stage2-intl intl; \
@@ -12332,10 +12002,6 @@ stage2-end::
 	@if test -d $(HOST_SUBDIR)/bfd; then \
 	  cd $(HOST_SUBDIR); mv bfd stage2-bfd; \
 	  mv prev-bfd stage1-bfd; : ; \
-	fi
-	@if test -d $(HOST_SUBDIR)/opcodes; then \
-	  cd $(HOST_SUBDIR); mv opcodes stage2-opcodes; \
-	  mv prev-opcodes stage1-opcodes; : ; \
 	fi
 	@if test -d $(HOST_SUBDIR)/intl; then \
 	  cd $(HOST_SUBDIR); mv intl stage2-intl; \
@@ -12395,10 +12061,6 @@ stage3-start::
 	  mkdir stage3-bfd; \
 	mv stage3-bfd bfd; \
 	mv stage2-bfd prev-bfd || test -f stage2-lean 
-	@cd $(HOST_SUBDIR); [ -d stage3-opcodes ] || \
-	  mkdir stage3-opcodes; \
-	mv stage3-opcodes opcodes; \
-	mv stage2-opcodes prev-opcodes || test -f stage2-lean 
 	@cd $(HOST_SUBDIR); [ -d stage3-intl ] || \
 	  mkdir stage3-intl; \
 	mv stage3-intl intl; \
@@ -12428,10 +12090,6 @@ stage3-end::
 	@if test -d $(HOST_SUBDIR)/bfd; then \
 	  cd $(HOST_SUBDIR); mv bfd stage3-bfd; \
 	  mv prev-bfd stage2-bfd; : ; \
-	fi
-	@if test -d $(HOST_SUBDIR)/opcodes; then \
-	  cd $(HOST_SUBDIR); mv opcodes stage3-opcodes; \
-	  mv prev-opcodes stage2-opcodes; : ; \
 	fi
 	@if test -d $(HOST_SUBDIR)/intl; then \
 	  cd $(HOST_SUBDIR); mv intl stage3-intl; \
@@ -12496,10 +12154,6 @@ stage4-start::
 	  mkdir stage4-bfd; \
 	mv stage4-bfd bfd; \
 	mv stage3-bfd prev-bfd || test -f stage3-lean 
-	@cd $(HOST_SUBDIR); [ -d stage4-opcodes ] || \
-	  mkdir stage4-opcodes; \
-	mv stage4-opcodes opcodes; \
-	mv stage3-opcodes prev-opcodes || test -f stage3-lean 
 	@cd $(HOST_SUBDIR); [ -d stage4-intl ] || \
 	  mkdir stage4-intl; \
 	mv stage4-intl intl; \
@@ -12529,10 +12183,6 @@ stage4-end::
 	@if test -d $(HOST_SUBDIR)/bfd; then \
 	  cd $(HOST_SUBDIR); mv bfd stage4-bfd; \
 	  mv prev-bfd stage3-bfd; : ; \
-	fi
-	@if test -d $(HOST_SUBDIR)/opcodes; then \
-	  cd $(HOST_SUBDIR); mv opcodes stage4-opcodes; \
-	  mv prev-opcodes stage3-opcodes; : ; \
 	fi
 	@if test -d $(HOST_SUBDIR)/intl; then \
 	  cd $(HOST_SUBDIR); mv intl stage4-intl; \
@@ -12597,10 +12247,6 @@ stageprofile-start::
 	  mkdir stageprofile-bfd; \
 	mv stageprofile-bfd bfd; \
 	mv stage1-bfd prev-bfd || test -f stage1-lean 
-	@cd $(HOST_SUBDIR); [ -d stageprofile-opcodes ] || \
-	  mkdir stageprofile-opcodes; \
-	mv stageprofile-opcodes opcodes; \
-	mv stage1-opcodes prev-opcodes || test -f stage1-lean 
 	@cd $(HOST_SUBDIR); [ -d stageprofile-intl ] || \
 	  mkdir stageprofile-intl; \
 	mv stageprofile-intl intl; \
@@ -12630,10 +12276,6 @@ stageprofile-end::
 	@if test -d $(HOST_SUBDIR)/bfd; then \
 	  cd $(HOST_SUBDIR); mv bfd stageprofile-bfd; \
 	  mv prev-bfd stage1-bfd; : ; \
-	fi
-	@if test -d $(HOST_SUBDIR)/opcodes; then \
-	  cd $(HOST_SUBDIR); mv opcodes stageprofile-opcodes; \
-	  mv prev-opcodes stage1-opcodes; : ; \
 	fi
 	@if test -d $(HOST_SUBDIR)/intl; then \
 	  cd $(HOST_SUBDIR); mv intl stageprofile-intl; \
@@ -12693,10 +12335,6 @@ stagefeedback-start::
 	  mkdir stagefeedback-bfd; \
 	mv stagefeedback-bfd bfd; \
 	mv stageprofile-bfd prev-bfd || test -f stageprofile-lean 
-	@cd $(HOST_SUBDIR); [ -d stagefeedback-opcodes ] || \
-	  mkdir stagefeedback-opcodes; \
-	mv stagefeedback-opcodes opcodes; \
-	mv stageprofile-opcodes prev-opcodes || test -f stageprofile-lean 
 	@cd $(HOST_SUBDIR); [ -d stagefeedback-intl ] || \
 	  mkdir stagefeedback-intl; \
 	mv stagefeedback-intl intl; \
@@ -12726,10 +12364,6 @@ stagefeedback-end::
 	@if test -d $(HOST_SUBDIR)/bfd; then \
 	  cd $(HOST_SUBDIR); mv bfd stagefeedback-bfd; \
 	  mv prev-bfd stageprofile-bfd; : ; \
-	fi
-	@if test -d $(HOST_SUBDIR)/opcodes; then \
-	  cd $(HOST_SUBDIR); mv opcodes stagefeedback-opcodes; \
-	  mv prev-opcodes stageprofile-opcodes; : ; \
 	fi
 	@if test -d $(HOST_SUBDIR)/intl; then \
 	  cd $(HOST_SUBDIR); mv intl stagefeedback-intl; \

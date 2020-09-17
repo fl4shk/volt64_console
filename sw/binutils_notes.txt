@@ -1,2 +1,4 @@
-Need to work on `bfd/elf32-volt32.c`.  The relocate section stuff is where
-I left off.
+//Need to work on `bfd/elf32-volt32.c`.  The relocate section stuff is where
+//I left off.
+
+Remember `enable_binutils_autotools.sh` and `autoreconf`

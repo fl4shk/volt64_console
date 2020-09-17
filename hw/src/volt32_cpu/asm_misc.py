@@ -31,9 +31,9 @@ class Volt32EncGrp(Enum):
 	# * a:  `iA`.  The first destination ILAR
 	# * j:  `imm4`.  The number of consecutive destination ILARs to `fetch`
 	# into.
-	# * b:  `dB`.  Only allows for the low 8 DLARs to be selected.
+	# * b:  `dB`.  Only allows for the low 16 DLARs to be selected.
 	# `dB.scalar_data` is used by this instruction. 
-	# * c:  `iC`.  `iC.address` is used by this instruction.
+	# * c:  `iC`.  `iC.addr` is used by this instruction.
 	# * i:  `simm9`.  Signed, 9-bit immediate
 
 	# Instruction:  fetch iA, imm4, dB, iC, simm9
