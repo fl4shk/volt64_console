@@ -430,6 +430,9 @@
 /* Old, unofficial value for Moxie.  */
 #define EM_MOXIE_OLD            0xFEED
 
+/* Unofficial value for Volt32. */
+#define EM_VOLT32_UNOFFICIAL		0xfeee
+
 #define EM_MICROBLAZE_OLD	0xbaab	/* Old MicroBlaze */
 
 #define EM_ADAPTEVA_EPIPHANY	0x1223  /* Adapteva's Epiphany architecture.  */

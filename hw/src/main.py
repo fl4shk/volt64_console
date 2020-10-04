@@ -41,10 +41,10 @@ def program(mod_name, **kw_args):
 	mod = mod_name(platform=DE0CVPlatform(), **kw_args)
 	mod.platform().build(mod, do_program=True)
 
-#if __name__ == "__main__":
-#	#formal(Fifo, ShapeT=unsigned(8), SIZE=4)
-#	#formal(FwftFifo, ShapeT=unsigned(8), SIZE=4)
-#	program(Top)
+if __name__ == "__main__":
+	#formal(Fifo, ShapeT=unsigned(8), SIZE=4)
+	#formal(FwftFifo, ShapeT=unsigned(8), SIZE=4)
+	program(Top)
 
 
 #temp = [enc_simm(x, 5) for x in [-0xa, 0xa, 0x0, 0xff, -0x1f]]

@@ -1,0 +1,12 @@
+09:48 <FL4SHK> as for my LUT question, is an `Array` of `Const` the right method?
+09:48 <FL4SHK> could just construct the LUT with regular Python code if so
+09:48 <ktemkin> for your LUT, once you have sufficient elements, you might be better off using a Memory without a write port
+09:49 <FL4SHK> I might need to read from the `Memory` and do something with the results within a single clock cycle
+09:49 <FL4SHK> and my specific use case *does* need that
+09:49 <ktemkin> you can set the read port's domain to "comb"
+09:49 <FL4SHK> neat
+09:50 <ktemkin> strictly speaking, the Array of Consts might infer an equivalent structure in the memory backend; that's pretty much how you do it in e.g. Verilog
+09:51 <ktemkin> s/in the memory backend/in the synthesis backend
+09:51 <FL4SHK> aI see
+09:57 <ktemkin> (the Memory however, winds up directly outputting a `memrd`, which is more or less Yosys for "hey! I'm describing the read half of a memory, here!")
+

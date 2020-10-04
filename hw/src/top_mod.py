@@ -104,6 +104,8 @@ class Top(Elaboratable):
 		vga.TIMING_INFO = VGA_TIMING_INFO_DICT["640x480@60"]
 		vga.FIFO_SIZE = 16
 
+		# Use the 100 MHz clock rate by setting the "sync" domain to "dom"
+		# instead
 		vga.m.driver = m.submodules.vga_driver \
 			= DomainRenamer({"sync": "dom"}) \
 			(
@@ -118,6 +120,8 @@ class Top(Elaboratable):
 		vga.drbus = vga.m.driver.bus()
 		#vga.col = RgbColor()
 
+		# Use the 100 MHz clock rate by setting the "sync" domain to "dom"
+		# instead
 		vga.m.ditherer = m.submodules.video_ditherer \
 			= DomainRenamer({"sync": "dom"}) \
 			(
