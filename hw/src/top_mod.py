@@ -7,6 +7,7 @@ from nmigen.hdl.rec import *
 from gfx.vga_ext_types import *
 from gfx.vga_driver_mod import *
 from gfx.video_ditherer_mod import *
+from gfx.vga_gradient_mod import *
 from general.sdram_ctrl_mod import *
 #from bram_mod import *
 
@@ -16,12 +17,13 @@ class Top(Elaboratable):
 		self.__platform = platform
 		self.__MAIN_CLK_RATE = 100
 
-		#self.__clk50 = self.platform().request("clk50", 0)
-		self.__vga = self.platform().request("vga", 0)
-		self.__ps2_kb = self.platform().request("ps2_host", 0)
-		self.__ps2_mouse = self.platform().request("ps2_host", 1)
-		self.__sd_card = self.platform().request("sd_card_spi", 0)
-		self.__sdram = self.platform().request("sdram", 0)
+		self.__pins = Blank()
+		#self.pins().clk50 = self.platform().request("clk50", 0)
+		self.pins().vga = self.platform().request("vga", 0)
+		self.pins().ps2_kb = self.platform().request("ps2_host", 0)
+		self.pins().ps2_mouse = self.platform().request("ps2_host", 1)
+		self.pins().sd_card = self.platform().request("sd_card_spi", 0)
+		self.pins().sdram = self.platform().request("sdram", 0)
 	#--------
 
 	#--------
@@ -32,18 +34,20 @@ class Top(Elaboratable):
 	#--------
 
 	#--------
+	def pins(self):
+		return self.__pins
 	#def clk50(self):
 	#	return self.__clk50
-	def vga(self):
-		return self.__vga
-	def ps2_kb(self):
-		return self.__ps2_kb
-	def ps2_mouse(self):
-		return self.__ps2_mouse
-	def sd_card(self):
-		return self.__sd_card
-	def sdram(self):
-		return self.__sdram
+	#def vga(self):
+	#	return self.__vga
+	#def ps2_kb(self):
+	#	return self.__ps2_kb
+	#def ps2_mouse(self):
+	#	return self.__ps2_mouse
+	#def sd_card(self):
+	#	return self.__sd_card
+	#def sdram(self):
+	#	return self.__sdram
 	#--------
 
 	#--------
@@ -113,7 +117,6 @@ class Top(Elaboratable):
 				(
 					CLK_RATE=self.MAIN_CLK_RATE(),
 					TIMING_INFO=vga.TIMING_INFO,
-					#NUM_BUF_SCANLINES=vga.NUM_BUF_SCANLINES,
 					FIFO_SIZE=vga.FIFO_SIZE,
 				)
 			)
@@ -128,13 +131,21 @@ class Top(Elaboratable):
 				VideoDitherer \
 				(
 					FB_SIZE=vga.m.driver.FB_SIZE(),
-					#drbus=vga.drbus,
-					#col=vga.col,
 				)
 			)
 		vga.dibus = vga.m.ditherer.bus()
 
-		vga.col = vga.dibus.col_in
+		# Use the 100 MHz clock rate by setting the "sync" domain to "dom"
+		# instead
+		vga.m.gradient = m.submodules.vga_gradient \
+			= DomainRenamer({"sync": "dom"}) \
+			(
+				VgaGradient \
+				(
+					vga_drbus=vga.drbus,
+					vga_dibus=vga.dibus,
+				)
+			)
 
 		m.d.comb \
 		+= [
@@ -143,59 +154,12 @@ class Top(Elaboratable):
 
 			#vga.dibus.en.eq(0b1),
 
-			self.vga().r.eq(vga.drbus.col.r),
-			self.vga().g.eq(vga.drbus.col.g),
-			self.vga().b.eq(vga.drbus.col.b),
-			self.vga().hs.eq(vga.drbus.hsync),
-			self.vga().vs.eq(vga.drbus.vsync),
+			self.pins().vga.r.eq(vga.drbus.col.r),
+			self.pins().vga.g.eq(vga.drbus.col.g),
+			self.pins().vga.b.eq(vga.drbus.col.b),
+			self.pins().vga.hs.eq(vga.drbus.hsync),
+			self.pins().vga.vs.eq(vga.drbus.vsync),
 		]
-
-		#m.d.comb \
-		#+= [
-		#]
-
-		with m.If(vga.drbus.buf.can_prep):
-			m.d.dom \
-			+= [
-				vga.drbus.buf.prep.eq(0b1),
-				vga.dibus.en.eq(0b1),
-			]
-
-			with m.If(vga.dibus.next_pos.x == 0x0):
-				m.d.dom += vga.col.r.eq(0x0)
-			with m.Else(): # If(vga.dibus.next_pos.x > 0x0)
-				m.d.dom += vga.col.r.eq(vga.col.r + 0x1)
-			#m.d.dom += vga.col.r.eq(vga.col.r + 0x1)
-
-			m.d.dom += vga.col.g.eq(0x0)
-			m.d.dom += vga.col.b.eq(0x0)
-		with m.Else(): # If(~vga.drbus.buf.can_prep):
-			m.d.dom \
-			+= [
-				#vga.drbus.buf.prep.eq(0b0),
-				vga.dibus.en.eq(0b0),
-			]
-
-		#with m.If(vga.drbus.pixel_en & vga.drbus.visib
-		#	& vga.drbus.buf.can_prep):
-
-		#	#m.d.dom += vga.past_col.eq(vga.col)
-
-		#	m.d.dom += vga.drbus.buf.prep.eq(0b1)
-
-		#	with m.If(vga.drbus.draw_pos.x >= 0x10):
-		#		m.d.dom += vga.col.r.eq(vga.col.r + 0x1)
-
-		#	with m.If(vga.drbus.draw_pos.y >= 0x10):
-		#		m.d.dom += vga.col.g.eq(vga.col.g + 0x1)
-
-		#	m.d.dom += vga.col.b.eq(0x0)
-		#with m.Else():
-		#	m.d.dom \
-		#	+= [
-		#		vga.drbus.buf.prep.eq(0b0)
-		#	]
-
 		#--------
 
 		#--------
