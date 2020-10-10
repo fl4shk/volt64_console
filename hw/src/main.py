@@ -45,6 +45,7 @@ if __name__ == "__main__":
 	#formal(Fifo, ShapeT=unsigned(8), SIZE=4)
 	#formal(AsyncReadFifo, ShapeT=unsigned(8), SIZE=4)
 	#program(Top)
+	pass
 
 
 #temp = [enc_simm(x, 5) for x in [-0xa, 0xa, 0x0, 0xff, -0x1f]]
