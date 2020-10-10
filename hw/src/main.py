@@ -5,6 +5,7 @@ import sys
 from misc_util import *
 from top_mod import *
 from general.fifo_mods import *
+from math.long_udiv_mods import *
 
 
 from nmigen import *
@@ -44,8 +45,9 @@ def program(mod_name, **kw_args):
 if __name__ == "__main__":
 	#formal(Fifo, ShapeT=unsigned(8), SIZE=4)
 	#formal(AsyncReadFifo, ShapeT=unsigned(8), SIZE=4)
+	formal(LongUdiv, MAIN_WIDTH=4, DENOM_WIDTH=4, CHUNK_WIDTH=3)
+	#formal(LongUdiv, MAIN_WIDTH=7, DENOM_WIDTH=3, CHUNK_WIDTH=2)
 	#program(Top)
-	pass
 
 
 #temp = [enc_simm(x, 5) for x in [-0xa, 0xa, 0x0, 0xff, -0x1f]]
