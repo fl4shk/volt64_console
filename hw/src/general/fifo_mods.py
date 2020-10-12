@@ -17,6 +17,7 @@ class FifoBus:
 		#--------
 
 		#--------
+		# Inputs
 		self.wr_en = Signal()
 		self.wr_data = Signal(self.ShapeT())
 
@@ -25,6 +26,7 @@ class FifoBus:
 		#--------
 
 		#--------
+		# Outputs
 		self.empty = Signal()
 		self.full = Signal()
 		#--------

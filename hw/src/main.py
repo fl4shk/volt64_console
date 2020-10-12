@@ -5,10 +5,12 @@ import sys
 from misc_util import *
 from top_mod import *
 from general.fifo_mods import *
-from math.long_udiv_mods import *
+from volt32_cpu.long_udiv_mods import *
 
 
 from nmigen import *
+from nmigen.back.pysim import *
+
 from nmigen.cli import main, main_parser, main_runner
 from nmigen_boards.de0_cv import *
 
@@ -34,6 +36,13 @@ def formal(dut_mod, **kw_args):
 
 	main_runner(parser, args, m, ports=dut.bus().ports())
 
+def verify(dut_mod, **kw_args):
+	dut = dut_mod(**kw_args)
+
+	sim = Simulator(dut)
+	sim.add_process(dut.verify_process)
+	sim.run()
+
 def program(mod_name, **kw_args):
 	#top = Top(DE0CVPlatform())
 
@@ -45,9 +54,14 @@ def program(mod_name, **kw_args):
 if __name__ == "__main__":
 	#formal(Fifo, ShapeT=unsigned(8), SIZE=4)
 	#formal(AsyncReadFifo, ShapeT=unsigned(8), SIZE=4)
-	formal(LongUdiv, MAIN_WIDTH=4, DENOM_WIDTH=4, CHUNK_WIDTH=3)
-	#formal(LongUdiv, MAIN_WIDTH=7, DENOM_WIDTH=3, CHUNK_WIDTH=2)
 	#program(Top)
+
+	#formal(LongUdiv, MAIN_WIDTH=4, DENOM_WIDTH=4, CHUNK_WIDTH=3)
+	#formal(LongUdiv, MAIN_WIDTH=7, DENOM_WIDTH=3, CHUNK_WIDTH=2)
+
+	verify(LongUdiv, MAIN_WIDTH=7, DENOM_WIDTH=4, CHUNK_WIDTH=3)
+	#verify(LongUdiv, MAIN_WIDTH=8, DENOM_WIDTH=8, CHUNK_WIDTH=3)
+	#verify(LongUdiv, MAIN_WIDTH=16, DENOM_WIDTH=10, CHUNK_WIDTH=2)
 
 
 #temp = [enc_simm(x, 5) for x in [-0xa, 0xa, 0x0, 0xff, -0x1f]]
