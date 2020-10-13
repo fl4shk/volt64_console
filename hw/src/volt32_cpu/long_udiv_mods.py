@@ -110,27 +110,29 @@ class LongUdiv(Elaboratable):
 	def verify_process(self):
 		bus = self.bus()
 		for numer in range(bus.MAIN_MAX_VAL()):
-			for denom in range(bus.DENOM_MAX_VAL()):
-				print("asdf")
+			for denom in range(1, bus.DENOM_MAX_VAL()):
+				#print("rst:  {}".format((yield ResetSignal())))
+				#yield Tick("sync")
+
 				yield bus.start.eq(0b1)
 				yield bus.numer.eq(numer)
 				yield bus.denom.eq(denom)
-				print("testificate")
 				yield Tick("sync")
 
-				print("tick")
 
 				yield bus.start.eq(0b0)
 				yield bus.numer.eq(numer + 1)
 				yield bus.denom.eq(denom + 1)
 				yield Tick("sync")
 
+				# Parentheses are there to make `yield` an expression
+				print("bus.busy:  {}".format((yield bus.busy)))
 				while (yield bus.busy):
 					print("{} {}".format(bus.quot, bus.rema))
 					yield Tick("sync")
 
-				bus_quot = yield bus.quot
-				bus_rema = yield bus.rema
+				bus_quot = (yield bus.quot)
+				bus_rema = (yield bus.rema)
 				oracle_quot = (numer // denom)
 				oracle_rema = (numer % denom)
 
@@ -139,7 +141,6 @@ class LongUdiv(Elaboratable):
 					bus_quot, bus_rema,
 					oracle_quot, oracle_rema,
 					(bus_quot == oracle_quot), (bus_rema == oracle_rema)))
-
 	#--------
 
 	#--------
@@ -177,6 +178,10 @@ class LongUdiv(Elaboratable):
 
 		# The vector of greater than comparison values
 		loc.gt_vec = Signal(self.NUM_DIGITS_PER_CHUNK())
+		#--------
+
+		#--------
+		loc.dbg = Blank()
 		#--------
 
 		##--------
@@ -285,7 +290,7 @@ class LongUdiv(Elaboratable):
 		#		bus.busy.eq(0b0),
 		#	]
 		#	#--------
-		with m.If(~loc.rst):
+		with m.If(loc.rst):
 			##--------
 			#if self.FORMAL():
 			#	with m.If(loc.formal.past_valid):
@@ -306,102 +311,110 @@ class LongUdiv(Elaboratable):
 			##--------
 
 			#--------
-			# If we're starting a divide
-			with m.If((~bus.busy) & bus.start):
-				##--------
-				#if self.FORMAL():
-				#	with m.If(loc.formal.past_valid):
-				#		m.d.sync \
-				#		+= [
-				#			#loc.formal.numer.eq(bus.numer),
-				#			#loc.formal.denom.eq(bus.denom),
-
-				#			loc.formal.oracle.quot.eq(bus.numer 
-				#				/ bus.denom),
-				#			loc.formal.oracle.rema.eq(bus.numer
-				#				% bus.denom),
-				#		]
-				##--------
-
-				#--------
-				m.d.sync \
-				+= [
-					bus.valid.eq(0b0),
-					bus.busy.eq(0b1),
-
-					loc.temp_numer.eq(bus.numer),
-
-					#loc.chunk_range.high.eq(self.TEMP_T_WIDTH()),
-					#loc.chunk_range.low.eq(self.TEMP_T_WIDTH() 
-					#	- self.CHUNK_WIDTH()),
-					loc.chunk_start.eq(self.TEMP_T_WIDTH()
-						- self.CHUNK_WIDTH()),
-				]
-
-				# Compute the array of `(denom * digit)`
-				for i in range(len(loc.denom_mult_lut)):
-					m.d.sync += loc.denom_mult_lut[i].eq(bus.denom * i)
-				#--------
-
-			# If we're performing a divide
-			with m.Elif(bus.busy):
-				##--------
-				#if self.FORMAL():
-				#	with m.If(loc.formal.past_valid):
-				#		with m.If(~Past(bus.busy)):
-				#			m.d.sync \
-				#			+= [
-				#				Assert(Past(bus.start)),
-
-				#				Assert(loc.temp_numer == Past(bus.numer)),
-
-				#				Assert(loc.chunk_start
-				#					== (self.TEMP_T_WIDTH()
-				#						- self.CHUNK_WIDTH())),
-				#			]
-
-				#			for i in range(len(loc.denom_mult_lut)):
-				#				m.d.sync \
-				#				+= [
-				#					Assert(loc.denom_mult_lut[i]
-				#						== (Past(bus.denom) * i)),
-				#				]
-				#		with m.Else(): # If(Past(bus.busy)):
-				#			m.d.sync \
-				#			+= [
-				#				Assert(Stable(loc.temp_numer)),
-				#				Assert(loc.chunk_start
-				#					== (Past(loc.chunk_start)
-				#						- self.CHUNK_WIDTH())),
-				#			]
-				#			for i in range(len(loc.denom_mult_lut)):
-				#				m.d.sync \
-				#				+= [
-				#					Assert(Stable(loc.denom_mult_lut[i])),
-				#				]
-
-				#		m.d.sync \
-				#		+= [
-				#			Assert(~bus.valid),
-				#		]
-				##--------
-
-				#--------
-				m.d.sync \
-				+= [
-					loc.chunk_start.eq(loc.chunk_start
-						- self.CHUNK_WIDTH()),
-				]
-
-				# We are on the last cycle if `chunk_start` is 0. 
-				with m.If(loc.chunk_start == 0x0):
-					m.d.sync \
-					+= [
-						bus.valid.eq(0b1),
-						bus.busy.eq(0b0),
-					]
-				#--------
+			# dbg
+			m.d.sync \
+			+= [
+				bus.busy.eq(0b1)
+			]
 			#--------
+
+			##--------
+			## If we're starting a divide
+			#with m.If((~bus.busy) & bus.start):
+			#	##--------
+			#	#if self.FORMAL():
+			#	#	with m.If(loc.formal.past_valid):
+			#	#		m.d.sync \
+			#	#		+= [
+			#	#			#loc.formal.numer.eq(bus.numer),
+			#	#			#loc.formal.denom.eq(bus.denom),
+
+			#	#			loc.formal.oracle.quot.eq(bus.numer 
+			#	#				/ bus.denom),
+			#	#			loc.formal.oracle.rema.eq(bus.numer
+			#	#				% bus.denom),
+			#	#		]
+			#	##--------
+
+			#	#--------
+			#	m.d.sync \
+			#	+= [
+			#		bus.valid.eq(0b0),
+			#		bus.busy.eq(0b1),
+
+			#		loc.temp_numer.eq(bus.numer),
+
+			#		#loc.chunk_range.high.eq(self.TEMP_T_WIDTH()),
+			#		#loc.chunk_range.low.eq(self.TEMP_T_WIDTH() 
+			#		#	- self.CHUNK_WIDTH()),
+			#		loc.chunk_start.eq(self.TEMP_T_WIDTH()
+			#			- self.CHUNK_WIDTH()),
+			#	]
+
+			#	# Compute the array of `(denom * digit)`
+			#	for i in range(len(loc.denom_mult_lut)):
+			#		m.d.sync += loc.denom_mult_lut[i].eq(bus.denom * i)
+			#	#--------
+
+			## If we're performing a divide
+			#with m.Elif(bus.busy):
+			#	##--------
+			#	#if self.FORMAL():
+			#	#	with m.If(loc.formal.past_valid):
+			#	#		with m.If(~Past(bus.busy)):
+			#	#			m.d.sync \
+			#	#			+= [
+			#	#				Assert(Past(bus.start)),
+
+			#	#				Assert(loc.temp_numer == Past(bus.numer)),
+
+			#	#				Assert(loc.chunk_start
+			#	#					== (self.TEMP_T_WIDTH()
+			#	#						- self.CHUNK_WIDTH())),
+			#	#			]
+
+			#	#			for i in range(len(loc.denom_mult_lut)):
+			#	#				m.d.sync \
+			#	#				+= [
+			#	#					Assert(loc.denom_mult_lut[i]
+			#	#						== (Past(bus.denom) * i)),
+			#	#				]
+			#	#		with m.Else(): # If(Past(bus.busy)):
+			#	#			m.d.sync \
+			#	#			+= [
+			#	#				Assert(Stable(loc.temp_numer)),
+			#	#				Assert(loc.chunk_start
+			#	#					== (Past(loc.chunk_start)
+			#	#						- self.CHUNK_WIDTH())),
+			#	#			]
+			#	#			for i in range(len(loc.denom_mult_lut)):
+			#	#				m.d.sync \
+			#	#				+= [
+			#	#					Assert(Stable(loc.denom_mult_lut[i])),
+			#	#				]
+
+			#	#		m.d.sync \
+			#	#		+= [
+			#	#			Assert(~bus.valid),
+			#	#		]
+			#	##--------
+
+			#	#--------
+			#	m.d.sync \
+			#	+= [
+			#		loc.chunk_start.eq(loc.chunk_start
+			#			- self.CHUNK_WIDTH()),
+			#	]
+
+			#	# We are on the last cycle if `chunk_start` is 0. 
+			#	with m.If(loc.chunk_start == 0x0):
+			#		m.d.sync \
+			#		+= [
+			#			bus.valid.eq(0b1),
+			#			bus.busy.eq(0b0),
+			#		]
+			#	#--------
+			##--------
 		#--------
 
 

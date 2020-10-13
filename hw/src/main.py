@@ -40,6 +40,7 @@ def verify(dut_mod, **kw_args):
 	dut = dut_mod(**kw_args)
 
 	sim = Simulator(dut)
+	sim.add_clock(1e-6) # 1 MHz
 	sim.add_process(dut.verify_process)
 	sim.run()
 
