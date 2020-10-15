@@ -168,7 +168,7 @@ class LongUdiv(Elaboratable):
 
 		# The array of (denominator * possible_digit) values
 		loc.denom_mult_lut = Array \
-			([Signal(self.DENOM_MULT_LUT_ENTRY_WIDTH())
+			([Signal(self.DENOM_MULT_LUT_ENTRY_WIDTH(), attrs={"keep": 1})
 			for i in range(self.NUM_DIGITS_PER_CHUNK())])
 
 		# Remainder with the current chunk of `temp_numer` shifted in
@@ -179,26 +179,26 @@ class LongUdiv(Elaboratable):
 		loc.chunk_start = Signal(self.NUM_DIGITS_PER_CHUNK())
 
 		# The vector of greater than comparison values
-		loc.gt_vec = Signal(self.NUM_DIGITS_PER_CHUNK())
+		loc.gt_vec = Signal(self.NUM_DIGITS_PER_CHUNK(), attrs={"keep": 1})
 
-		loc.temp_gt_vec = Signal(self.NUM_DIGITS_PER_CHUNK())
+		#loc.temp_gt_vec = Signal(self.NUM_DIGITS_PER_CHUNK())
 
-		loc.temp_denom_mult_lut_0 \
-			= Signal(self.DENOM_MULT_LUT_ENTRY_WIDTH())
-		loc.temp_denom_mult_lut_1 \
-			= Signal(self.DENOM_MULT_LUT_ENTRY_WIDTH())
-		loc.temp_denom_mult_lut_2 \
-			= Signal(self.DENOM_MULT_LUT_ENTRY_WIDTH())
-		loc.temp_denom_mult_lut_3 \
-			= Signal(self.DENOM_MULT_LUT_ENTRY_WIDTH())
-		loc.temp_denom_mult_lut_4 \
-			= Signal(self.DENOM_MULT_LUT_ENTRY_WIDTH())
-		loc.temp_denom_mult_lut_5 \
-			= Signal(self.DENOM_MULT_LUT_ENTRY_WIDTH())
-		loc.temp_denom_mult_lut_6 \
-			= Signal(self.DENOM_MULT_LUT_ENTRY_WIDTH())
-		loc.temp_denom_mult_lut_7 \
-			= Signal(self.DENOM_MULT_LUT_ENTRY_WIDTH())
+		#loc.temp_denom_mult_lut_0 \
+		#	= Signal(self.DENOM_MULT_LUT_ENTRY_WIDTH())
+		#loc.temp_denom_mult_lut_1 \
+		#	= Signal(self.DENOM_MULT_LUT_ENTRY_WIDTH())
+		#loc.temp_denom_mult_lut_2 \
+		#	= Signal(self.DENOM_MULT_LUT_ENTRY_WIDTH())
+		#loc.temp_denom_mult_lut_3 \
+		#	= Signal(self.DENOM_MULT_LUT_ENTRY_WIDTH())
+		#loc.temp_denom_mult_lut_4 \
+		#	= Signal(self.DENOM_MULT_LUT_ENTRY_WIDTH())
+		#loc.temp_denom_mult_lut_5 \
+		#	= Signal(self.DENOM_MULT_LUT_ENTRY_WIDTH())
+		#loc.temp_denom_mult_lut_6 \
+		#	= Signal(self.DENOM_MULT_LUT_ENTRY_WIDTH())
+		#loc.temp_denom_mult_lut_7 \
+		#	= Signal(self.DENOM_MULT_LUT_ENTRY_WIDTH())
 		#--------
 
 		##--------
@@ -222,6 +222,10 @@ class LongUdiv(Elaboratable):
 			loc.formal.oracle_quot = Signal(self.TEMP_T_WIDTH())
 			loc.formal.oracle_rema = Signal(self.TEMP_T_WIDTH())
 			#--------
+
+			##--------
+			#loc.formal.temp_denom_mult_lut_lst = []
+			##--------
 		#--------
 
 		#--------
@@ -262,10 +266,10 @@ class LongUdiv(Elaboratable):
 				loc.temp_rema[:TEMP_T_WIDTH - CHUNK_WIDTH])),
 		]
 
-		m.d.sync \
-		+= [
-			loc.temp_gt_vec.eq(loc.gt_vec),
-		]
+		#m.d.sync \
+		#+= [
+		#	loc.temp_gt_vec.eq(loc.gt_vec),
+		#]
 
 		# Compare every element of the computed `denom * digit` array to
 		# `shift_in_rema`, computing `gt_vec`.
@@ -275,38 +279,35 @@ class LongUdiv(Elaboratable):
 			m.d.comb += loc.gt_vec[i].eq(loc.denom_mult_lut[i] 
 				> loc.shift_in_rema)
 
-		# Create a priority encoder to find both the current
-		# quotient digit, which is then also used to find the next
-		# value of the remainder.
+		# Find the current quotient digit with something resembling a
+		# priority encoder.
 		with m.Switch(loc.gt_vec):
-			#for i in range(len(loc.gt_vec)):
-			#	with m.Case(("0" * (len(loc.gt_vec) - (i + 1))) + "1"
-			#		+ ("-" * i)):
-			#		m.d.comb \
-			#		+= [
-			#			#loc.quot_digit.eq(i)
-			#			loc.quot_digit.eq(len(loc.gt_vec) - 1 - i),
-			#			#loc.quot_digit.eq(0x0),
-			#		]
-			#with m.Case("-------1"):
-			#	m.d.comb += loc.quot_digit.eq(0)
-			#with m.Case("------10"):
 			with m.Default():
 				m.d.comb += loc.quot_digit.eq(0)
-			with m.Case("11111100"):
-				m.d.comb += loc.quot_digit.eq(1)
-			with m.Case("11111000"):
-				m.d.comb += loc.quot_digit.eq(2)
-			with m.Case("11110000"):
-				m.d.comb += loc.quot_digit.eq(3)
-			with m.Case("11100000"):
-				m.d.comb += loc.quot_digit.eq(4)
-			with m.Case("11000000"):
-				m.d.comb += loc.quot_digit.eq(5)
-			with m.Case("10000000"):
-				m.d.comb += loc.quot_digit.eq(6)
-			with m.Case("00000000"):
-				m.d.comb += loc.quot_digit.eq(7)
+			for i in range(1, len(loc.gt_vec)):
+				with m.Case(("1" * (len(loc.gt_vec) - (i + 1))) + "0"
+					+ ("-" * i)):
+					m.d.comb \
+					+= [
+						loc.quot_digit.eq(i)
+					]
+			##with m.Case("------10"):
+			#with m.Default():
+			#	m.d.comb += loc.quot_digit.eq(0)
+			#with m.Case("11111100"):
+			#	m.d.comb += loc.quot_digit.eq(1)
+			#with m.Case("11111000"):
+			#	m.d.comb += loc.quot_digit.eq(2)
+			#with m.Case("11110000"):
+			#	m.d.comb += loc.quot_digit.eq(3)
+			#with m.Case("11100000"):
+			#	m.d.comb += loc.quot_digit.eq(4)
+			#with m.Case("11000000"):
+			#	m.d.comb += loc.quot_digit.eq(5)
+			#with m.Case("10000000"):
+			#	m.d.comb += loc.quot_digit.eq(6)
+			#with m.Case("00000000"):
+			#	m.d.comb += loc.quot_digit.eq(7)
 
 		m.d.comb \
 		+= [
@@ -449,28 +450,31 @@ class LongUdiv(Elaboratable):
 						+= [
 							Assert(~bus.valid),
 
+							Assert(loc.chunk_start <= (TEMP_T_WIDTH
+								- CHUNK_WIDTH)),
+
 							Assert(loc.quot_digit == loc.formal.oracle_quot
 								.word_select(loc.chunk_start,
 									CHUNK_WIDTH)),
 
-							# These lines make no sense?  They make the
-							# base case pass!
-							Assume(loc.temp_denom_mult_lut_0
-								== loc.denom_mult_lut[0]),
-							Assume(loc.temp_denom_mult_lut_1
-								== loc.denom_mult_lut[1]),
-							Assume(loc.temp_denom_mult_lut_2
-								== loc.denom_mult_lut[2]),
-							Assume(loc.temp_denom_mult_lut_3
-								== loc.denom_mult_lut[3]),
-							Assume(loc.temp_denom_mult_lut_4
-								== loc.denom_mult_lut[4]),
-							Assume(loc.temp_denom_mult_lut_5
-								== loc.denom_mult_lut[5]),
-							Assume(loc.temp_denom_mult_lut_6
-								== loc.denom_mult_lut[6]),
-							Assume(loc.temp_denom_mult_lut_7
-								== loc.denom_mult_lut[7]),
+							## These lines make no sense?  They make the
+							## base case pass!
+							#Assume(loc.temp_denom_mult_lut_0
+							#	== loc.denom_mult_lut[0]),
+							#Assume(loc.temp_denom_mult_lut_1
+							#	== loc.denom_mult_lut[1]),
+							#Assume(loc.temp_denom_mult_lut_2
+							#	== loc.denom_mult_lut[2]),
+							#Assume(loc.temp_denom_mult_lut_3
+							#	== loc.denom_mult_lut[3]),
+							#Assume(loc.temp_denom_mult_lut_4
+							#	== loc.denom_mult_lut[4]),
+							#Assume(loc.temp_denom_mult_lut_5
+							#	== loc.denom_mult_lut[5]),
+							#Assume(loc.temp_denom_mult_lut_6
+							#	== loc.denom_mult_lut[6]),
+							#Assume(loc.temp_denom_mult_lut_7
+							#	== loc.denom_mult_lut[7]),
 						]
 				#--------
 
@@ -490,8 +494,8 @@ class LongUdiv(Elaboratable):
 				## extra LUT delays from the reset logic.
 				#m.d.sync \
 				#+= [
-				#	loc.temp_quot.word_select(loc.chunk_start,
-				#		CHUNK_WIDTH).eq(loc.quot_digit),
+				#	loc.temp_quot.word_select(loc.chunk_start, CHUNK_WIDTH)
+				#		.eq(loc.quot_digit),
 				#	loc.temp_rema.eq(loc.shift_in_rema
 				#		- loc.denom_mult_lut[loc.quot_digit]),
 				#]
