@@ -16,3 +16,4 @@ hw/src/*/*_prove
 *.gz
 *.tar.*
 *.zip
+*.vcd
