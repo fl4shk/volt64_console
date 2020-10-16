@@ -9,7 +9,7 @@ from volt32_cpu.long_udiv_mods import *
 
 
 from nmigen import *
-from nmigen.back.pysim import *
+from nmigen.sim import *
 
 from nmigen.cli import main, main_parser, main_runner
 from nmigen_boards.de0_cv import *
@@ -37,12 +37,13 @@ def formal(dut_mod, **kw_args):
 	main_runner(parser, args, m, ports=dut.bus().ports())
 
 def verify(dut_mod, **kw_args):
-	dut = dut_mod(**kw_args)
+	dut = dut_mod(**kw_args, DBG=True)
 
 	sim = Simulator(dut)
 	sim.add_clock(1e-6) # 1 MHz
 	sim.add_process(dut.verify_process)
-	sim.run()
+	with sim.write_vcd("test.vcd"):
+		sim.run_until(1e-3)
 
 def program(mod_name, **kw_args):
 	#top = Top(DE0CVPlatform())
@@ -60,9 +61,15 @@ if __name__ == "__main__":
 	#formal(LongUdiv, MAIN_WIDTH=4, DENOM_WIDTH=4, CHUNK_WIDTH=3)
 	#formal(LongUdiv, MAIN_WIDTH=7, DENOM_WIDTH=3, CHUNK_WIDTH=2)
 
-	formal(LongUdiv, MAIN_WIDTH=7, DENOM_WIDTH=4, CHUNK_WIDTH=3)
+	verify(LongUdiv, MAIN_WIDTH=3, DENOM_WIDTH=3, CHUNK_WIDTH=2)
 	#formal(LongUdiv, MAIN_WIDTH=8, DENOM_WIDTH=8, CHUNK_WIDTH=3)
-	#formal(LongUdiv, MAIN_WIDTH=16, DENOM_WIDTH=10, CHUNK_WIDTH=2)
+	#formal(LongUdiv, MAIN_WIDTH=16, DENOM_WIDTH=10, CHUNK_WIDTH=4)
+	#for MAIN_WIDTH in range(1, 16 + 1):
+	#	for DENOM_WIDTH in range(1, 16 + 1):
+	#		for CHUNK_WIDTH in range(1, 8 + 1):
+	#			formal(LongUdiv, MAIN_WIDTH=MAIN_WIDTH,
+	#				DENOM_WIDTH=DENOM_WIDTH, CHUNK_WIDTH=CHUNK_WIDTH)
+	#formal(LongUdiv, MAIN_WIDTH=7, DENOM_WIDTH=7, CHUNK_WIDTH=2)
 
 
 #temp = [enc_simm(x, 5) for x in [-0xa, 0xa, 0x0, 0xff, -0x1f]]
