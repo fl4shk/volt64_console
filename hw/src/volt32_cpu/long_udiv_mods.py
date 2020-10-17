@@ -107,9 +107,6 @@ class LongUdiv(Elaboratable):
 		for numer in range(bus.MAIN_MAX_VAL()):
 		#for numer in range(4, bus.MAIN_MAX_VAL()):
 			for denom in range(1, bus.DENOM_MAX_VAL()):
-				#print("rst:  {}".format((yield ResetSignal())))
-				#yield Tick("sync")
-
 				yield bus.start.eq(0b1)
 				yield bus.numer.eq(numer)
 				yield bus.denom.eq(denom)
@@ -117,18 +114,11 @@ class LongUdiv(Elaboratable):
 
 
 				yield bus.start.eq(0b0)
-				#yield bus.numer.eq(numer + 1)
-				#yield bus.denom.eq(denom + 1)
 				yield Tick("sync")
 
 				# Parentheses are there to make `yield whatever` an
 				# expression.
-				#print("begin:  {} {}".format((yield bus.busy),
-				#	(yield bus.start)))
-				#print("begin")
 				while (yield bus.busy):
-					#print("{} {}".format(hex((yield bus.quot)),
-					#	hex((yield bus.rema))))
 					yield Tick("sync")
 
 				bus_quot = (yield bus.quot)
@@ -243,12 +233,6 @@ class LongUdiv(Elaboratable):
 		#--------
 		m = Module()
 		#--------
-
-		##--------
-		#m.d.sync += self.bus().busy.eq(0b1)
-		#return m
-		##--------
-
 		#--------
 		# Local variables
 		bus = self.bus()
@@ -257,9 +241,6 @@ class LongUdiv(Elaboratable):
 
 		TEMP_T_WIDTH = self.TEMP_T_WIDTH()
 		CHUNK_WIDTH = self.CHUNK_WIDTH()
-
-		## dbg
-		#bus.loc = loc
 		#--------
 
 		#--------
@@ -270,11 +251,6 @@ class LongUdiv(Elaboratable):
 				(loc.chunk_start, CHUNK_WIDTH),
 				loc.temp_rema[:TEMP_T_WIDTH - CHUNK_WIDTH])),
 		]
-
-		#m.d.sync \
-		#+= [
-		#	loc.temp_gt_vec.eq(loc.gt_vec),
-		#]
 
 		# Compare every element of the computed `denom * digit` array to
 		# `shift_in_rema`, computing `gt_vec`.
@@ -324,15 +300,6 @@ class LongUdiv(Elaboratable):
 		#--------
 
 		#--------
-		#with m.If(loc.rst):
-		#	#--------
-		#	m.d.sync \
-		#	+= [
-		#		bus.valid.eq(0b0),
-		#		bus.busy.eq(0b0),
-		#	]
-		#	#--------
-
 		with m.If(~loc.rst):
 			#--------
 			# If we're starting a divide
