@@ -17,6 +17,18 @@ from nmigen_boards.de0_cv import *
 from nmigen.asserts import Assert, Assume, Cover
 from nmigen.asserts import Past, Rose, Fell, Stable
 
+def ports(bus):
+	def inner_ports(bus):
+		ret = []
+		for key in bus.__dict__:
+			val = bus.__dict__[key]
+			if key[0] != "_":
+				ret += [val] \
+					if (type(val) == Signal) or (type(val) == Record) \
+					else inner_ports(val)
+		return ret
+	return ([ClockSignal(), ResetSignal()] + inner_ports(bus))
+
 def to_verilog(dut_mod, **kw_args):
 	#alu = Alu(8)
 	#main(alu, 
@@ -26,7 +38,7 @@ def to_verilog(dut_mod, **kw_args):
 	#		alu.bus.result, alu.bus.carry_out
 	#	])
 	dut = dut_mod(**kw_args)
-	main(dut, ports=dut.bus().ports())
+	main(dut, ports=ports(dut.bus()))
 
 def formal(dut_mod, **kw_args):
 	parser = main_parser()
@@ -34,7 +46,7 @@ def formal(dut_mod, **kw_args):
 	m = Module()
 	m.submodules.dut = dut = dut_mod(**kw_args, FORMAL=True)
 
-	main_runner(parser, args, m, ports=dut.bus().ports())
+	main_runner(parser, args, m, ports=ports(dut.bus()))
 
 def verify(dut_mod, **kw_args):
 	dut = dut_mod(**kw_args, DBG=True)
@@ -43,7 +55,8 @@ def verify(dut_mod, **kw_args):
 	sim.add_clock(1e-6) # 1 MHz
 	sim.add_process(dut.verify_process)
 	with sim.write_vcd("test.vcd"):
-		sim.run_until(1e-3)
+		#sim.run_until(1e-3)
+		sim.run()
 
 def program(mod_name, **kw_args):
 	#top = Top(DE0CVPlatform())
@@ -61,9 +74,12 @@ if __name__ == "__main__":
 	#formal(LongUdiv, MAIN_WIDTH=4, DENOM_WIDTH=4, CHUNK_WIDTH=3)
 	#formal(LongUdiv, MAIN_WIDTH=7, DENOM_WIDTH=3, CHUNK_WIDTH=2)
 
-	verify(LongUdiv, MAIN_WIDTH=3, DENOM_WIDTH=3, CHUNK_WIDTH=2)
-	#formal(LongUdiv, MAIN_WIDTH=8, DENOM_WIDTH=8, CHUNK_WIDTH=3)
-	#formal(LongUdiv, MAIN_WIDTH=16, DENOM_WIDTH=10, CHUNK_WIDTH=4)
+	formal(LongUdiv, MAIN_WIDTH=8, DENOM_WIDTH=8, CHUNK_WIDTH=3)
+	#for CHUNK_WIDTH in range(1, 4 + 1):
+	#	formal(LongUdiv, MAIN_WIDTH=8, DENOM_WIDTH=8,
+	#		CHUNK_WIDTH=CHUNK_WIDTH)
+	#formal(LongUdiv, MAIN_WIDTH=16, DENOM_WIDTH=12, CHUNK_WIDTH=3)
+	#formal(LongUdiv, MAIN_WIDTH=16, DENOM_WIDTH=10, CHUNK_WIDTH=5)
 	#for MAIN_WIDTH in range(1, 16 + 1):
 	#	for DENOM_WIDTH in range(1, 16 + 1):
 	#		for CHUNK_WIDTH in range(1, 8 + 1):

@@ -35,42 +35,72 @@ VGA_TIMING_INFO_DICT \
 		)
 }
 
-class VgaDriverBusLayout(Layout):
+#class VgaDriverBusLayout(Layout):
+#	def __init__(self):
+#		super().__init__ \
+#		([
+#			# Global VGA driving enable (white screen when off)
+#			("en", unsigned(1)),
+#
+#			# VGA physical pins
+#			("col", RgbColorLayout()),
+#			("hsync", unsigned(1)),
+#			("vsync", unsigned(1)),
+#
+#			# Pixel buffer
+#			("buf", VgaDriverBufLayout()),
+#
+#			# Debug
+#			("dbg_fifo_empty", unsigned(1)),
+#			("dbg_fifo_full", unsigned(1)),
+#
+#			# Misc.
+#			("pixel_en", unsigned(1)),
+#			("next_visib", unsigned(1)),
+#			("visib", unsigned(1)),
+#			("past_visib", unsigned(1)),
+#			("draw_pos", Vec2Layout(self.CoordShapeT())),
+#			("past_draw_pos", Vec2Layout(self.CoordShapeT())),
+#			("size", Vec2Layout(self.CoordShapeT())),
+#			#("start_draw", unsigned(1)),
+#		])
+#
+#	def CoordShapeT(self):
+#		return unsigned(16)
+#
+#class VgaDriverBus(Record):
+#	def __init__(self):
+#		super().__init__(VgaDriverBusLayout())
+
+class VgaDriverBus:
 	def __init__(self):
-		super().__init__ \
-		([
-			# Global VGA driving enable (white screen when off)
-			("en", unsigned(1)),
+		# Global VGA driving enable (white screen when off)
+		self.en = Signal()
 
-			# VGA physical pins
-			("col", RgbColorLayout()),
-			("hsync", unsigned(1)),
-			("vsync", unsigned(1)),
+		# VGA physical pins
+		self.col = RgbColor()
+		self.hsync = Signal()
+		self.vsync = Signal()
 
-			# Pixel buffer
-			("buf", VgaDriverBufLayout()),
+		# Pixel buffer
+		self.buf = VgaDriverBuf()
 
-			# Debug
-			("dbg_fifo_empty", unsigned(1)),
-			("dbg_fifo_full", unsigned(1)),
+		# Debug
+		self.dbg_fifo_empty = Signal()
+		self.dbg_fifo_full = Signal()
 
-			# Misc.
-			("pixel_en", unsigned(1)),
-			("next_visib", unsigned(1)),
-			("visib", unsigned(1)),
-			("past_visib", unsigned(1)),
-			("draw_pos", Vec2Layout(self.CoordShapeT())),
-			("past_draw_pos", Vec2Layout(self.CoordShapeT())),
-			("size", Vec2Layout(self.CoordShapeT())),
-			#("start_draw", unsigned(1)),
-		])
+		# Misc.
+		self.pixel_en = Signal()
+		self.next_visib = Signal()
+		self.visib = Signal()
+		self.past_visib = Signal()
+		self.draw_pos = Vec2(self.CoordShapeT())
+		self.past_draw_pos = Vec2(self.CoordShapeT())
+		self.size = Vec2(self.CoordShapeT())
+		#self.start_draw = Signal()
 
 	def CoordShapeT(self):
 		return unsigned(16)
-
-class VgaDriverBus(Record):
-	def __init__(self):
-		super().__init__(VgaDriverBusLayout())
 
 class VgaDriver(Elaboratable):
 	def __init__(self, CLK_RATE, TIMING_INFO, FIFO_SIZE,

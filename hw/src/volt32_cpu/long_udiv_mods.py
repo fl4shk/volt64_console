@@ -47,13 +47,6 @@ class LongUdivBus:
 	def DENOM_MAX_VAL(self):
 		return (1 << self.DENOM_WIDTH())
 	#--------
-
-	#--------
-	def ports(self):
-		return [ClockSignal(), ResetSignal(), 
-			self.start, self.numer, self.denom,
-			self.valid, self.busy, self.quot, self.rema]
-	#--------
 #--------
 
 #--------
@@ -175,7 +168,7 @@ class LongUdiv(Elaboratable):
 		# The array of (denominator * possible_digit) values
 		loc.denom_mult_lut = Array \
 			([Signal(self.DENOM_MULT_LUT_ENTRY_WIDTH(), attrs={"keep": 1})
-			for i in range(self.NUM_DIGITS_PER_CHUNK())])
+			for _ in range(self.NUM_DIGITS_PER_CHUNK())])
 
 		# Remainder with the current chunk of `temp_numer` shifted in
 		loc.shift_in_rema = Signal(self.TEMP_T_WIDTH())
@@ -196,15 +189,19 @@ class LongUdiv(Elaboratable):
 			#--------
 
 			#--------
-			loc.formal.past_valid = Signal(reset=0b0)
+			loc.formal.past_valid = Signal(reset=0b0, attrs={"keep": 1})
 			#--------
 
 			#--------
-			loc.formal.formal_numer = Signal(self.TEMP_T_WIDTH())
-			loc.formal.formal_denom = Signal(self.DENOM_WIDTH())
+			loc.formal.formal_numer = Signal(self.TEMP_T_WIDTH(),
+				attrs={"keep": 1})
+			loc.formal.formal_denom = Signal(self.DENOM_WIDTH(),
+				attrs={"keep": 1})
 
-			loc.formal.oracle_quot = Signal(self.TEMP_T_WIDTH())
-			loc.formal.oracle_rema = Signal(self.TEMP_T_WIDTH())
+			loc.formal.oracle_quot = Signal(self.TEMP_T_WIDTH(),
+				attrs={"keep": 1})
+			loc.formal.oracle_rema = Signal(self.TEMP_T_WIDTH(),
+				attrs={"keep": 1})
 			#--------
 
 			#--------
@@ -212,7 +209,7 @@ class LongUdiv(Elaboratable):
 			for i in range(self.NUM_DIGITS_PER_CHUNK()):
 				loc.formal.denom_mult_lut_lst.append \
 					(Signal(self.DENOM_MULT_LUT_ENTRY_WIDTH(),
-						name=f"denom_mult_lut_{i}"))
+						name=f"denom_mult_lut_{i}", attrs={"keep": 1}))
 			#--------
 		#--------
 
@@ -293,10 +290,7 @@ class LongUdiv(Elaboratable):
 			for i in range(len(loc.gt_vec)):
 				with m.Case(("1" * (len(loc.gt_vec) - (i + 1)))
 					+ ("0" * (i + 1))):
-					m.d.comb \
-					+= [
-						loc.quot_digit.eq(i)
-					]
+					m.d.comb += loc.quot_digit.eq(i)
 			with m.Default():
 				m.d.comb += loc.quot_digit.eq(0)
 
@@ -311,43 +305,12 @@ class LongUdiv(Elaboratable):
 			#with m.Default():
 			#	m.d.comb += loc.quot_digit.eq(0)
 
-		#with m.If(loc.gt_vec[2]):
-		#	with m.If(loc.gt_vec[1]):
-		#		m.d.comb += loc.quot_digit.eq(0)
-		#	with m.Else():
-		#		m.d.comb += loc.quot_digit.eq(1)
-		#with m.Else():
-		#	with m.If(loc.gt_vec[3]):
-		#		m.d.comb += loc.quot_digit.eq(2)
-		#	with m.Else():
-		#		m.d.comb += loc.quot_digit.eq(3)
 
 		m.d.comb \
 		+= [
 			bus.quot.eq(loc.temp_quot[:len(bus.quot)]),
 			bus.rema.eq(loc.temp_rema[:len(bus.rema)]),
 		]
-		#--------
-
-		#--------
-		if self.FORMAL():
-			m.d.comb \
-			+= [
-				#--------
-				Assume(bus.denom != 0x0),
-				#--------
-			]
-			for i in range(len(loc.formal.denom_mult_lut_lst)):
-				m.d.comb \
-				+= [
-					loc.formal.denom_mult_lut_lst[i]
-						.eq(loc.denom_mult_lut[i])
-				]
-
-			m.d.sync \
-			+= [
-				loc.formal.past_valid.eq(0b1)
-			]
 		#--------
 
 		#--------
@@ -372,35 +335,6 @@ class LongUdiv(Elaboratable):
 
 		with m.If(~loc.rst):
 			#--------
-			if self.FORMAL():
-				with m.If(loc.formal.past_valid):
-					with m.If(Past(loc.rst)):
-						m.d.sync \
-						+= [
-							#--------
-							Assert(~bus.valid),
-							Assert(~bus.busy),
-							Assert(bus.quot == 0x0),
-							Assert(bus.rema == 0x0),
-
-							#Assert(loc.temp_numer == Past(bus.numer)),
-							Assert(loc.temp_quot == 0x0),
-							Assert(loc.temp_rema == 0x0),
-							#--------
-						]
-					with m.Elif(Past(bus.busy) & (~bus.busy)):
-						m.d.sync \
-						+= [
-							#--------
-							Assert(bus.quot 
-								== loc.formal.oracle_quot[:len(bus.quot)]),
-							Assert(bus.rema 
-								== loc.formal.oracle_rema[:len(bus.rema)]),
-							#--------
-						]
-			#--------
-
-			#--------
 			# If we're starting a divide
 			with m.If(~bus.busy):
 				#--------
@@ -416,30 +350,12 @@ class LongUdiv(Elaboratable):
 						loc.temp_quot.eq(0x0),
 						loc.temp_rema.eq(0x0),
 
-						#loc.chunk_start.eq(TEMP_T_WIDTH - CHUNK_WIDTH),
 						loc.chunk_start.eq(CHUNK_WIDTH - 1)
 					]
 
 					# Compute the array of `(denom * digit)`
 					for i in range(len(loc.denom_mult_lut)):
 						m.d.sync += loc.denom_mult_lut[i].eq(bus.denom * i)
-					#--------
-
-					#--------
-					if self.FORMAL():
-						#with m.If(loc.formal.past_valid):
-						m.d.sync \
-						+= [
-							#--------
-							Assume(loc.formal.formal_numer == bus.numer),
-							Assume(loc.formal.formal_denom == bus.denom),
-
-							Assume(loc.formal.oracle_quot == (bus.numer 
-								// bus.denom)),
-							Assume(loc.formal.oracle_rema == (bus.numer 
-								% bus.denom)),
-							#--------
-						]
 					#--------
 
 					#--------
@@ -450,23 +366,6 @@ class LongUdiv(Elaboratable):
 							loc.dbg.dbg_rema.eq(bus.numer % bus.denom),
 						]
 					#--------
-				with m.Else(): # If(~bus.start):
-					#--------
-					if self.FORMAL():
-						with m.If(Stable(bus.busy) & Stable(loc.rst)):
-							m.d.sync \
-							+= [
-								#--------
-								Assert(Stable(bus.valid)),
-								#--------
-
-								#--------
-								Assert(Stable(loc.temp_quot)),
-								Assert(Stable(loc.temp_rema)),
-								#--------
-							]
-					#--------
-				#--------
 
 			# If we're performing a divide
 			with m.Else(): # If(bus.busy):
@@ -479,7 +378,6 @@ class LongUdiv(Elaboratable):
 					loc.temp_rema.eq(loc.shift_in_rema
 						- loc.denom_mult_lut[loc.quot_digit]),
 
-					#loc.chunk_start.eq(loc.chunk_start - CHUNK_WIDTH),
 					loc.chunk_start.eq(loc.chunk_start - 0x1),
 				]
 
@@ -501,74 +399,167 @@ class LongUdiv(Elaboratable):
 						bus.busy.eq(0b0),
 					]
 				#--------
+			#--------
+		#--------
 
+		#--------
+		if self.FORMAL():
+			#--------
+			past_valid = loc.formal.past_valid
+
+			formal_numer = loc.formal.formal_numer
+			formal_denom = loc.formal.formal_denom
+
+			oracle_quot = loc.formal.oracle_quot
+			oracle_rema = loc.formal.oracle_rema
+
+			denom_mult_lut_lst = loc.formal.denom_mult_lut_lst
+			#--------
+
+			#--------
+			m.d.comb \
+			+= [
 				#--------
-				if self.FORMAL():
-					with m.If(loc.formal.past_valid):
-						with m.If(~Past(bus.busy)):
-							m.d.sync \
+				Assume(bus.denom != 0x0),
+				#--------
+			]
+
+			m.d.comb += [denom_mult_lut_lst[i].eq(loc.denom_mult_lut[i])
+				for i in range(len(denom_mult_lut_lst))]
+
+			m.d.sync \
+			+= [
+				past_valid.eq(0b1)
+			]
+			#--------
+
+			#--------
+			with m.If(~loc.rst):
+				with m.If(~bus.busy):
+					#--------
+					with m.If(bus.start):
+						m.d.sync \
+						+= [
+							#--------
+							formal_numer.eq(bus.numer),
+							formal_denom.eq(bus.denom),
+
+							oracle_quot.eq(bus.numer // bus.denom),
+							oracle_rema.eq(bus.numer % bus.denom)
+							#--------
+						] 
+					with m.Else(): # If(~bus.start):
+						pass
+					#--------
+
+					#--------
+					with m.If(past_valid):
+						#--------
+						with m.If(Past(bus.busy)):
+							m.d.comb \
 							+= [
-								Assert(Past(bus.start)),
+								#--------
+								Assert(~Stable(bus.valid)),
+								Assert(bus.valid),
 
-								Assert(loc.temp_numer == Past(bus.numer)),
+								Assert(bus.quot == (formal_numer
+									// formal_denom)),
+								Assert(bus.rema == (formal_numer
+									% formal_denom)),
+								#--------
 
-								Assert(loc.chunk_start == (TEMP_T_WIDTH
-									- CHUNK_WIDTH)),
 							]
-
-							for i in range(len(loc.denom_mult_lut)):
-								m.d.sync \
-								+= [
-									Assert(loc.denom_mult_lut[i]
-										== (Past(bus.denom) * i)),
-								]
-						with m.Else(): # If(Past(bus.busy)):
-							m.d.sync \
+						with m.Else(): # If(~Past(bus.busy)):
+							m.d.comb \
 							+= [
+								#--------
+								#Assert(Stable(bus.start)),
+								#Assert(~bus.start),
+
+								Assert(Stable(bus.valid)),
+								#--------
+
+								#--------
 								Assert(Stable(loc.temp_numer)),
-								Assert(loc.chunk_start
-									== (Past(loc.chunk_start)
-										- CHUNK_WIDTH)),
+								Assert(Stable(loc.quot_digit)),
+
+								Assert(Stable(loc.temp_quot)),
+								Assert(Stable(loc.temp_rema)),
+								#--------
 							]
-							for i in range(len(loc.denom_mult_lut)):
-								m.d.sync \
-								+= [
-									Assert(Stable(loc.denom_mult_lut[i])),
-								]
+						#--------
 
-					# If we're just busy
-					m.d.sync \
+						#--------
+						#with m.If(~bus.start):
+						m.d.comb \
+						+= [
+							#--------
+							Assert(Stable(formal_numer)),
+							Assert(Stable(formal_denom)),
+
+							Assert(Stable(oracle_quot)),
+							Assert(Stable(oracle_rema)),
+							#--------
+						] \
+						+ [Assert(Stable(denom_mult_lut_lst[i]))
+							for i in range(len(denom_mult_lut_lst))]
+						#--------
+					#--------
+				with m.Else(): # If(bus.busy):
+					#--------
+					m.d.comb \
 					+= [
+						#--------
 						Assert(~bus.valid),
+						#--------
 
-						Assert(loc.chunk_start <= (TEMP_T_WIDTH
-							- CHUNK_WIDTH)),
-
-						Assert(loc.quot_digit == loc.formal.oracle_quot
-							.word_select(loc.chunk_start,
-								CHUNK_WIDTH)),
-
-						## These lines make no sense?  They make the
-						## base case pass!
-						#Assume(loc.temp_denom_mult_lut_0
-						#	== loc.denom_mult_lut[0]),
-						#Assume(loc.temp_denom_mult_lut_1
-						#	== loc.denom_mult_lut[1]),
-						#Assume(loc.temp_denom_mult_lut_2
-						#	== loc.denom_mult_lut[2]),
-						#Assume(loc.temp_denom_mult_lut_3
-						#	== loc.denom_mult_lut[3]),
-						#Assume(loc.temp_denom_mult_lut_4
-						#	== loc.denom_mult_lut[4]),
-						#Assume(loc.temp_denom_mult_lut_5
-						#	== loc.denom_mult_lut[5]),
-						#Assume(loc.temp_denom_mult_lut_6
-						#	== loc.denom_mult_lut[6]),
-						#Assume(loc.temp_denom_mult_lut_7
-						#	== loc.denom_mult_lut[7]),
+						#--------
+						Assert(loc.quot_digit == oracle_quot
+							.word_select(loc.chunk_start, CHUNK_WIDTH)),
+						#--------
 					]
-				#--------
+					#--------
 
+					#--------
+					with m.If(past_valid):
+						#--------
+						with m.If(~Past(bus.busy)):
+							#--------
+							m.d.comb \
+							+= [
+								#--------
+								Assert(formal_numer == Past(bus.numer)),
+								Assert(formal_denom == Past(bus.denom)),
+
+								Assert(oracle_quot == (Past(bus.numer)
+									// Past(bus.denom))),
+								Assert(oracle_rema == (Past(bus.numer)
+									% Past(bus.denom))),
+								#--------
+							] \
+							+ [Assert(denom_mult_lut_lst[i]
+								== (Past(bus.denom) * i))
+								for i in range(len(denom_mult_lut_lst))]
+								
+							#--------
+						with m.Else(): # If(Past(bus.busy)):
+							#--------
+							m.d.comb \
+							+= [
+								#--------
+								Assert(Stable(formal_numer)),
+								Assert(Stable(formal_denom)),
+
+								Assert(Stable(oracle_quot)),
+								Assert(Stable(oracle_rema)),
+								#--------
+							] \
+							+ [Assert(Stable(denom_mult_lut_lst[i]))
+								for i in range(len(denom_mult_lut_lst))]
+							#--------
+						#--------
+
+					#--------
 			#--------
 		#--------
 
@@ -578,4 +569,3 @@ class LongUdiv(Elaboratable):
 		#--------
 	#--------
 #--------
-

@@ -123,6 +123,7 @@ class RgbColor(Record):
 			else RgbColor.DEF_CHAN_WIDTH()
 		super().__init__(RgbColorLayout(CHAN_WIDTH=REAL_CHAN_WIDTH))
 
+	@staticmethod
 	def DEF_CHAN_WIDTH():
 		return 4
 
@@ -139,3 +140,11 @@ class VgaDriverBufLayout(Layout):
 			("prep", unsigned(1)),
 			("col", RgbColorLayout(CHAN_WIDTH=CHAN_WIDTH)),
 		])
+class VgaDriverBuf(Record):
+	def __init__(self, CHAN_WIDTH=RgbColor.DEF_CHAN_WIDTH()):
+		super().__init__(VgaDriverBufLayout(CHAN_WIDTH=CHAN_WIDTH))
+
+		self.__CHAN_WIDTH = CHAN_WIDTH
+
+	def CHAN_WIDTH(self):
+		return self.__CHAN_WIDTH

@@ -36,11 +36,11 @@ class FifoBus:
 	def SIZE(self):
 		return self.__SIZE
 
-	def ports(self):
-		#return [self.clk, self.rst, self.wr_en, self.wr_data, self.rd_en,
-		#	self.rd_data, self.empty, self.full]
-		return [ClockSignal(), ResetSignal(), self.wr_en, self.wr_data,
-			self.rd_en, self.rd_data, self.empty, self.full]
+	#def ports(self):
+	#	#return [self.clk, self.rst, self.wr_en, self.wr_data, self.rd_en,
+	#	#	self.rd_data, self.empty, self.full]
+	#	return [ClockSignal(), ResetSignal(), self.wr_en, self.wr_data,
+	#		self.rd_en, self.rd_data, self.empty, self.full]
 #--------
 
 #--------
@@ -371,7 +371,8 @@ class AsyncReadFifo(Fifo):
 		#		Cover(loc.formal.past_valid)
 		#		#Cover(loc.formal.past_valid & bus.empty),
 		#		#Cover(loc.formal.past_valid & bus.full),
-		#		#Cover(loc.formal.past_valid & (~bus.empty) & (~bus.full)),
+		#		#Cover(loc.formal.past_valid & (~bus.empty)
+		#		#	& (~bus.full)),
 		#	]
 		#--------
 
@@ -487,11 +488,14 @@ class AsyncReadFifo(Fifo):
 
 					# empty
 					with m.If(loc.head == loc.tail):
-						m.d.sync += Assert(bus.empty & (~bus.full))
+						m.d.sync += Assert(bus.empty
+							& (~bus.full))
 					with m.Elif(loc.formal.test_head == loc.tail):
-						m.d.sync += Assert((~bus.empty) & bus.full)
+						m.d.sync += Assert((~bus.empty)
+							& bus.full)
 					with m.Else():
-						m.d.sync += Assert((~bus.empty) & (~bus.full))
+						m.d.sync += Assert((~bus.empty)
+							& (~bus.full))
 			#--------
 		#--------
 
