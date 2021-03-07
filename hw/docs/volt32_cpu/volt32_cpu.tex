@@ -1,0 +1,220 @@
+\documentclass{article}
+
+\usepackage{pbox}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{fancyvrb}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{setspace}
+\usepackage[nottoc]{tocbibind}
+\usepackage[font=large]{caption}
+\usepackage{framed}
+\usepackage{tabularx}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{fontspec}
+\usepackage[backend=biber,sorting=none]{biblatex}
+%%\usepackage[
+%%	backend=biber,
+%%	style=ieee,
+%%	sorting=none
+%%]{biblatex}
+%\addbibresource{project_refs.bib}
+
+%% Hide section, subsection, and subsubsection numbering
+%\renewcommand{\thesection}{}
+%\renewcommand{\thesubsection}{}
+%\renewcommand{\thesubsubsection}{}
+
+% Alternative form of doing section stuff
+\renewcommand{\thesection}{}
+\renewcommand{\thesubsection}{\arabic{section}.\arabic{subsection}}
+\makeatletter
+\def\@seccntformat#1{\csname #1ignore\expandafter\endcsname\csname the#1\endcsname\quad}
+\let\sectionignore\@gobbletwo
+\let\latex@numberline\numberline
+\def\numberline#1{\if\relax#1\relax\else\latex@numberline{#1}\fi}
+\makeatother
+
+\makeatletter
+\renewcommand\tableofcontents{%
+    \@starttoc{toc}%
+}
+\makeatother
+
+\newcommand{\respacing}{\doublespacing \singlespacing}
+\newcommand{\code}[2][1]{\noindent \texttt{\tab[#1] #2} \\}
+\newcommand{\skipline}[0]{\texttt{}\\}
+\newcommand{\tnl}[0]{\tabularnewline}
+
+\begin{document}
+%--------
+	\font\titlefont={Times New Roman} at 20pt
+	\title{{\titlefont Volt32 CPU}}
+
+	\font\bottomtextfont={Times New Roman} at 12pt
+	\date{{\bottomtextfont} \today}
+	\author{{\bottomtextfont Andrew Clark}}
+
+	\setmainfont{Times New Roman}
+	\setmonofont{Courier New}
+
+	\maketitle
+	\pagenumbering{gobble}
+
+	\newpage
+	\pagenumbering{arabic}
+	%\tableofcontents
+	%\newpage
+
+	%\doublespacing
+
+%\section{Abstract}
+	%\setcounter{section}{-1}
+
+\section{Table of Contents}
+	\tableofcontents
+	\newpage
+
+\section{Registers, Main Widths, etc.}
+	\begin{itemize}
+	%--------
+	\item The main width of the processor is 32-bit, and addresses are
+	32-bit.  Some 64-bit operations exist.
+
+	\item The machine is an implementation of Line Associative Registers
+	(LARs).  Both instruction LARs (ILARs) and data LARs (DLARs) are
+	included in the design.  There are a grand total of 128 ILARs and 128
+	DLARs, but they are split between the LARs owned by the supervisor
+	mode and the LARs owned by the user mode.  There are 64 supervisor mode
+	ILARs, 64 supervisor mode DLARs, 64 user mode ILARs, and 64 user mode
+	DLARs.
+
+	\item The machine boots in supervisor mode.  The processor jumps to
+	address \texttt{0x0} when it enters supervisor mode, which includes
+	when the machine boots.
+
+	\item ILARs
+		\begin{itemize}
+		%--------
+		\item In user mode, ILARs 0 to 63 are referred to as \texttt{i0},
+		\texttt{i1}, \texttt{i2}, ..., \texttt{i61}, \texttt{i62},
+		\texttt{ipc}.
+
+		\item In supervisor mode, ILARs 64 to 127 are referred to as
+		\texttt{i0}, \texttt{i1}, \texttt{i2}, ..., \texttt{i61},
+		\texttt{i62}, \texttt{ipc}.
+
+		\item The two ILARs called "\texttt{i0}" have all their
+		fields set to zero, and when written to, the contents of the ILAR
+		does not change.
+
+		\item The two ILARs called "\texttt{ipc}" are the program
+		counters for the two operating modes of the processor.
+
+		\item An ILAR's data field is 128 bytes long.  It is composed of
+		32-bit instructions aligned to 32 bits.
+
+		\item An ILAR's scalar offset field is 5-bit due to instructions
+		being 32-bit and the data field being 128 bytes long.
+
+		\item The base address field of an ILAR is (32 - 7 = 25)-bit.
+
+		\item An ILAR's tag field is 6-bit.
+		%--------
+		\end{itemize}
+
+	\item DLARs
+		\begin{itemize}
+		%--------
+		\item In user mode, DLARs 0 to 63 are referred to as \texttt{d0},
+		\texttt{d1}, \texttt{d2}, ..., \texttt{d61}, \texttt{d62},
+		\texttt{d63}.
+
+		\item In supervisor mode, DLARs 64 to 127 are referred to as
+		\texttt{d0}, \texttt{d1}, \texttt{d2}, ..., \texttt{d61},
+		\texttt{d62}, \texttt{d63}.
+
+		\item The two DLARs called "\texttt{d0}" have all their
+		fields set to zero, and when written to, the contents of the DLAR
+		does not change.
+
+		\item A DLAR's data field is 128 bytes long.  It is composed of the
+		scalar data elements of the 128 byte vectors, where the type of the
+		scalar data elements is determined by the type tag field of the
+		DLAR.
+
+		\item A DLAR's scalar offset field is 7-bit due to the data field
+		being 128 bytes long.
+
+		\item The base address field of a DLAR is (32 - 7 = 25)-bit.
+
+		\item DLARs can take on the following types (3-bit enum):
+			\begin{itemize}
+			%--------
+			\item 8-bit, unsigned (\texttt{u8})
+			\item 8-bit, signed (\texttt{i8})
+			\item 16-bit, unsigned (\texttt{u16})
+			\item 16-bit, signed (\texttt{i16})
+			\item 32-bit, unsigned (\texttt{u32})
+			\item 32-bit, signed (\texttt{i32})
+			\item 64-bit, unsigned (\texttt{u64}); only usable for some
+			operations, if not usable gets treated like \texttt{u32}
+			\item 64-bit, signed (\texttt{i64}); only usable for some
+			operations, if not usable gets treated like \texttt{i32}
+			%--------
+			\end{itemize}
+
+		\item A DLAR's tag field is 6-bit.
+		%--------
+		\end{itemize}
+
+	\item The \texttt{ie} register
+		\begin{itemize}
+		%--------
+		\item This register is 1-bit.
+
+		\item This register is a flag indicating whether or not an
+		exception can be serviced.  It can be written to with the
+		\texttt{cpy} (with \texttt{ie} as the destination operand)
+		instruction, and it can be read from with the \texttt{cpy} (with
+		\texttt{ie} as a source operand) instruction.
+
+		\item The \texttt{reti} instruction sets \texttt{ie} to
+		\texttt{0b1} and returns from supervisor mode to user mode.
+		%--------
+		\end{itemize}
+	%--------
+	\end{itemize}
+
+\section{Exceptions}
+	Some instructions may cause an exception to occur, putting the
+	processor in supervisor mode.
+
+	The following exceptions may occur during normal execution of a
+	program.
+
+	\begin{itemize}
+	%--------
+	\item Taking an interrupt, which also sets \texttt{ie} to \texttt{0b0}.
+	\item Division by zero.
+	\item \texttt{swi}.
+		\begin{itemize}
+		%--------
+		\item Note that this instruction always causes an exception to
+		occur.
+		%--------
+		\end{itemize}
+	\item \texttt{reti} in user mode.
+	\item \texttt{cpy} that writes to \texttt{ie} when in user mode.
+	\item Instructions that read from/write to supervisor mode
+	ILARs or DLARs when in user mode.
+	%--------
+	\end{itemize}
+
+
+	%\printbibliography[heading=bibnumbered,title={Bibliography}]
+
+%--------
+\end{document}
