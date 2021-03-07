@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import math
 from misc_util import *
 from nmigen import *
 from nmigen.hdl.rec import Record, Layout
@@ -13,26 +14,37 @@ from enum import Enum, auto
 #--------
 class LongUdivBus:
 	#--------
-	def __init__(self, MAIN_WIDTH, DENOM_WIDTH):
+	def __init__(self, MAIN_WIDTH, DENOM_WIDTH, CHUNK_WIDTH):
 		#--------
-		self.__MAIN_WIDTH, self.__DENOM_WIDTH = MAIN_WIDTH, DENOM_WIDTH
+		self.__MAIN_WIDTH, self.__DENOM_WIDTH, self.__CHUNK_WIDTH
+			= MAIN_WIDTH, DENOM_WIDTH, CHUNK_WIDTH
 		#--------
 
 		#--------
 		# Inputs
+
+		# if not PIPELINED
 		self.start = Signal()
 
 		self.numer = Signal(self.MAIN_WIDTH())
 		self.denom = Signal(self.DENOM_WIDTH())
+
+		# if PIPELINED
+		self.tag_in = Signal(self.TAG_WIDTH())
 		#--------
 
 		#--------
 		# Outputs
 		self.valid = Signal()
+
+		# if not PIPELINED
 		self.busy = Signal()
 
 		self.quot = Signal(self.MAIN_WIDTH())
 		self.rema = Signal(self.MAIN_WIDTH())
+
+		# if PIPELINED
+		self.tag_out = Signal(self.TAG_WIDTH())
 		#--------
 	#--------
 
@@ -46,21 +58,51 @@ class LongUdivBus:
 		return self.__DENOM_WIDTH
 	def DENOM_MAX_VAL(self):
 		return (1 << self.DENOM_WIDTH())
+
+	def CHUNK_WIDTH(self):
+		return self.__CHUNK_WIDTH
+	def TAG_WIDTH(self):
+		return (math.log2(self.MAIN_WIDTH() // self.CHUNK_WIDTH()) + 1)
 	#--------
 #--------
 
 #--------
-class LongUdiv(Elaboratable):
+class LongUdivPstageBus(LongUdivBus):
 	#--------
-	def __init__(self, MAIN_WIDTH, DENOM_WIDTH, CHUNK_WIDTH, FORMAL=False,
-		DBG=False):
-		self.__bus = LongUdivBus \
+	def __init__(self, MAIN_WIDTH, DENOM_WIDTH, CHUNK_WIDTH, PIPELINED):
+		super().__init__ \
+		(
+			MAIN_WIDTH=MAIN_WIDTH,
+			DENOM_WIDTH=DENOM_WIDTH,
+			CHUNK_WIDTH=CHUNK_WIDTH,
+		)
+
+		self.numer_out = Signal(self.MAIN_WIDTH())
+		self.denom_out = Signal(self.DENOM_WIDTH())
+
+		self.quot_in = Signal(self.MAIN_WIDTH())
+		self.rema_in = Signal(self.MAIN_WIDTH())
+	#--------
+
+	#--------
+	#--------
+#--------
+
+#--------
+# Used for both the pipeline stages
+class LongUdivPstage(Elaboratable):
+	#--------
+	def __init__(self, MAIN_WIDTH, DENOM_WIDTH, CHUNK_WIDTH,
+		PIPELINED=False, FORMAL=False):
+		self.__bus \
+			= LongUdivBus \
 			(
 				MAIN_WIDTH=MAIN_WIDTH,
-				DENOM_WIDTH=DENOM_WIDTH
+				DENOM_WIDTH=DENOM_WIDTH,
+				CHUNK_WIDTH=CHUNK_WIDTH,
+				PIPELINED=PIPELINED,
 			)
-		self.__CHUNK_WIDTH, self.__FORMAL, self.__DBG \
-			= CHUNK_WIDTH, FORMAL, DBG
+		self.__FORMAL = FORMAL
 	#--------
 
 	#--------
@@ -73,12 +115,51 @@ class LongUdiv(Elaboratable):
 		return self.bus().MAIN_WIDTH()
 	def DENOM_WIDTH(self):
 		return self.bus().DENOM_WIDTH()
-	#--------
-
-	#--------
 	def CHUNK_WIDTH(self):
-		return self.__CHUNK_WIDTH
+		return self.bus().CHUNK_WIDTH()
+	def TAG_WIDTH(self):
+		return self.bus().TAG_WIDTH()
+	def PIPELINED(self):
+		return self.bus().PIPELINED()
+	#--------
 
+#--------
+
+#--------
+class LongUdiv(Elaboratable):
+	#--------
+	def __init__(self, MAIN_WIDTH, DENOM_WIDTH, CHUNK_WIDTH,
+		PIPELINED=False, FORMAL=False, DBG=False):
+		self.__bus \
+			= LongUdivBus \
+			(
+				MAIN_WIDTH=MAIN_WIDTH,
+				DENOM_WIDTH=DENOM_WIDTH,
+				CHUNK_WIDTH=CHUNK_WIDTH,
+				PIPELINED=PIPELINED,
+			)
+		self.__FORMAL, self.__DBG = FORMAL, DBG
+	#--------
+
+	#--------
+	def bus(self):
+		return self.__bus
+	#--------
+
+	#--------
+	def MAIN_WIDTH(self):
+		return self.bus().MAIN_WIDTH()
+	def DENOM_WIDTH(self):
+		return self.bus().DENOM_WIDTH()
+	def CHUNK_WIDTH(self):
+		return self.bus().CHUNK_WIDTH()
+	def TAG_WIDTH(self):
+		return self.bus().TAG_WIDTH()
+	def PIPELINED(self):
+		return self.bus().PIPELINED()
+	#--------
+
+	#--------
 	def FORMAL(self):
 		return self.__FORMAL
 	def DBG(self):
@@ -89,8 +170,9 @@ class LongUdiv(Elaboratable):
 	def TEMP_T_WIDTH(self):
 		#return (self.CHUNK_WIDTH() * ((self.MAIN_WIDTH()
 		#	// self.CHUNK_WIDTH()) + 2))
+		add_amount = 1 if not self.PIPELINED() else 2
 		return (self.CHUNK_WIDTH() * ((self.MAIN_WIDTH()
-			// self.CHUNK_WIDTH()) + 1))
+			// self.CHUNK_WIDTH()) + add_amount))
 
 	#def NUM_CHUNKS(self):
 	#	return (self.TEMP_T_WIDTH() // self.CHUNK_WIDTH())
@@ -141,8 +223,6 @@ class LongUdiv(Elaboratable):
 		#--------
 
 		#--------
-		loc.rst = ResetSignal()
-
 		# Numerator as a `temp_t`
 		loc.temp_numer = Signal(self.TEMP_T_WIDTH())
 
@@ -300,7 +380,7 @@ class LongUdiv(Elaboratable):
 		#--------
 
 		#--------
-		with m.If(~loc.rst):
+		with m.If(~ResetSignal()):
 			#--------
 			# If we're starting a divide
 			with m.If(~bus.busy):
@@ -401,7 +481,7 @@ class LongUdiv(Elaboratable):
 			#--------
 
 			#--------
-			with m.If(~loc.rst):
+			with m.If(~ResetSignal()):
 				with m.If(~bus.busy):
 					#--------
 					with m.If(bus.start):

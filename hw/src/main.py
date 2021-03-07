@@ -5,7 +5,7 @@ import sys
 from misc_util import *
 from top_mod import *
 from general.fifo_mods import *
-from volt32_cpu.long_udiv_mods import *
+from volt32_cpu.long_udiv_mod import *
 
 
 from nmigen import *
@@ -74,7 +74,11 @@ if __name__ == "__main__":
 	#formal(LongUdiv, MAIN_WIDTH=4, DENOM_WIDTH=4, CHUNK_WIDTH=3)
 	#formal(LongUdiv, MAIN_WIDTH=7, DENOM_WIDTH=3, CHUNK_WIDTH=2)
 
-	formal(LongUdiv, MAIN_WIDTH=8, DENOM_WIDTH=8, CHUNK_WIDTH=3)
+	formal(LongUdiv, MAIN_WIDTH=8, DENOM_WIDTH=8, CHUNK_WIDTH=3,
+		PIPELINED=False)
+	#formal(LongUdiv, MAIN_WIDTH=8, DENOM_WIDTH=8, CHUNK_WIDTH=3,
+	#	PIPELINED=True)
+
 	#for CHUNK_WIDTH in range(1, 4 + 1):
 	#	formal(LongUdiv, MAIN_WIDTH=8, DENOM_WIDTH=8,
 	#		CHUNK_WIDTH=CHUNK_WIDTH)

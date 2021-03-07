@@ -1,0 +1,141 @@
+\documentclass{article}
+
+\usepackage{pbox}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{fancyvrb}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{setspace}
+\usepackage[nottoc]{tocbibind}
+\usepackage[font=large]{caption}
+\usepackage{framed}
+\usepackage{tabularx}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{fontspec}
+\usepackage[backend=biber,sorting=none]{biblatex}
+%%\usepackage[
+%%	backend=biber,
+%%	style=ieee,
+%%	sorting=none
+%%]{biblatex}
+%\addbibresource{project_refs.bib}
+
+%% Hide section, subsection, and subsubsection numbering
+%\renewcommand{\thesection}{}
+%\renewcommand{\thesubsection}{}
+%\renewcommand{\thesubsubsection}{}
+
+% Alternative form of doing section stuff
+\renewcommand{\thesection}{}
+\renewcommand{\thesubsection}{\arabic{section}.\arabic{subsection}}
+\makeatletter
+\def\@seccntformat#1{\csname #1ignore\expandafter\endcsname\csname the#1\endcsname\quad}
+\let\sectionignore\@gobbletwo
+\let\latex@numberline\numberline
+\def\numberline#1{\if\relax#1\relax\else\latex@numberline{#1}\fi}
+\makeatother
+
+\makeatletter
+\renewcommand\tableofcontents{%
+    \@starttoc{toc}%
+}
+\makeatother
+
+\newcommand{\respacing}{\doublespacing \singlespacing}
+\newcommand{\code}[2][1]{\noindent \texttt{\tab[#1] #2} \\}
+\newcommand{\skipline}[0]{\texttt{}\\}
+\newcommand{\tnl}[0]{\tabularnewline}
+
+\begin{document}
+%--------
+	\font\titlefont={Times New Roman} at 20pt
+	\title{{\titlefont Volt32 CPU}}
+
+	\font\bottomtextfont={Times New Roman} at 12pt
+	\date{{\bottomtextfont} \today}
+	\author{{\bottomtextfont Andrew Clark}}
+
+	\setmainfont{Times New Roman}
+	\setmonofont{Courier New}
+
+	\maketitle
+	\pagenumbering{gobble}
+
+	\newpage
+	\pagenumbering{arabic}
+	%\tableofcontents
+	%\newpage
+
+	%\doublespacing
+
+%\section{Abstract}
+	%\setcounter{section}{-1}
+
+\section{Table of Contents}
+	\tableofcontents
+	\newpage
+
+\section{Registers, Main Widths, etc.}
+	\begin{itemize}
+	%--------
+	\item The main width of the processor is 32-bit.  Addresses are 32-bit,
+	and some operations forcibly treat the operands as 32-bit.
+
+	\item The machine is an implementation of Line Associative Registers
+	(LARs).  Both instruction LARs (ILARs) and data LARs (DLARs) are
+	included in the design.  There are a grand total of 128 ILARs and 128
+	DLARs, but they are split between the LARs owned by the supervisor
+	mode and the LARs owned by the user mode.  There are 64 supervisor mode
+	ILARs and 64 supervisor mode DLARs, and there are 64 user mode ILARs
+	and 64 user mode DLARs.
+
+	\item ILARs
+		\begin{itemize}
+		%--------
+		\item In user mode, ILARs 0 to 63 are referred to as \texttt{i0},
+		\texttt{i1}, \texttt{i2}, ..., \texttt{i61}, \texttt{i62},
+		\texttt{i63}.
+
+		\item In supervisor mode, ILARs 64 to 127 are referred to as
+		\texttt{i0}, \texttt{i1}, \texttt{i2}, ..., \texttt{i61},
+		\texttt{i62}, \texttt{i63}.
+
+		\item The two ILARs with the name \texttt{i0} have all their fields
+		set to zero, and written to, the contents do not change.
+
+		\item An ILAR's data field is 128 bytes long.  It is composed of
+		32-bit instructions aligned to 32 bits.
+
+		\item An ILAR's scalar offset field is 5-bit due to instructions
+		being 32-bit and the data field being 128 bytes long.
+
+		\item The base address field of an ILAR is 32 - 7 = 25-bit.
+		%--------
+		\end{itemize}
+
+	\item DLARs
+		\begin{itemize}
+		%--------
+		\item In user mode, DLARs 0 to 63 are referred to as \texttt{d0},
+		\texttt{d1}, \texttt{d2}, ..., \texttt{d61}, \texttt{d62},
+		\texttt{d63}
+
+		\item In supervisor mode, DLARs 0 to 63 are referred to as
+		\texttt{d0}, \texttt{d1}, \texttt{d2}, ..., \texttt{d61},
+		\texttt{dira}, \texttt{dida}.
+
+		\item The two DLARs with the name \texttt{d0} have all their fields
+		set to zero, and written to, the contents do not change.
+
+		%--------
+		\end{itemize}
+	%--------
+	\end{itemize}
+
+
+	%\printbibliography[heading=bibnumbered,title={Bibliography}]
+
+%--------
+\end{document}

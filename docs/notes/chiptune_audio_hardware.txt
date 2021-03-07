@@ -1,0 +1,7 @@
+pulse: frequency, volume, pulse width
+triangle: frequency, volume (possibly reduced precision vs. pulse/noise), waveform choice (saw, triangle, or triangle & saw)
+noise: frequency (possibly reduced precision vs. pulse/triangle), volume, choice of tap giving long or short sequence
+[11:57 AM]
+Do you still have the pseudo-HDL I sent a couple years back?
+[11:58 AM]
+The only thing it's really missing, as I understand it, is the variable filter

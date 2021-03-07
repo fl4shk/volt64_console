@@ -118,7 +118,7 @@ class VgaDriver(Elaboratable):
 		fifo = m.submodules.fifo \
 			= FwftFifo \
 			(
-				ShapeT=rec_to_shape(RgbColor()),
+				ShapeT=to_shape(RgbColor()),
 				SIZE=self.FIFO_SIZE()
 			)
 

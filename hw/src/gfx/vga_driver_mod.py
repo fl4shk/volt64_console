@@ -155,7 +155,7 @@ class VgaDriver(Elaboratable):
 		fifo = m.submodules.fifo \
 			= AsyncReadFifo \
 			(
-				ShapeT=rec_to_shape(self.ColorT()()),
+				ShapeT=to_shape(self.ColorT()()),
 				SIZE=self.FIFO_SIZE(),
 			)
 
