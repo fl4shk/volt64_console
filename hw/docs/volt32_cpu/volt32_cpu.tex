@@ -129,12 +129,12 @@
 		\begin{itemize}
 		%--------
 		\item In user mode, DLARs 0 to 63 are referred to as \texttt{d0},
-		\texttt{d1}, \texttt{d2}, ..., \texttt{d61}, \texttt{d62},
-		\texttt{d63}.
+		\texttt{d1}, \texttt{d2}, ..., \texttt{d59}, \texttt{d60},
+		\texttt{dcp}, \texttt{dfp}, \texttt{dsp}.
 
 		\item In supervisor mode, DLARs 64 to 127 are referred to as
-		\texttt{d0}, \texttt{d1}, \texttt{d2}, ..., \texttt{d61},
-		\texttt{d62}, \texttt{d63}.
+		\texttt{d0}, \texttt{d1}, \texttt{d2}, ..., \texttt{d59},
+		\texttt{d60}, \texttt{dcp}, \texttt{dfp}, \texttt{dsp}.
 
 		\item The two DLARs called "\texttt{d0}" have all their
 		fields set to zero, and when written to, the contents of the DLAR
@@ -160,9 +160,9 @@
 			\item 32-bit, unsigned (\texttt{u32})
 			\item 32-bit, signed (\texttt{i32})
 			\item 64-bit, unsigned (\texttt{u64}); only usable for some
-			operations, if not usable gets treated like \texttt{u32}
+			operations
 			\item 64-bit, signed (\texttt{i64}); only usable for some
-			operations, if not usable gets treated like \texttt{i32}
+			operations
 			%--------
 			\end{itemize}
 
@@ -176,17 +176,31 @@
 		\item This register is 1-bit.
 
 		\item This register is a flag indicating whether or not an
-		exception can be serviced.  It can be written to with the
-		\texttt{cpy} (with \texttt{ie} as the destination operand)
-		instruction, and it can be read from with the \texttt{cpy} (with
-		\texttt{ie} as a source operand) instruction.
+		interrupt can be serviced.  It can be written to with the
+		\texttt{cpy} instruction (with \texttt{ie} as the destination
+		operand), and it can be read from with the \texttt{cpy} instruction
+		(with \texttt{ie} as the source operand).
 
 		\item The \texttt{reti} instruction sets \texttt{ie} to
-		\texttt{0b1} and returns from supervisor mode to user mode.
+		\texttt{0b1} and returns to user mode from supervisor mode.
+		%--------
+		\end{itemize}
+
+	\item The \texttt{xct} register
+		\begin{itemize}
+		%--------
+		\item This register is 32-bit.
+
+		\item This register gets set to one of the following values upon
+		the machine entering supervisor mode.  It can be written to using
+		the \texttt{cpy} instruction (with \texttt{xct} as the destination
+		operand), and it can be read from using the \texttt{cpy}
+		instruction (with \texttt{xct} as the source operand).
 		%--------
 		\end{itemize}
 	%--------
 	\end{itemize}
+	\newpage
 
 \section{Exceptions}
 	Some instructions may cause an exception to occur, putting the
@@ -199,6 +213,8 @@
 	%--------
 	\item Taking an interrupt, which also sets \texttt{ie} to \texttt{0b0}.
 	\item Division by zero.
+	\item Undefined instruction.
+	\item Instructions where 64-bit ops are not defined.
 	\item \texttt{swi}.
 		\begin{itemize}
 		%--------
@@ -207,11 +223,468 @@
 		%--------
 		\end{itemize}
 	\item \texttt{reti} in user mode.
-	\item \texttt{cpy} that writes to \texttt{ie} when in user mode.
+	\item \texttt{cpy} that reads from/writes to \texttt{ie} when in user
+	mode.
+	\item \texttt{cpy} that reads from/writes to \texttt{xct} when in user
+	mode.
 	\item Instructions that read from/write to supervisor mode
 	ILARs or DLARs when in user mode.
 	%--------
 	\end{itemize}
+	\newpage
+
+\section{Instructions (CPU's perspective)}
+	\subsection{Group 0 Instructions}
+		\begin{itemize}
+		%--------
+		\item Encoding: \texttt{0000 aaaa aabb bbbb  cccc ccdd dddv oooo}
+			\begin{itemize}
+			%--------
+			\item \texttt{a}:  DLAR a
+			\item \texttt{b}:  DLAR b
+			\item \texttt{c}:  DLAR c
+			\item \texttt{d}:  DLAR d (\texttt{d32} to \texttt{d63})
+			\item \texttt{v}:
+				\begin{itemize}
+				%--------
+				\item when \texttt{0b0}:  scalar operation
+				\item when \texttt{0b1}:  vector operation
+				%--------
+				\end{itemize}
+			\item \texttt{o}:  Opcode
+			%--------
+			\end{itemize}
+		\item Instruction List:
+			\begin{enumerate}
+			%--------
+			\item \texttt{add dA, dB, dC}
+				\begin{itemize}
+				%--------
+				\item This instruction causes an exception if \texttt{dA}
+				is of the following types:  \texttt{u64}, \texttt{i64}.
+				%--------
+				\end{itemize}
+			\item \texttt{sub dA, dB, dC}
+				\begin{itemize}
+				%--------
+				\item This instruction causes an exception if \texttt{dA}
+				is of the following types:  \texttt{u64}, \texttt{i64}.
+				%--------
+				\end{itemize}
+			\item \texttt{slt dA, dB, dC}
+				\begin{itemize}
+				%--------
+				\item This instruction causes an exception if \texttt{dA}
+				is of the following types:  \texttt{u64}, \texttt{i64}.
+				%--------
+				\end{itemize}
+			\item \texttt{mul dA, dB, dC}
+				\begin{itemize}
+				%--------
+				\item This instruction causes an exception if \texttt{dB}
+				or \texttt{dC} is of the following types:  \texttt{u64},
+				\texttt{i64}.
+				%--------
+				\end{itemize}
+
+			\item \texttt{div dA, dB, dC, dD}
+				\begin{itemize}
+				%--------
+				\item This instruction causes an exception if \texttt{dB},
+				\texttt{dC}, or \texttt{dD} is of the following types:
+				\texttt{u64}, \texttt{i64}.
+
+				\item This instruction writes the quotient into
+				\texttt{dA}, and the remainder into \texttt{dD}.
+				%--------
+				\end{itemize}
+			\item \texttt{and dA, dB, dC}
+			\item \texttt{or dA, dB, dC}
+			\item \texttt{xor dA, dB, dC}
+
+			\item \texttt{shl dA, dB, dC}
+				\begin{itemize}
+				%--------
+				\item Logical shift left.
+
+				\item This instruction causes an exception if \texttt{dA},
+				\texttt{dB}, or \texttt{dC} is of the following types:
+				\texttt{u64}, \texttt{i64}.
+
+				\item This instruction casts a temporary copy of
+				\texttt{dC} to the unsigned type that is the same size as
+				\texttt{dA}'s type and uses that instead of \texttt{dC}.
+				%--------
+				\end{itemize}
+			\item \texttt{shr dA, dB, dC}
+				\begin{itemize}
+				%--------
+				\item Logical shift right if \texttt{dA} is unsigned, or
+				arithmetic shift right if \texttt{dA} is signed.
+
+				\item This instruction causes an exception if \texttt{dA},
+				\texttt{dB}, or \texttt{dC} is of the following types:
+				\texttt{u64}, \texttt{i64}.
+
+				\item This instruction casts a temporary copy of
+				\texttt{dC} to the unsigned type that is the same size as
+				\texttt{dA}'s type and uses that instead of \texttt{dC}.
+				%--------
+				\end{itemize}
+			\item \texttt{rol dA, dB, dC}
+				\begin{itemize}
+				%--------
+				\item Rotate left.
+
+				\item This instruction causes an exception if \texttt{dA},
+				\texttt{dB}, or \texttt{dC} is of the following types:
+				\texttt{u64}, \texttt{i64}.
+
+				\item This instruction casts a temporary copy of
+				\texttt{dC} to the unsigned type that is the same size as
+				\texttt{dA}'s type and uses that instead of \texttt{dC}.
+				%--------
+				\end{itemize}
+			\item \texttt{ror dA, dB, dC}
+				\begin{itemize}
+				%--------
+				\item Rotate right.
+
+				\item This instruction causes an exception if \texttt{dA},
+				\texttt{dB}, or \texttt{dC} is of the following types:
+				\texttt{u64}, \texttt{i64}.
+
+				\item This instruction casts a temporary copy of
+				\texttt{dC} to the unsigned type that is the same size as
+				\texttt{dA}'s type and uses that instead of \texttt{dC}.
+				%--------
+				\end{itemize}
+
+			\item \texttt{add dA, dB.addr, dC}
+				\begin{itemize}
+				%--------
+				\item This instruction causes an exception if \texttt{dA}
+				or \texttt{dC} is of the following types: \texttt{u64},
+				\texttt{i64}.
+
+				\item For \texttt{add.v dA, dB.addr, dC}, this instruction
+				duplicates \texttt{cast(dA.type, dB.addr)} (a scalar) into
+				a temporary (128 bytes long) vector of element type
+				\texttt{dA.type}.
+				%--------
+				\end{itemize}
+			\item \texttt{shl dA, dB.addr, dC}
+				\begin{itemize}
+				%--------
+				\item This instruction causes an exception if \texttt{dA}
+				or \texttt{dC} is of the following types: \texttt{u64},
+				\texttt{i64}.
+
+				\item For \texttt{shl.v dA, dB.addr, dC}, this instruction
+				duplicates \texttt{cast(dA.type, dB.addr)} (a scalar) into
+				a temporary (128 bytes long) vector of element type
+				\texttt{dA.type}.
+
+				\item This instruction casts a temporary copy of
+				\texttt{dC} to the unsigned type that is the same size as
+				\texttt{dA}'s type and uses that instead of \texttt{dC}.
+				%--------
+				\end{itemize}
+			\item \textit{Reserved for future expansion.}
+			\item \textit{Reserved for future expansion.}
+			%--------
+			\end{enumerate}
+		%--------
+		\end{itemize}
+		\newpage
+
+	\subsection{Group 1 Instructions}
+		\begin{itemize}
+		%--------
+		\item Encoding: \texttt{0001 aaaa aabb bbbb  cccc ccii iiii iooo}
+			\begin{itemize}
+			%--------
+			\item \texttt{a}:  DLAR a
+			\item \texttt{b}:  DLAR b
+			\item \texttt{c}:  DLAR c
+			\item \texttt{i}:  \texttt{simm7} (sign-extended 7-bit
+			immediate)
+			\item \texttt{o}:  Opcode
+			%--------
+			\end{itemize}
+
+		\item For these instructions, the \texttt{dB} register's scalar
+		data field (temporarily casted to the \texttt{u32} type) and the
+		\texttt{dC} register's address field are used. 
+
+		\item Instruction List:
+			\begin{enumerate}
+			%--------
+			\item \texttt{ldu8 dA, dB, dC, simm7}
+			\item \texttt{ldi8 dA, dB, dC, simm7}
+			\item \texttt{ldu16 dA, dB, dC, simm7}
+			\item \texttt{ldi16 dA, dB, dC, simm7}
+			\item \texttt{ldu32 dA, dB, dC, simm7}
+			\item \texttt{ldi32 dA, dB, dC, simm7}
+			\item \texttt{ldu64 dA, dB, dC, simm7}
+			\item \texttt{ldi64 dA, dB, dC, simm7}
+			%--------
+			\end{enumerate}
+		%--------
+		\end{itemize}
+		\newpage
+
+	\subsection{Group 2 Instructions}
+		\begin{itemize}
+		%--------
+		\item Encoding: \texttt{0010 aaaa aabb bbbb  cccc ccii iiii iooo}
+			\begin{itemize}
+			%--------
+			\item \texttt{a}:  DLAR a
+			\item \texttt{b}:  DLAR b
+			\item \texttt{c}:  DLAR c
+			\item \texttt{i}:  \texttt{simm7} (sign-extended 7-bit
+			immediate)
+			\item \texttt{o}:  Opcode
+			%--------
+			\end{itemize}
+
+		\item For these instructions, the \texttt{dB} register's scalar
+		data field (temporarily casted to the \texttt{u32} type) and the
+		\texttt{dC} register's address field are used. 
+
+		\item Instruction List:
+			\begin{enumerate}
+			%--------
+			\item \texttt{stu8 dA, dB, dC, simm7}
+			\item \texttt{sti8 dA, dB, dC, simm7}
+			\item \texttt{stu16 dA, dB, dC, simm7}
+			\item \texttt{sti16 dA, dB, dC, simm7}
+			\item \texttt{stu32 dA, dB, dC, simm7}
+			\item \texttt{sti32 dA, dB, dC, simm7}
+			\item \texttt{stu64 dA, dB, dC, simm7}
+			\item \texttt{sti64 dA, dB, dC, simm7}
+			%--------
+			\end{enumerate}
+		%--------
+		\end{itemize}
+		\newpage
+
+	\subsection{Group 3 Instructions}
+		\begin{itemize}
+		%--------
+		\item Encoding: \texttt{0011 aaaa aabb bbbb  0000 0000 0000 0ooo}
+			\begin{itemize}
+			%--------
+			\item \texttt{a}:  DLAR a
+			\item \texttt{b}:  DLAR b
+			\item \texttt{o}:  Opcode
+			%--------
+			\end{itemize}
+
+		\item For these instructions, the \texttt{dB} register's scalar
+		data field is used.
+
+		\item Instruction List:
+			\begin{enumerate}
+			%--------
+			\item \texttt{dpu8 dA, dB}
+				\begin{itemize}
+				%--------
+				\item This instruction casts (a temporary copy of) the
+				scalar data of \texttt{dB} to the \texttt{u8} type.  The
+				casted scalar data is then stored into every \texttt{u8}
+				vector element of \texttt{dA}.  The type of \texttt{dA} is
+				then changed to \texttt{u8}.
+				%--------
+				\end{itemize}
+			\item \texttt{dpi8 dA, dB}
+				\begin{itemize}
+				%--------
+				\item This instruction casts (a temporary copy of) the
+				scalar data of \texttt{dB} to the \texttt{i8} type.  The
+				casted scalar data is then stored into every \texttt{i8}
+				vector element of \texttt{dA}.  The type of \texttt{dA} is
+				then changed to \texttt{i8}.
+				%--------
+				\end{itemize}
+			\item \texttt{dpu16 dA, dB}
+				\begin{itemize}
+				%--------
+				\item This instruction casts (a temporary copy of) the
+				scalar data of \texttt{dB} to the \texttt{u16} type.  The
+				casted scalar data is then stored into every \texttt{u16}
+				vector element of \texttt{dA}.  The type of \texttt{dA} is
+				then changed to \texttt{u16}.
+				%--------
+				\end{itemize}
+			\item \texttt{dpi16 dA, dB}
+				\begin{itemize}
+				%--------
+				\item This instruction casts (a temporary copy of) the
+				scalar data of \texttt{dB} to the \texttt{i16} type.  The
+				casted scalar data is then stored into every \texttt{i16}
+				vector element of \texttt{dA}.  The type of \texttt{dA} is
+				then changed to \texttt{i16}.
+				%--------
+				\end{itemize}
+
+			\item \texttt{dpu32 dA, dB}
+				\begin{itemize}
+				%--------
+				\item This instruction casts (a temporary copy of) the
+				scalar data of \texttt{dB} to the \texttt{u32} type.  The
+				casted scalar data is then stored into every \texttt{u32}
+				vector element of \texttt{dA}.  The type of \texttt{dA} is
+				then changed to \texttt{u32}.
+				%--------
+				\end{itemize}
+			\item \texttt{dpi32 dA, dB}
+				\begin{itemize}
+				%--------
+				\item This instruction casts (a temporary copy of) the
+				scalar data of \texttt{dB} to the \texttt{i32} type.  The
+				casted scalar data is then stored into every \texttt{i32}
+				vector element of \texttt{dA}.  The type of \texttt{dA} is
+				then changed to \texttt{i32}.
+				%--------
+				\end{itemize}
+			\item \texttt{dpu64 dA, dB}
+				\begin{itemize}
+				%--------
+				\item This instruction casts (a temporary copy of) the
+				scalar data of \texttt{dB} to the \texttt{u64} type.  The
+				casted scalar data is then stored into every \texttt{u64}
+				vector element of \texttt{dA}.  The type of \texttt{dA} is
+				then changed to \texttt{u64}.
+				%--------
+				\end{itemize}
+			\item \texttt{dpi64 dA, dB}
+				\begin{itemize}
+				%--------
+				\item This instruction casts (a temporary copy of) the
+				scalar data of \texttt{dB} to the \texttt{i64} type.  The
+				casted scalar data is then stored into every \texttt{i64}
+				vector element of \texttt{dA}.  The type of \texttt{dA} is
+				then changed to \texttt{i64}.
+				%--------
+				\end{itemize}
+			%--------
+			\end{enumerate}
+		%--------
+		\end{itemize}
+		\newpage
+
+	\subsection{Group 4 Instructions}
+		\begin{itemize}
+		%--------
+		\item Encoding:  \texttt{0100 aaaa aabb bbbb  cccc ccii iiii iiii}
+			\begin{itemize}
+			%--------
+			\item \texttt{a}:  ILAR a
+			\item \texttt{b}:  ILAR b
+			\item \texttt{c}:  DLAR c
+			\item \texttt{i}:  \texttt{simm10} (sign-extended 10-bit
+			immediate)
+			%--------
+			\end{itemize}
+
+		\item This instruction uses the address field of \texttt{iB} and
+		the scalar data field (temporarily casted to the \texttt{u32} type)
+		of the \texttt{dC} register.
+
+		\item Instruction List:
+			\begin{enumerate}
+			%--------
+			\item \texttt{fetch iA, iB, dC, simm10}
+			%--------
+			\end{enumerate}
+		%--------
+		\end{itemize}
+		\newpage
+
+	\subsection{Group 5 Instructions}
+		\begin{itemize}
+		%--------
+		\item Encoding:  \texttt{0101 aaaa aabb bbbb  iiii ijjj jj0v oooo}
+			\begin{itemize}
+			%--------
+			\item \texttt{a}:  DLAR a
+			\item \texttt{b}:  ILAR b
+			\item \texttt{i}:  \texttt{iimm5} (zero-extended 5-bit
+			immediate i)
+			\item \texttt{j}:  \texttt{jimm5} (zero-extended 5-bit
+			immediate j)
+			\item \texttt{v}:
+				\begin{itemize}
+				%--------
+				\item when \texttt{0b0}:  scalar operation (uses the scalar
+				data of \texttt{dA})
+				\item when \texttt{0b1}:  vector operation (uses the vector
+				data of \texttt{dA})
+				%--------
+				\end{itemize}
+			\item \texttt{o}:  Opcode
+			%--------
+			\end{itemize}
+
+		\item These instructions use the scalar or vector data field of
+		\texttt{dA}.
+
+		\item Instruction List:
+			\begin{enumerate}
+			%--------
+			\item \texttt{sel dA, iB, iimm5, jimm5}
+				\begin{itemize}
+				%--------
+				\item This instruction jumps to \texttt{iB[iimm5 << 2]} if
+				the particular data field of \texttt{dA}
+				is non-zero, otherwise to the address \texttt{iB[jimm5 <<
+				2]}.
+				%--------
+				\end{itemize}
+			\item \texttt{jz dA, iB, iimm5}
+				\begin{itemize}
+				%--------
+				\item This instruction jumps to \texttt{iB[iimm5 << 2]}
+				if the particular data field of \texttt{dA} is zero.
+				%--------
+				\end{itemize}
+			\item \texttt{jnz dA, iB, iimm5}
+				\begin{itemize}
+				%--------
+				\item This instruction jumps to \texttt{iB[iimm5 << 2]}
+				if the particular data field of \texttt{dA} is non-zero.
+				%--------
+				\end{itemize}
+			\item \texttt{reti dA}
+				\begin{itemize}
+				%--------
+				\item This instruction returns from an interrupt if in
+				supervisor mode and \texttt{dA} is non-zero, setting
+				\texttt{ie}
+				%--------
+				\end{itemize}
+
+			\item \textit{Reserved for future expansion.}
+			\item \textit{Reserved for future expansion.}
+			\item \textit{Reserved for future expansion.}
+			\item \textit{Reserved for future expansion.}
+
+			\item \textit{Reserved for future expansion.}
+			\item \textit{Reserved for future expansion.}
+			\item \textit{Reserved for future expansion.}
+			\item \textit{Reserved for future expansion.}
+
+			\item \textit{Reserved for future expansion.}
+			\item \textit{Reserved for future expansion.}
+			\item \textit{Reserved for future expansion.}
+			\item \textit{Reserved for future expansion.}
+			%--------
+			\end{enumerate}
+		%--------
+		\end{itemize}
+		\newpage
 
 
 	%\printbibliography[heading=bibnumbered,title={Bibliography}]
