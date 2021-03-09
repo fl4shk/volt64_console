@@ -198,6 +198,15 @@
 		instruction (with \texttt{xct} as the source operand).
 		%--------
 		\end{itemize}
+
+	\item The \texttt{swiarg} register
+		\begin{itemize}
+		%--------
+		\item This register is 32-bit.
+
+		\item This register
+		%--------
+		\end{itemize}
 	%--------
 	\end{itemize}
 	\newpage
@@ -222,11 +231,13 @@
 		occur.
 		%--------
 		\end{itemize}
-	\item \texttt{reti} in user mode.
+	\item \texttt{reti} or \texttt{retx} in user mode.
 	\item \texttt{cpy} that reads from/writes to \texttt{ie} when in user
 	mode.
 	\item \texttt{cpy} that reads from/writes to \texttt{xct} when in user
 	mode.
+	\item \texttt{cpy} that reads from/writes to \texttt{swiarg} when in
+	user mode.
 	\item Instructions that read from/write to supervisor mode
 	ILARs or DLARs when in user mode.
 	%--------
@@ -243,7 +254,7 @@
 			\item \texttt{a}:  DLAR a
 			\item \texttt{b}:  DLAR b
 			\item \texttt{c}:  DLAR c
-			\item \texttt{d}:  DLAR d (\texttt{d32} to \texttt{d63})
+			\item \texttt{d}:  DLAR d (\texttt{d0} to \texttt{d31})
 			\item \texttt{v}:
 				\begin{itemize}
 				%--------
@@ -578,14 +589,17 @@
 	\subsection{Group 4 Instructions}
 		\begin{itemize}
 		%--------
-		\item Encoding:  \texttt{0100 aaaa aabb bbbb  cccc ccii iiii iiii}
+		\item Encoding:  \texttt{0100 aaaa aabb bbbb  cccc iiii iiii jjjj}
 			\begin{itemize}
 			%--------
 			\item \texttt{a}:  ILAR a
 			\item \texttt{b}:  ILAR b
-			\item \texttt{c}:  DLAR c
-			\item \texttt{i}:  \texttt{simm10} (sign-extended 10-bit
+			\item \texttt{c}:  DLAR c (\texttt{d0} to \texttt{d15})
+			\item \texttt{i}:  \texttt{isimm8} (sign-extended 8-bit
 			immediate)
+			\item \texttt{j}:  \texttt{jimm4} (zero-extended 4-bit
+			immediate), the number of consecutive ILARs past \texttt{iA} to
+			\texttt{fetch} into.
 			%--------
 			\end{itemize}
 
@@ -596,7 +610,7 @@
 		\item Instruction List:
 			\begin{enumerate}
 			%--------
-			\item \texttt{fetch iA, iB, dC, simm10}
+			\item \texttt{fetch iA, iB, dC, isimm8, jimm4}
 			%--------
 			\end{enumerate}
 		%--------
@@ -660,13 +674,25 @@
 			\item \texttt{reti dA}
 				\begin{itemize}
 				%--------
-				\item This instruction returns from an interrupt if in
-				supervisor mode and \texttt{dA} is non-zero, setting
-				\texttt{ie}
+				\item This instruction returns from an interrupt if
+				\texttt{dA} is non-zero, setting \texttt{ie} to
+				\texttt{0b1}.
+
+				\item This instruction causes an exception if the processor
+				is in user mode.
 				%--------
 				\end{itemize}
 
-			\item \textit{Reserved for future expansion.}
+			\item \texttt{retx dA}
+				\begin{itemize}
+				%--------
+				\item This instruction returns from supervisor mode to user
+				mode if \texttt{dA} is non-zero.
+
+				\item This instruction causes an exception if the processor
+				is in user mode.
+				%--------
+				\end{itemize}
 			\item \textit{Reserved for future expansion.}
 			\item \textit{Reserved for future expansion.}
 			\item \textit{Reserved for future expansion.}
@@ -685,6 +711,142 @@
 		%--------
 		\end{itemize}
 		\newpage
+
+	\subsection{Group 6 Instructions}
+		\begin{itemize}
+		%--------
+		\item Encoding:  \texttt{0110 aaaa aabb bbbb  cccc ccii iiii sooo}
+			\begin{itemize}
+			%--------
+			\item \texttt{a}:  ILAR a or DLAR a
+			\item \texttt{b}:  ILAR b or DLAR b
+			\item \texttt{c}:  DLAR c
+			\item \texttt{i}:  \texttt{imm6} (zero-extended 6-bit
+			immediate), amount of LAR contents to use
+			\item \texttt{s}:
+				\begin{itemize}
+				%--------
+				\item when \texttt{0b0}:  Destination LARs (the ones
+				starting with \texttt{iA} or \texttt{dA}) or source LARs
+				(the ones starting with \texttt{iB} or \texttt{dB}) are
+				user mode LARs.  An example of the syntax for
+				\texttt{getaddr} in this case is \texttt{getaddr.u}.  The
+				"\texttt{.u}" suffix indicates this instruction will have
+				the \texttt{s} bit set to \texttt{0b0}.
+
+				\item when \texttt{0b1}:  Destination LARs (the ones
+				starting with \texttt{iA} or \texttt{dA}) or source LARs
+				(the ones starting with \texttt{iB} or \texttt{dB}) are
+				supervisor mode LARs.  An example of the syntax for
+				\texttt{getaddr} in this case is \texttt{getaddr.s}.  The
+				"\texttt{.s}" suffix indicates this instruction will have
+				the \texttt{s} bit set to \texttt{0b1}.
+				%--------
+				\end{itemize}
+			\item \texttt{o}:  Opcode
+			%--------
+			\end{itemize}
+
+		\item Instruction List:
+			\begin{enumerate}
+			%--------
+			\item \texttt{getaddr dA, dB, imm6}
+				\begin{itemize}
+				%--------
+				\item This instruction uses the \texttt{s} bit to indicate
+				which mode the source DLARs belong to.
+
+				\item This instruction grabs the addresses of source DLARs
+				starting with \texttt{dB} and then also the following
+				\texttt{imm6 - 1} source DLARs. The grabbed addresses are
+				then written into consecutive scalar data elements of
+				destination DLARs (starting with \texttt{dA} and continuing
+				into the following destination DLARs as necessary).
+
+				\item When supervisor mode LARs are used for the source(s),
+				this instruction causes an exception if used in user mode.
+				%--------
+				\end{itemize}
+			\item \texttt{getaddr dA, iB, imm6}
+				\begin{itemize}
+				%--------
+				\item This instruction uses the \texttt{s} bit to indicate
+				which mode the source ILARs belong to.
+
+				\item This instruction grabs the addresses of source ILARs
+				starting with \texttt{dB} and then also the following
+				\texttt{imm6 - 1} source DLARs. The grabbed addresses are
+				then written into consecutive scalar data elements of
+				destination DLARs (starting with \texttt{dA} and continuing
+				into the following destination DLARs as necessary).
+
+				\item When supervisor mode LARs are used for the source(s),
+				this instruction causes an exception if used in user mode.
+				%--------
+				\end{itemize}
+			\item \texttt{gettype dA, dB, imm6}
+				\begin{itemize}
+				%--------
+				\item This instruction uses the \texttt{s} bit to indicate
+				which mode the source DLARs belong to.
+
+				\item This instruction grabs the types of source DLARs
+				starting with \texttt{dB} and then also the following
+				\texttt{imm6 - 1} source DLARs. The grabbed types are then
+				written into consecutive scalar data elements of
+				destination DLARs (starting with \texttt{dA} and continuing
+				into the following destination DLARs as necessary).
+
+				\item When supervisor mode LARs are used for the source(s),
+				this instruction causes an exception if used in user mode.
+				%--------
+				\end{itemize}
+			\item \texttt{ldm dA, dB, dC, imm6}
+				\begin{itemize}
+				%--------
+				\item This instruction's name is short for "load multiple".
+
+				\item This instruction uses the \texttt{s} bit to indicate
+				to which mode the destination DLARs belong.
+
+				\item This instruction uses addresses stored in the
+				\texttt{imm6} scalar data elements of consecutive DLARs
+				(starting with \texttt{dB}) and types stored in the
+				\texttt{imm6} scalar data elements of consecutive DLARs
+				(starting with \texttt{dC}).  Multiple loads from memory
+				are performed into the \texttt{imm6} destination DLARs
+				(starting with \texttt{dA}).
+
+				\item When supervisor mode LARs are used for the
+				destination(s), this instruction causes an exception if
+				used in user mode.
+				%--------
+				\end{itemize}
+
+			\item \texttt{fetchm iA, dB, imm6}
+				\begin{itemize}
+				%--------
+				\item This instruction's name is short for "fetch
+				multiple".
+
+				\item This instruction uses the \texttt{s} bit to indicate
+				to which mode the destination DLARs belong.
+
+				\item This instruction uses addresses stored in the
+				\texttt{imm6} scalar data elements of consecutive DLARs
+				(starting with \texttt{dB}).  Multiple fetches from memory
+				are performed into the \texttt{imm6} destination ILARs
+				(starting with \texttt{iA}).
+
+				\item When supervisor mode LARs are used for the
+				destination(s), this instruction causes an exception if
+				used in user mode.
+				%--------
+				\end{itemize}
+			%--------
+			\end{enumerate}
+		%--------
+		\end{itemize}
 
 
 	%\printbibliography[heading=bibnumbered,title={Bibliography}]
