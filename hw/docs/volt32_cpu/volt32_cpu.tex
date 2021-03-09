@@ -173,13 +173,13 @@
 	\item The \texttt{ie} register
 		\begin{itemize}
 		%--------
+		\item "interrupt enable"
+
 		\item This register is 1-bit.
 
 		\item This register is a flag indicating whether or not an
-		interrupt can be serviced.  It can be written to with the
-		\texttt{cpy} instruction (with \texttt{ie} as the destination
-		operand), and it can be read from with the \texttt{cpy} instruction
-		(with \texttt{ie} as the source operand).
+		interrupt can be serviced.  It can be read from/written to using
+		\texttt{cpy} instructions.
 
 		\item The \texttt{reti} instruction sets \texttt{ie} to
 		\texttt{0b1} and returns to user mode from supervisor mode.
@@ -189,22 +189,53 @@
 	\item The \texttt{xct} register
 		\begin{itemize}
 		%--------
+		\item "exception type"
+
 		\item This register is 32-bit.
 
-		\item This register gets set to one of the following values upon
-		the machine entering supervisor mode.  It can be written to using
-		the \texttt{cpy} instruction (with \texttt{xct} as the destination
-		operand), and it can be read from using the \texttt{cpy}
-		instruction (with \texttt{xct} as the source operand).
+		\item This register is set to the numerical value of an exception's
+		type upon the machine entering supervisor mode.  It can be read
+		from/written to using \texttt{cpy} instructions.
 		%--------
 		\end{itemize}
 
-	\item The \texttt{swiarg} register
+	\item The \texttt{swiarg0} register
 		\begin{itemize}
 		%--------
 		\item This register is 32-bit.
 
-		\item This register
+		\item This register indicates argument 0 to \texttt{swi}.  It can
+		be read from/written to with \texttt{cpy} instructions.
+		%--------
+		\end{itemize}
+
+	\item The \texttt{swiarg1} register
+		\begin{itemize}
+		%--------
+		\item This register is 32-bit.
+
+		\item This register indicates argument 1 to \texttt{swi}.  It can
+		be read from/written to with \texttt{cpy} instructions.
+		%--------
+		\end{itemize}
+
+	\item The \texttt{swiarg2} register
+		\begin{itemize}
+		%--------
+		\item This register is 32-bit.
+
+		\item This register indicates argument 2 to \texttt{swi}.  It can
+		be read from/written to with \texttt{cpy} instructions.
+		%--------
+		\end{itemize}
+
+	\item The \texttt{swiarg3} register
+		\begin{itemize}
+		%--------
+		\item This register is 32-bit.
+
+		\item This register indicates argument 3 to \texttt{swi}.  It can
+		be read from/written to with \texttt{cpy} instructions.
 		%--------
 		\end{itemize}
 	%--------
@@ -216,7 +247,8 @@
 	processor in supervisor mode.
 
 	The following exceptions may occur during normal execution of a
-	program.
+	program.  \texttt{xct} is set to a numerical value representing these
+	upon the processor encountering an exception. 
 
 	\begin{itemize}
 	%--------
@@ -224,6 +256,7 @@
 	\item Division by zero.
 	\item Undefined instruction.
 	\item Instructions where 64-bit ops are not defined.
+
 	\item \texttt{swi}.
 		\begin{itemize}
 		%--------
@@ -231,20 +264,34 @@
 		occur.
 		%--------
 		\end{itemize}
-	\item \texttt{reti} or \texttt{retx} in user mode.
-	\item \texttt{cpy} that reads from/writes to \texttt{ie} when in user
-	mode.
-	\item \texttt{cpy} that reads from/writes to \texttt{xct} when in user
-	mode.
-	\item \texttt{cpy} that reads from/writes to \texttt{swiarg} when in
+
+	\item \texttt{reti} when in user mode.
+	\item \texttt{retx} when in user mode.
+
+	\item \texttt{cpy} that reads from \texttt{ie} in user mode.
+	\item \texttt{cpy} that writes to \texttt{ie} in user mode.
+	\item \texttt{cpy} that reads from \texttt{xct} in user mode.
+	\item \texttt{cpy} that writes to \texttt{xct} in user mode.
+
+	\item \texttt{cpy} that reads from \texttt{swiarg0} when in user mode.
+	\item \texttt{cpy} that writes to \texttt{swiarg0} when in user mode.
+	\item \texttt{cpy} that reads from \texttt{swiarg1} when in user mode.
+	\item \texttt{cpy} that writes to \texttt{swiarg1} when in user mode.
+
+	\item \texttt{cpy} that reads from \texttt{swiarg2} when in user mode.
+	\item \texttt{cpy} that writes to \texttt{swiarg2} when in user mode.
+	\item \texttt{cpy} that reads from \texttt{swiarg3} when in user mode.
+	\item \texttt{cpy} that writes to \texttt{swiarg3} when in user mode.
+
+	\item Instructions that read from supervisor mode ILARs or DLARs when
+	in user mode.
+	\item Instructions that write to supervisor mode ILARs or DLARs when in
 	user mode.
-	\item Instructions that read from/write to supervisor mode
-	ILARs or DLARs when in user mode.
 	%--------
 	\end{itemize}
 	\newpage
 
-\section{Instructions (CPU's perspective)}
+\section{Instructions}
 	\subsection{Group 0 Instructions}
 		\begin{itemize}
 		%--------
@@ -258,8 +305,13 @@
 			\item \texttt{v}:
 				\begin{itemize}
 				%--------
-				\item when \texttt{0b0}:  scalar operation
-				\item when \texttt{0b1}:  vector operation
+				\item when \texttt{0b0}:  scalar operation.  The assembly
+				syntax indicating a scalar operation simply adds
+				"\texttt{.s}" to the instruction's name.
+
+				\item when \texttt{0b1}:  vector operation.  The assembly
+				syntax indicating a vector operation simply adds
+				"\texttt{.v}" to the instruction's name.
 				%--------
 				\end{itemize}
 			\item \texttt{o}:  Opcode
@@ -633,9 +685,13 @@
 				\begin{itemize}
 				%--------
 				\item when \texttt{0b0}:  scalar operation (uses the scalar
-				data of \texttt{dA})
+				data of \texttt{dA}).  The assembly syntax indicating a
+				scalar operation simply adds "\texttt{.s}" to the
+				instruction's name.
 				\item when \texttt{0b1}:  vector operation (uses the vector
-				data of \texttt{dA})
+				data of \texttt{dA}).  The assembly syntax indicating a
+				vector operation simply adds "\texttt{.v}" to the
+				instruction's name.
 				%--------
 				\end{itemize}
 			\item \texttt{o}:  Opcode
@@ -843,6 +899,51 @@
 				used in user mode.
 				%--------
 				\end{itemize}
+			\item \textit{Reserved for future expansion.}
+			\item \textit{Reserved for future expansion.}
+			\item \textit{Reserved for future expansion.}
+			%--------
+			\end{enumerate}
+		%--------
+		\end{itemize}
+		\newpage
+
+	\subsection{Group 7 Instructions}
+		\begin{itemize}
+		%--------
+		\item Encoding:  \texttt{0111 aaaa aabb bbbb  cccc ccdd dddd oooo}
+			\begin{itemize}
+			%--------
+			\item \texttt{a}:  DLAR a
+			\item \texttt{b}:  DLAR b
+			\item \texttt{c}:  DLAR c
+			\item \texttt{d}:  DLAR d
+			\item \texttt{o}:  Opcode
+			%--------
+			\end{itemize}
+
+		\item Instruction List:
+			\begin{enumerate}
+			%--------
+			\item \texttt{cpy dA, ie}
+			\item \texttt{cpy ie, dA}
+			\item \texttt{cpy dA, xct}
+			\item \texttt{cpy xct, dA}
+
+			\item \texttt{cpy dA, swiarg0}
+			\item \texttt{cpy swiarg0, dA}
+			\item \texttt{cpy dA, swiarg1}
+			\item \texttt{cpy swiarg1, dA}
+
+			\item \texttt{cpy dA, swiarg2}
+			\item \texttt{cpy swiarg2, dA}
+			\item \texttt{cpy dA, swiarg3}
+			\item \texttt{cpy swiarg3, dA}
+
+			\item \texttt{swi dA, dB, dC, dD}
+			\item \textit{Reserved for future expansion.}
+			\item \textit{Reserved for future expansion.}
+			\item \textit{Reserved for future expansion.}
 			%--------
 			\end{enumerate}
 		%--------
