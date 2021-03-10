@@ -949,6 +949,231 @@
 		%--------
 		\end{itemize}
 
+	\subsection{Group 8 Instructions}
+		\begin{itemize}
+		%--------
+		\item Encoding:  \texttt{1000 aaaa aabb bbbb  cccc cc00 000v oooo}
+			\begin{itemize}
+			%--------
+			\item \texttt{a}:  DLAR a
+			\item \texttt{b}:  DLAR b
+			\item \texttt{c}:  DLAR c
+			\item \texttt{v}:
+				\begin{itemize}
+				%--------
+				\item when \texttt{0b0}:  scalar operation.  The assembly
+				syntax indicating a scalar operation simply adds
+				"\texttt{.s}" to the instruction's name.
+				\item when \texttt{0b1}:  vector operation.  The assembly
+				syntax indicating a vector operation simply adds
+				"\texttt{.v}" to the instruction's name.
+				%--------
+				\end{itemize}
+			\item \texttt{o}:  Opcode
+			%--------
+			\end{itemize}
+
+		\item These instructions perform a read from/write to the IO
+		address calculated by adding the scalar data of \texttt{dB} and
+		\texttt{dC}, or \texttt{dB + dC}.  The types of \texttt{dB} and
+		\texttt{dC} are temporarily casted to \texttt{u32} for this
+		calculation.
+
+		\item When a scalar operation is being performed, only the
+		scalar data of \texttt{dA} is read into from/written out to IO
+		space.
+
+		\item When a vector operation is being performed, the
+		entire vector data of \texttt{dA} is read into from/written out to
+		IO space.
+
+		\item Instruction List:
+			\begin{enumerate}
+			%--------
+			\item \texttt{inu8 dA, dB, dC}
+				\begin{itemize}
+				%--------
+				\item This instruction sets the type of \texttt{dA} to
+				\texttt{u8} before performing anything else of the
+				operation.
+
+				\item This instruction reads from IO space and writes to
+				\texttt{dA}.
+				%--------
+				\end{itemize}
+			\item \texttt{ini8 dA, dB, dC}
+				\begin{itemize}
+				%--------
+				\item This instruction sets the type of \texttt{dA} to
+				\texttt{i8} before performing anything else of the
+				operation.
+
+				\item This instruction reads from IO space and writes to
+				\texttt{dA}.
+				%--------
+				\end{itemize}
+			\item \texttt{inu16 dA, dB, dC}
+				\begin{itemize}
+				%--------
+				\item This instruction sets the type of \texttt{dA} to
+				\texttt{u16} before performing anything else of the
+				operation.
+
+				\item This instruction reads from IO space and writes to
+				\texttt{dA}.
+				%--------
+				\end{itemize}
+			\item \texttt{ini16 dA, dB, dC}
+				\begin{itemize}
+				%--------
+				\item This instruction sets the type of \texttt{dA} to
+				\texttt{i16} before performing anything else of the
+				operation.
+
+				\item This instruction reads from IO space and writes to
+				\texttt{dA}.
+				%--------
+				\end{itemize}
+
+			\item \texttt{inu32 dA, dB, dC}
+				\begin{itemize}
+				%--------
+				\item This instruction sets the type of \texttt{dA} to
+				\texttt{u32} before performing anything else of the
+				operation.
+
+				\item This instruction reads from IO space and writes to
+				\texttt{dA}.
+				%--------
+				\end{itemize}
+			\item \texttt{ini32 dA, dB, dC}
+				\begin{itemize}
+				%--------
+				\item This instruction sets the type of \texttt{dA} to
+				\texttt{i32} before performing anything else of the
+				operation.
+
+				\item This instruction reads from IO space and writes to
+				\texttt{dA}.
+				%--------
+				\end{itemize}
+			\item \texttt{inu64 dA, dB, dC}
+				\begin{itemize}
+				%--------
+				\item This instruction sets the type of \texttt{dA} to
+				\texttt{u64} before performing anything else of the
+				operation.
+
+				\item This instruction reads from IO space and writes to
+				\texttt{dA}.
+				%--------
+				\end{itemize}
+			\item \texttt{ini64 dA, dB, dC}
+				\begin{itemize}
+				%--------
+				\item This instruction sets the type of \texttt{dA} to
+				\texttt{i64} before performing anything else of the
+				operation.
+
+				\item This instruction reads from IO space and writes to
+				\texttt{dA}.
+				%--------
+				\end{itemize}
+
+			\item \texttt{outu8 dA, dB, dC}
+				\begin{itemize}
+				%--------
+				\item This instruction sets the type of \texttt{dA} to
+				\texttt{u8} before performing anything else of the
+				operation.
+
+				\item This instruction writes to IO space and reads from
+				\texttt{dA}.
+				%--------
+				\end{itemize}
+			\item \texttt{outi8 dA, dB, dC}
+				\begin{itemize}
+				%--------
+				\item This instruction sets the type of \texttt{dA} to
+				\texttt{i8} before performing anything else of the
+				operation.
+
+				\item This instruction writes to IO space and reads from
+				\texttt{dA}.
+				%--------
+				\end{itemize}
+			\item \texttt{outu16 dA, dB, dC}
+				\begin{itemize}
+				%--------
+				\item This instruction sets the type of \texttt{dA} to
+				\texttt{u16} before performing anything else of the
+				operation.
+
+				\item This instruction writes to IO space and reads from
+				\texttt{dA}.
+				%--------
+				\end{itemize}
+			\item \texttt{outi16 dA, dB, dC}
+				\begin{itemize}
+				%--------
+				\item This instruction sets the type of \texttt{dA} to
+				\texttt{i16} before performing anything else of the
+				operation.
+
+				\item This instruction writes to IO space and reads from
+				\texttt{dA}.
+				%--------
+				\end{itemize}
+
+			\item \texttt{outu32 dA, dB, dC}
+				\begin{itemize}
+				%--------
+				\item This instruction sets the type of \texttt{dA} to
+				\texttt{u32} before performing anything else of the
+				operation.
+
+				\item This instruction writes to IO space and reads from
+				\texttt{dA}.
+				%--------
+				\end{itemize}
+			\item \texttt{outi32 dA, dB, dC}
+				\begin{itemize}
+				%--------
+				\item This instruction sets the type of \texttt{dA} to
+				\texttt{i32} before performing anything else of the
+				operation.
+
+				\item This instruction writes to IO space and reads from
+				\texttt{dA}.
+				%--------
+				\end{itemize}
+			\item \texttt{outu64 dA, dB, dC}
+				\begin{itemize}
+				%--------
+				\item This instruction sets the type of \texttt{dA} to
+				\texttt{u64} before performing anything else of the
+				operation.
+
+				\item This instruction writes to IO space and reads from
+				\texttt{dA}.
+				%--------
+				\end{itemize}
+			\item \texttt{outi64 dA, dB, dC}
+				\begin{itemize}
+				%--------
+				\item This instruction sets the type of \texttt{dA} to
+				\texttt{i64} before performing anything else of the
+				operation.
+
+				\item This instruction writes to IO space and reads from
+				\texttt{dA}.
+				%--------
+				\end{itemize}
+			%--------
+			\end{enumerate}
+		%--------
+		\end{itemize}
+
 
 	%\printbibliography[heading=bibnumbered,title={Bibliography}]
 
