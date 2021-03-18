@@ -111,7 +111,9 @@
 		does not change.
 
 		\item The two ILARs called "\texttt{ipc}" are the program
-		counters for the two operating modes of the processor.
+		counters for the two operating modes of the processor.  The
+		location within the \texttt{ipc} ILARs can be computed by taking
+		the low 7 bits of their addresses.
 
 		\item An ILAR's data field is 128 bytes long.  It is composed of
 		32-bit instructions aligned to 32 bits.
@@ -423,38 +425,88 @@
 				%--------
 				\end{itemize}
 
-			\item \texttt{add dA, dB.addr, dC}
+			%\item \texttt{add dA, dB.addr, dC}
+			%	\begin{itemize}
+			%	%--------
+			%	\item This instruction causes an exception if \texttt{dA}
+			%	or \texttt{dC} is of the following types: \texttt{u64},
+			%	\texttt{i64}.
+
+			%	\item For \texttt{add.v dA, dB.addr, dC}, this instruction
+			%	duplicates \texttt{cast(dA.type, dB.addr)} (a scalar) into
+			%	a temporary (128 bytes long) vector of element type
+			%	\texttt{dA.type}.
+			%	%--------
+			%	\end{itemize}
+			%\item \texttt{shl dA, dB.addr, dC}
+			%	\begin{itemize}
+			%	%--------
+			%	\item This instruction causes an exception if \texttt{dA}
+			%	or \texttt{dC} is of the following types: \texttt{u64},
+			%	\texttt{i64}.
+
+			%	\item For \texttt{shl.v dA, dB.addr, dC}, this instruction
+			%	duplicates \texttt{cast(dA.type, dB.addr)} (a scalar) into
+			%	a temporary (128 bytes long) vector of element type
+			%	\texttt{dA.type}.
+
+			%	\item This instruction casts a temporary copy of
+			%	\texttt{dC} to the unsigned type that is the same size as
+			%	\texttt{dA}'s type and uses that instead of \texttt{dC}.
+			%	%--------
+			%	\end{itemize}
+			\item \texttt{rsum dA, dB}
 				\begin{itemize}
 				%--------
-				\item This instruction causes an exception if \texttt{dA}
-				or \texttt{dC} is of the following types: \texttt{u64},
-				\texttt{i64}.
-
-				\item For \texttt{add.v dA, dB.addr, dC}, this instruction
-				duplicates \texttt{cast(dA.type, dB.addr)} (a scalar) into
-				a temporary (128 bytes long) vector of element type
-				\texttt{dA.type}.
-				%--------
-				\end{itemize}
-			\item \texttt{shl dA, dB.addr, dC}
-				\begin{itemize}
-				%--------
-				\item This instruction causes an exception if \texttt{dA}
-				or \texttt{dC} is of the following types: \texttt{u64},
-				\texttt{i64}.
-
-				\item For \texttt{shl.v dA, dB.addr, dC}, this instruction
-				duplicates \texttt{cast(dA.type, dB.addr)} (a scalar) into
-				a temporary (128 bytes long) vector of element type
-				\texttt{dA.type}.
-
 				\item This instruction casts a temporary copy of
-				\texttt{dC} to the unsigned type that is the same size as
-				\texttt{dA}'s type and uses that instead of \texttt{dC}.
+				\texttt{dB} to the \texttt{dA}'s type and performs a sum of
+				all the vector elements of the temporary copy of
+				\texttt{dB}, then stores the result in \texttt{dA}'s scalar
+				data.
+
+				\item This instruction ignores the \texttt{v} bit encoded
+				into it.
 				%--------
 				\end{itemize}
-			\item \textit{Reserved for future expansion.}
-			\item \textit{Reserved for future expansion.}
+			\item \texttt{rprod dA, dB}
+				\begin{itemize}
+				%--------
+				\item This instruction casts a temporary copy of
+				\texttt{dB} to the \texttt{dA}'s type and performs a
+				product of all the vector elements of the temporary copy of
+				\texttt{dB}, then stores the result in \texttt{dA}'s scalar
+				data.
+
+				\item This instruction ignores the \texttt{v} bit encoded
+				into it.
+				%--------
+				\end{itemize}
+			\item \texttt{rhigh dA, dB}
+				\begin{itemize}
+				%--------
+				\item This instruction casts a temporary copy of
+				\texttt{dB} to the \texttt{dA}'s type and finds the index
+				of the scalar element of the temporary copy of
+				\texttt{dB} that is the highest, then stores the result in
+				\texttt{dA}'s scalar data.
+
+				\item This instruction ignores the \texttt{v} bit encoded
+				into it.
+				%--------
+				\end{itemize}
+			\item \texttt{rlow dA, dB}
+				\begin{itemize}
+				%--------
+				\item This instruction casts a temporary copy of
+				\texttt{dB} to the \texttt{dA}'s type and finds the index
+				of the scalar element of the temporary copy of
+				\texttt{dB} that is the lowest, then stores the result in
+				\texttt{dA}'s scalar data.
+
+				\item This instruction ignores the \texttt{v} bit encoded
+				into it.
+				%--------
+				\end{itemize}
 			%--------
 			\end{enumerate}
 		%--------

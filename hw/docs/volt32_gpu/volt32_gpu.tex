@@ -1,0 +1,153 @@
+\documentclass{article}
+
+\usepackage{pbox}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{fancyvrb}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{setspace}
+\usepackage[nottoc]{tocbibind}
+\usepackage[font=large]{caption}
+\usepackage{framed}
+\usepackage{tabularx}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{fontspec}
+\usepackage[backend=biber,sorting=none]{biblatex}
+%%\usepackage[
+%%	backend=biber,
+%%	style=ieee,
+%%	sorting=none
+%%]{biblatex}
+%\addbibresource{project_refs.bib}
+
+%% Hide section, subsection, and subsubsection numbering
+%\renewcommand{\thesection}{}
+%\renewcommand{\thesubsection}{}
+%\renewcommand{\thesubsubsection}{}
+
+% Alternative form of doing section stuff
+\renewcommand{\thesection}{}
+\renewcommand{\thesubsection}{\arabic{section}.\arabic{subsection}}
+\makeatletter
+\def\@seccntformat#1{\csname #1ignore\expandafter\endcsname\csname the#1\endcsname\quad}
+\let\sectionignore\@gobbletwo
+\let\latex@numberline\numberline
+\def\numberline#1{\if\relax#1\relax\else\latex@numberline{#1}\fi}
+\makeatother
+
+\makeatletter
+\renewcommand\tableofcontents{%
+    \@starttoc{toc}%
+}
+\makeatother
+
+\newcommand{\respacing}{\doublespacing \singlespacing}
+\newcommand{\code}[2][1]{\noindent \texttt{\tab[#1] #2} \\}
+\newcommand{\skipline}[0]{\texttt{}\\}
+\newcommand{\tnl}[0]{\tabularnewline}
+
+\begin{document}
+%--------
+	\font\titlefont={Times New Roman} at 20pt
+	\title{{\titlefont Volt32 CPU}}
+
+	\font\bottomtextfont={Times New Roman} at 12pt
+	\date{{\bottomtextfont} \today}
+	\author{{\bottomtextfont Andrew Clark}}
+
+	\setmainfont{Times New Roman}
+	\setmonofont{Courier New}
+
+	\maketitle
+	\pagenumbering{gobble}
+
+	\newpage
+	\pagenumbering{arabic}
+	%\tableofcontents
+	%\newpage
+
+	%\doublespacing
+
+%\section{Abstract}
+	%\setcounter{section}{-1}
+
+\section{Table of Contents}
+	\tableofcontents
+	\newpage
+
+\section{General}
+	\begin{itemize}
+	%--------
+	\item The GPU is a 2D one, with sprites and backgrounds.
+
+	\item Tiles are 8x8.
+
+	\item The screen resolution of the console is 320x240, or 40 tiles by
+	30 tiles.
+
+	\item There are 76,800 bytes, or 320 * 240 bytes, of tile VRAM.  This
+	is enough for 1,200 tiles, which is a whole BG's worth of tiles.
+
+	\item The GPU can also be set to treat tile VRAM as a single
+	framebuffer.
+	%--------
+	\end{itemize}
+
+\section{Sprites}
+	\begin{itemize}
+	%--------
+	\item There are 128 sprites.
+
+	\item Sprites can be of two different sizes:  8x8 and 16x16.
+
+	\item There can be up to 64 sprites per scanline.
+
+	\item Sprites have a 3-bit drawing priority field.  If two sprites have
+	the same drawing priority and collide with one another, the lower
+	numbered sprite's pixel will be drawn instead of the one with the higher
+	number's pixel.  If a sprite has the same or more priority as a
+	background, it will be drawn on top of the background, not counting
+	when a sprite will be drawn on top of that sprite.
+
+	\item The format of a sprite attribute table (SAT) entry is as follows:
+		\begin{table}[H]
+			\begin{center}
+				\begin{tabular}{c|c}
+				\end{tabular}
+			\end{center}
+		\end{table}
+	%--------
+	\end{itemize}
+
+\section{Backgrounds}
+	\begin{itemize}
+	%--------
+	\item There are 4 backgrounds.
+
+	\item Backgrounds have a 3-bit drawing priority field.  In the case of
+	a tie in drawing priority between two backgrounds, the lower numbered
+	background's pixel will be drawn on top of the higher numbered
+	background's pixel.
+
+	\item Backgrounds can be scrolled vertically and horizontally.
+
+	\item Tilemaps are 512x256, or 64 tiles by 32 tiles.  There is a grand
+	total of 16 kiB of tilemap space, or 16 bits per every background tile.
+
+	\item The format of a tilemap entry is as follows:
+		\begin{table}[H]
+			\begin{center}
+				\begin{tabular}{c|c}
+				\end{tabular}
+			\end{center}
+		\end{table}
+	%--------
+	\end{itemize}
+
+
+	%\printbibliography[heading=bibnumbered,title={Bibliography}]
+
+%--------
+\end{document}
