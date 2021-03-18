@@ -51,7 +51,7 @@
 \begin{document}
 %--------
 	\font\titlefont={Times New Roman} at 20pt
-	\title{{\titlefont Volt32 CPU}}
+	\title{{\titlefont Volt32 GPU}}
 
 	\font\bottomtextfont={Times New Roman} at 12pt
 	\date{{\bottomtextfont} \today}
@@ -94,6 +94,7 @@
 	framebuffer.
 	%--------
 	\end{itemize}
+	\newpage
 
 \section{Sprites}
 	\begin{itemize}
@@ -114,12 +115,34 @@
 	\item The format of a sprite attribute table (SAT) entry is as follows:
 		\begin{table}[H]
 			\begin{center}
-				\begin{tabular}{c|c}
+				\begin{tabular}{|c|c|c|}
+					\hline
+					\textbf{Name} & \textbf{Bit Range} 
+						& \textbf{Description}\\
+					\hline
+					Reserved[8] & [31:24]
+						& \textit{Reserved for future expansion}\\
+					Size[0:0] & [23]
+						& \texttt{0b0} for 8x8, \texttt{0b1} for 16x16 \\
+					Priority[3] & [22:20]
+						& Drawing priority\\
+					Tile Index[17] & [19:3]
+						& Which tile to draw\\
+					Horizontal Flip[1] & [2]
+						& Whether or not to flip the sprite horizontally
+						when it's drawn\\
+					Vertical Flip[1] & [1]
+						& Whether or not to flip the sprite vertically
+						when it's drawn\\
+					Reserved[1] & [0]
+						& \textit{Reserved for future expansion}\\
+					\hline
 				\end{tabular}
 			\end{center}
 		\end{table}
 	%--------
 	\end{itemize}
+	\newpage
 
 \section{Backgrounds}
 	\begin{itemize}
@@ -139,12 +162,18 @@
 	\item The format of a tilemap entry is as follows:
 		\begin{table}[H]
 			\begin{center}
-				\begin{tabular}{c|c}
+				\begin{tabular}{|c|c|c|}
+					\hline
+					\textbf{Name} & \textbf{Bit Range}
+						& \textbf{Description}\\
+					\hline
+					\hline
 				\end{tabular}
 			\end{center}
 		\end{table}
 	%--------
 	\end{itemize}
+	\newpage
 
 
 	%\printbibliography[heading=bibnumbered,title={Bibliography}]
