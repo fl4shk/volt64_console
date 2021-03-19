@@ -120,26 +120,26 @@
 					\textbf{Name} & \textbf{Bit Range} 
 						& \textbf{Description}\\
 					\hline
-					Reserved[8] & [31:24]
+					Reserved[9] & [31:23]
 						& \textit{Reserved for future expansion}\\
-					Size[0:0] & [23]
+					Size[0:0] & [22]
 						& \texttt{0b0} for 8x8, \texttt{0b1} for 16x16 \\
-					Priority[3] & [22:20]
+					Priority[3] & [21:19]
 						& Drawing priority\\
-					Tile Index[17] & [19:3]
-						& Which tile to draw\\
-					Horizontal Flip[1] & [2]
+					Horizontal Flip[1] & [18]
 						& Whether or not to flip the sprite horizontally
 						when it's drawn\\
-					Vertical Flip[1] & [1]
+					Vertical Flip[1] & [17]
 						& Whether or not to flip the sprite vertically
 						when it's drawn\\
-					Reserved[1] & [0]
-						& \textit{Reserved for future expansion}\\
+					Tile Index[17] & [16:0]
+						& Which tile(s) to draw\\
 					\hline
 				\end{tabular}
 			\end{center}
 		\end{table}
+
+	\item 512 bytes are required to store the SAT.
 	%--------
 	\end{itemize}
 	\newpage
@@ -157,7 +157,7 @@
 	\item Backgrounds can be scrolled vertically and horizontally.
 
 	\item Tilemaps are 512x256, or 64 tiles by 32 tiles.  There is a grand
-	total of 16 kiB of tilemap space, or 16 bits per every background tile.
+	total of 8 kiB of tilemap space, or 32 bits per every background tile.
 
 	\item The format of a tilemap entry is as follows:
 		\begin{table}[H]
@@ -167,6 +167,18 @@
 					\textbf{Name} & \textbf{Bit Range}
 						& \textbf{Description}\\
 					\hline
+					Reserved[10] & [31:22]
+						& \textit{Reserved for future expansion}\\
+					Priority[3] & [21:19]
+						& Drawing priority\\
+					Horizontal Flip[1] & [18]
+						& Whether or not to flip the tile horizontally
+						when it's drawn\\
+					Vertical Flip[1] & [17]
+						& Whether or not to flip the tile vertically
+						when it's drawn\\
+					Tile Index[17] & [16:0]
+						& Which tile to draw\\
 					\hline
 				\end{tabular}
 			\end{center}
