@@ -115,13 +115,19 @@
 	\item The format of a sprite attribute table (SAT) entry is as follows:
 		\begin{table}[H]
 			\begin{center}
-				\begin{tabular}{|c|c|c|}
+				\begin{tabular}{|c|c|p{55mm}|}
 					\hline
 					\textbf{Name} & \textbf{Bit Range} 
 						& \textbf{Description}\\
 					\hline
-					Reserved[9] & [31:23]
+					Reserved[23] & [63:41]
 						& \textit{Reserved for future expansion}\\
+					Horizontal Position[9] & [40:32]
+						& Horizontal position on screen
+						\newline (\texttt{0x0} means left edge of screen)\\
+					Vertical Position[9] & [31:23]
+						& Vertical position on screen
+						\newline (\texttt{0x0} means top edge of screen)\\
 					Size[0:0] & [22]
 						& \texttt{0b0} for 8x8, \texttt{0b1} for 16x16 \\
 					Priority[3] & [21:19]
@@ -133,13 +139,14 @@
 						& Whether or not to flip the sprite vertically
 						when it's drawn\\
 					Tile Index[17] & [16:0]
-						& Which tile(s) to draw\\
+						& Which tile to draw (8x8), 
+						\newline or which top-left tile to draw (16x16) \\
 					\hline
 				\end{tabular}
 			\end{center}
 		\end{table}
 
-	\item 512 bytes are required to store the SAT.
+	\item 1024 bytes are required to store the SAT.
 	%--------
 	\end{itemize}
 	\newpage
@@ -187,6 +194,71 @@
 	\end{itemize}
 	\newpage
 
+\section{Palette}
+	\begin{itemize}
+	%--------
+	\item There is a single 256 color palette, though color 0 is the
+	transparent color.
+
+	\item Colors are 18-bit, with 6-bit channels.
+
+	\item A structure of arrays is used to store the entire palette.  This
+	is due to the CPU's registers being vectors. Each array stores one RGB
+	channel as an 8-bit field.  Bits 7 and 6 of each channel table (CHT)
+	entry are ignored by the GPU.
+
+	\item 768 bytes are needed to store the palette. 
+
+	\item The GPU's framebuffer mode still uses the 256-entry palette, such
+	that it is a paletted framebuffer.  For this mode, the GPU treats color
+	0 as a visible color instead of transparent.
+	%--------
+	\end{itemize}
+	\newpage
+
+\section{Misc. Registers}
+	\begin{itemize}
+	%--------
+	\item temp
+	%--------
+	\end{itemize}
+	\newpage
+
+\section{IO Space Map}
+	\begin{itemize}
+	%//--------
+	\item IO Space is referred to as such because it's IO from the
+	perspective of the CPU.  The CPU itself has two address spaces it can
+	access:  IO and main memory.  The CPU is the only "bus master" that can
+	access main memory.
+
+	\item The "\textbf{Offset}" in the "\textbf{Offset}" and 
+	"\textbf{Offset + Size}" columns means "offset from base address",
+	where "base address" is the IO space base address of the GPU.
+
+	\item Here is the table proper.
+		\begin{table}[H]
+			\begin{center}
+				\begin{tabular}{|c|c|c|}
+					\hline
+					\textbf{Offset} & \textbf{Offset + Size - 1}
+						& \textbf{Name}\\
+					\hline
+					\texttt{0x0} & \texttt{0x1\_2bff} & Tiles\\
+					\texttt{0x1\_2c00} & \texttt{0x1\_4bff} & Tilemaps\\
+					\texttt{0x1\_4c00} & \texttt{0x1\_4fff}
+						& Sprite Attribute Table\\
+					\texttt{0x1\_5000} & \texttt{0x1\_52ff}
+						& Palette\\
+					\texttt{0x1\_5300} & \texttt{0x1\_53ff}
+						& Misc. Registers\\
+					\hline
+				\end{tabular}
+			\end{center}
+		\end{table}
+	%--------
+	\end{itemize}
+	\newpage
 
 	%\printbibliography[heading=bibnumbered,title={Bibliography}]
 
