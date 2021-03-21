@@ -115,7 +115,7 @@
 	\item The format of a sprite attribute table (SAT) entry is as follows:
 		\begin{table}[H]
 			\begin{center}
-				\begin{tabular}{|c|c|p{55mm}|}
+				\begin{tabular}{|c|c|p{65mm}|}
 					\hline
 					\textbf{Name} & \textbf{Bit Range} 
 						& \textbf{Description}\\
@@ -123,11 +123,11 @@
 					Reserved[23] & [63:41]
 						& \textit{Reserved for future expansion}\\
 					Horizontal Position[9] & [40:32]
-						& Horizontal position on screen
-						\newline (\texttt{0x0} means left edge of screen)\\
+						& Horizontal position on screen (\texttt{0x0} means
+						left edge of screen)\\
 					Vertical Position[9] & [31:23]
-						& Vertical position on screen
-						\newline (\texttt{0x0} means top edge of screen)\\
+						& Vertical position on screen (\texttt{0x0} means
+						top edge of screen)\\
 					Size[0:0] & [22]
 						& \texttt{0b0} for 8x8, \texttt{0b1} for 16x16 \\
 					Priority[3] & [21:19]
@@ -139,8 +139,8 @@
 						& Whether or not to flip the sprite vertically
 						when it's drawn\\
 					Tile Index[17] & [16:0]
-						& Which tile to draw (8x8), 
-						\newline or which top-left tile to draw (16x16) \\
+						& Which tile to draw (8x8), or which top-left tile
+						to draw (16x16) \\
 					\hline
 				\end{tabular}
 			\end{center}
@@ -219,7 +219,36 @@
 \section{Misc. Registers}
 	\begin{itemize}
 	%--------
-	\item temp
+	\item BG0 Horizontal Scroll[32]
+	\item BG0 Vertical Scroll[32]
+
+	\item BG1 Horizontal Scroll[32]
+	\item BG1 Vertical Scroll[32]
+
+	\item BG2 Horizontal Scroll[32]
+	\item BG2 Vertical Scroll[32]
+
+	\item BG3 Horizontal Scroll[32]
+	\item BG3 Vertical Scroll[32]
+
+	\item GPU Status[32]
+		\begin{table}[H]
+			\begin{center}
+				\begin{tabular}{|c|c|p{65mm}|}
+					\hline
+					\textbf{Name} & \textbf{Bit Range}
+						& \textbf{Description}\\
+					\hline
+					Reserved[31] & [31:30]
+						& \textit{Reserved for future expansion}\\
+					Framebuffer Mode Enable[0] & [0:0]
+						& \texttt{0b1} to enable the GPU's framebuffer mode
+						(which disables sprites and backgrounds and uses
+						tile VRAM as a framebuffer)\\
+					\hline
+				\end{tabular}
+			\end{center}
+		\end{table}
 	%--------
 	\end{itemize}
 	\newpage
