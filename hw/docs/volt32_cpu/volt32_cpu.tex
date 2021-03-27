@@ -485,10 +485,10 @@
 				\begin{itemize}
 				%--------
 				\item This instruction casts a temporary copy of
-				\texttt{dB} to the \texttt{dA}'s type and finds the index
-				of the scalar element of the temporary copy of
-				\texttt{dB} that is the maximum, then stores the result in
-				\texttt{dA}'s scalar data.
+				\texttt{dB} to the \texttt{dA}'s type and finds the scalar
+				element of the temporary copy of \texttt{dB} that is the
+				maximum, then stores the result in \texttt{dA}'s scalar
+				data.
 
 				\item This instruction ignores the \texttt{v} bit encoded
 				into it.
@@ -498,10 +498,10 @@
 				\begin{itemize}
 				%--------
 				\item This instruction casts a temporary copy of
-				\texttt{dB} to the \texttt{dA}'s type and finds the index
-				of the scalar element of the temporary copy of
-				\texttt{dB} that is the minimum, then stores the result in
-				\texttt{dA}'s scalar data.
+				\texttt{dB} to the \texttt{dA}'s type and finds the scalar
+				element of the temporary copy of \texttt{dB} that is the
+				minimum, then stores the result in \texttt{dA}'s scalar
+				data.
 
 				\item This instruction ignores the \texttt{v} bit encoded
 				into it.
@@ -693,13 +693,13 @@
 	\subsection{Group 4 Instructions}
 		\begin{itemize}
 		%--------
-		\item Encoding:  \texttt{0100 aaaa aabb bbbb  cccc iiii iiii jjjj}
+		\item Encoding:  \texttt{0100 aaaa aabb bbbb  cccc ccii iiii jjjj}
 			\begin{itemize}
 			%--------
 			\item \texttt{a}:  ILAR a
 			\item \texttt{b}:  ILAR b
-			\item \texttt{c}:  DLAR c (\texttt{d0} to \texttt{d15})
-			\item \texttt{i}:  \texttt{isimm8} (sign-extended 8-bit
+			\item \texttt{c}:  DLAR c
+			\item \texttt{i}:  \texttt{isimm6} (sign-extended 6-bit
 			immediate)
 			\item \texttt{j}:  \texttt{jimm4} (zero-extended 4-bit
 			immediate), the number of consecutive ILARs past \texttt{iA} to
@@ -709,12 +709,12 @@
 
 		\item This instruction uses the address field of \texttt{iB} and
 		the scalar data field (temporarily casted to the \texttt{u32} type)
-		of the \texttt{dC} register.
+		of the \texttt{dC} DLAR.
 
 		\item Instruction List:
 			\begin{enumerate}
 			%--------
-			\item \texttt{fetch iA, iB, dC, isimm8, jimm4}
+			\item \texttt{fetch iA, iB, dC, isimm6, jimm4}
 			%--------
 			\end{enumerate}
 		%--------
@@ -1027,9 +1027,9 @@
 
 		\item These instructions perform a read from/write to the IO
 		address calculated by adding the scalar data of \texttt{dB} and
-		\texttt{dC}, or \texttt{dB + dC}.  The types of \texttt{dB} and
-		\texttt{dC} are temporarily casted to \texttt{u32} for this
-		calculation.
+		\texttt{dC}, or (in other words) \texttt{dB + dC}.  The types of
+		\texttt{dB} and \texttt{dC} are temporarily casted to \texttt{u32}
+		for this calculation.
 
 		\item When a scalar operation is being performed, only the
 		scalar data of \texttt{dA} is read into from/written out to IO
