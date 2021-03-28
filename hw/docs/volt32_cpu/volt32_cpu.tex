@@ -425,98 +425,170 @@
 				%--------
 				\end{itemize}
 
-			%\item \texttt{add dA, dB.addr, dC}
-			%	\begin{itemize}
-			%	%--------
-			%	\item This instruction causes an exception if \texttt{dA}
-			%	or \texttt{dC} is of the following types: \texttt{u64},
-			%	\texttt{i64}.
-
-			%	\item For \texttt{add.v dA, dB.addr, dC}, this instruction
-			%	duplicates \texttt{cast(dA.type, dB.addr)} (a scalar) into
-			%	a temporary (128 bytes long) vector of element type
-			%	\texttt{dA.type}.
-			%	%--------
-			%	\end{itemize}
-			%\item \texttt{shl dA, dB.addr, dC}
-			%	\begin{itemize}
-			%	%--------
-			%	\item This instruction causes an exception if \texttt{dA}
-			%	or \texttt{dC} is of the following types: \texttt{u64},
-			%	\texttt{i64}.
-
-			%	\item For \texttt{shl.v dA, dB.addr, dC}, this instruction
-			%	duplicates \texttt{cast(dA.type, dB.addr)} (a scalar) into
-			%	a temporary (128 bytes long) vector of element type
-			%	\texttt{dA.type}.
-
-			%	\item This instruction casts a temporary copy of
-			%	\texttt{dC} to the unsigned type that is the same size as
-			%	\texttt{dA}'s type and uses that instead of \texttt{dC}.
-			%	%--------
-			%	\end{itemize}
-			\item \texttt{rsum dA, dB}
+			\item \texttt{add dA, dB.addr, dC}
 				\begin{itemize}
 				%--------
-				\item This instruction casts a temporary copy of
-				\texttt{dB} to the \texttt{dA}'s type and performs a sum of
-				all the vector elements of the temporary copy of
-				\texttt{dB}, then stores the result in \texttt{dA}'s scalar
-				data.
+				\item This instruction causes an exception if \texttt{dA}
+				or \texttt{dC} is of the following types: \texttt{u64},
+				\texttt{i64}.
 
-				\item This instruction ignores the \texttt{v} bit encoded
-				into it.
+				\item For \texttt{add.v dA, dB.addr, dC}, this instruction
+				duplicates \texttt{cast(dA.type, dB.addr)} (a scalar) into
+				a temporary (128 bytes long) vector of element type
+				\texttt{dA.type}.
 				%--------
 				\end{itemize}
-			\item \texttt{rprod dA, dB}
+			\item \texttt{shl dA, dB.addr, dC}
 				\begin{itemize}
 				%--------
-				\item This instruction casts a temporary copy of
-				\texttt{dB} to the \texttt{dA}'s type and performs a
-				product of all the vector elements of the temporary copy of
-				\texttt{dB}, then stores the result in \texttt{dA}'s scalar
-				data.
+				\item This instruction causes an exception if \texttt{dA}
+				or \texttt{dC} is of the following types: \texttt{u64},
+				\texttt{i64}.
 
-				\item This instruction ignores the \texttt{v} bit encoded
-				into it.
+				\item For \texttt{shl.v dA, dB.addr, dC}, this instruction
+				duplicates \texttt{cast(dA.type, dB.addr)} (a scalar) into
+				a temporary (128 bytes long) vector of element type
+				\texttt{dA.type}.
+
+				\item This instruction casts a temporary copy of
+				\texttt{dC} to the unsigned type that is the same size as
+				\texttt{dA}'s type and uses that instead of \texttt{dC}.
 				%--------
 				\end{itemize}
-			\item \texttt{rmax dA, dB}
-				\begin{itemize}
-				%--------
-				\item This instruction casts a temporary copy of
-				\texttt{dB} to the \texttt{dA}'s type and finds the scalar
-				element of the temporary copy of \texttt{dB} that is the
-				maximum, then stores the result in \texttt{dA}'s scalar
-				data.
-
-				\item This instruction ignores the \texttt{v} bit encoded
-				into it.
-				%--------
-				\end{itemize}
-			\item \texttt{rmin dA, dB}
-				\begin{itemize}
-				%--------
-				\item This instruction casts a temporary copy of
-				\texttt{dB} to the \texttt{dA}'s type and finds the scalar
-				element of the temporary copy of \texttt{dB} that is the
-				minimum, then stores the result in \texttt{dA}'s scalar
-				data.
-
-				\item This instruction ignores the \texttt{v} bit encoded
-				into it.
-				%--------
-				\end{itemize}
+			\item \textit{Reserved for future expansion.}
+			\item \textit{Reserved for future expansion.}
 			%--------
 			\end{enumerate}
 		%--------
 		\end{itemize}
 		\newpage
-
 	\subsection{Group 1 Instructions}
 		\begin{itemize}
 		%--------
-		\item Encoding: \texttt{0001 aaaa aabb bbbb  cccc ccii iiii iooo}
+		\item Encoding: \texttt{0001 aaaa aabb bbbb  0000 0000 0000 oooo}
+			\begin{itemize}
+			%--------
+			\item \texttt{a}:  DLAR a
+			\item \texttt{b}:  DLAR b
+			\item \texttt{o}:  Opcode
+			%--------
+			\end{itemize}
+
+		\item Instruction List:
+			\begin{enumerate}
+			%--------
+			\item \texttt{add.r dA, dB}
+				\begin{itemize}
+				%--------
+				\item This instruction casts a temporary copy of
+				\texttt{dB} to the \texttt{dA}'s type and performs a sum of
+				all the scalar data elements of the temporary copy of
+				\texttt{dB}, then stores the result in \texttt{dA}'s scalar
+				data.
+
+				\item This instruction causes an exception if \texttt{dA}
+				is of the following types:  \texttt{u64}, \texttt{i64}.
+				%--------
+				\end{itemize}
+			\item \texttt{mul.r dA, dB}
+				\begin{itemize}
+				%--------
+				\item This instruction casts a temporary copy of
+				\texttt{dB} to the \texttt{dA}'s type and performs a
+				product of all the scalar data elements of the temporary
+				copy of \texttt{dB}, then stores the result in
+				\texttt{dA}'s scalar data.
+
+				\item This instruction causes an exception if \texttt{dA}
+				is of the following types:  \texttt{u64}, \texttt{i64}.
+				%--------
+				\end{itemize}
+			\item \texttt{max.r dA, dB}
+				\begin{itemize}
+				%--------
+				\item This instruction casts a temporary copy of
+				\texttt{dB} to the \texttt{dA}'s type and finds the scalar
+				data element of the temporary copy of \texttt{dB} that is
+				the maximum, then stores the result in \texttt{dA}'s scalar
+				data.
+
+				\item This instruction causes an exception if \texttt{dA}
+				is of the following types:  \texttt{u64}, \texttt{i64}.
+				%--------
+				\end{itemize}
+			\item \texttt{min.r dA, dB}
+				\begin{itemize}
+				%--------
+				\item This instruction casts a temporary copy of
+				\texttt{dB} to the \texttt{dA}'s type and finds the scalar
+				data element of the temporary copy of \texttt{dB} that is
+				the minimum, then stores the result in \texttt{dA}'s scalar
+				data.
+
+				\item This instruction causes an exception if \texttt{dA}
+				is of the following types:  \texttt{u64}, \texttt{i64}.
+				%--------
+				\end{itemize}
+
+			\item \texttt{and.r dA, dB}
+				\begin{itemize}
+				%--------
+				\item This instruction casts a temporary copy of
+				\texttt{dB} to the \texttt{dA}'s type and performs a
+				bitwise AND reduction of all the scalar data elements of
+				the temporary copy of \texttt{dB}, then stores the result
+				in \texttt{dA}'s scalar data.
+
+				\item This instruction causes an exception if \texttt{dA}
+				is of the following types:  \texttt{u64}, \texttt{i64}.
+				%--------
+				\end{itemize}
+			\item \texttt{or.r dA, dB}
+				\begin{itemize}
+				%--------
+				\item This instruction casts a temporary copy of
+				\texttt{dB} to the \texttt{dA}'s type and performs a
+				bitwise OR reduction of all the scalar data elements of the
+				temporary copy of \texttt{dB}, then stores the result in
+				\texttt{dA}'s scalar data.
+
+				\item This instruction causes an exception if \texttt{dA}
+				is of the following types:  \texttt{u64}, \texttt{i64}.
+				%--------
+				\end{itemize}
+			\item \texttt{xor.r dA, dB}
+				\begin{itemize}
+				%--------
+				\item This instruction casts a temporary copy of
+				\texttt{dB} to the \texttt{dA}'s type and performs a
+				bitwise XOR reduction of all the scalar data elements of
+				the temporary copy of \texttt{dB}, then stores the result
+				in \texttt{dA}'s scalar data.
+
+				\item This instruction causes an exception if \texttt{dA}
+				is of the following types:  \texttt{u64}, \texttt{i64}.
+				%--------
+				\end{itemize}
+			\item \textit{Reserved for future expansion.}
+
+			\item \textit{Reserved for future expansion.}
+			\item \textit{Reserved for future expansion.}
+			\item \textit{Reserved for future expansion.}
+			\item \textit{Reserved for future expansion.}
+
+			\item \textit{Reserved for future expansion.}
+			\item \textit{Reserved for future expansion.}
+			\item \textit{Reserved for future expansion.}
+			\item \textit{Reserved for future expansion.}
+			%--------
+			\end{enumerate}
+		%--------
+		\end{itemize}
+
+	\subsection{Group 2 Instructions}
+		\begin{itemize}
+		%--------
+		\item Encoding: \texttt{0010 aaaa aabb bbbb  cccc ccii iiii iooo}
 			\begin{itemize}
 			%--------
 			\item \texttt{a}:  DLAR a
@@ -549,10 +621,10 @@
 		\end{itemize}
 		\newpage
 
-	\subsection{Group 2 Instructions}
+	\subsection{Group 3 Instructions}
 		\begin{itemize}
 		%--------
-		\item Encoding: \texttt{0010 aaaa aabb bbbb  cccc ccii iiii iooo}
+		\item Encoding: \texttt{0011 aaaa aabb bbbb  cccc ccii iiii iooo}
 			\begin{itemize}
 			%--------
 			\item \texttt{a}:  DLAR a
@@ -585,10 +657,10 @@
 		\end{itemize}
 		\newpage
 
-	\subsection{Group 3 Instructions}
+	\subsection{Group 4 Instructions}
 		\begin{itemize}
 		%--------
-		\item Encoding: \texttt{0011 aaaa aabb bbbb  0000 0000 0000 0ooo}
+		\item Encoding: \texttt{0100 aaaa aabb bbbb  0000 0000 0000 0ooo}
 			\begin{itemize}
 			%--------
 			\item \texttt{a}:  DLAR a
@@ -690,10 +762,10 @@
 		\end{itemize}
 		\newpage
 
-	\subsection{Group 4 Instructions}
+	\subsection{Group 5 Instructions}
 		\begin{itemize}
 		%--------
-		\item Encoding:  \texttt{0100 aaaa aabb bbbb  cccc ccii iiii jjjj}
+		\item Encoding:  \texttt{0101 aaaa aabb bbbb  cccc ccii iiii jjjj}
 			\begin{itemize}
 			%--------
 			\item \texttt{a}:  ILAR a
@@ -721,18 +793,20 @@
 		\end{itemize}
 		\newpage
 
-	\subsection{Group 5 Instructions}
+	\subsection{Group 6 Instructions}
 		\begin{itemize}
 		%--------
-		\item Encoding:  \texttt{0101 aaaa aabb bbbb  iiii ijjj jj0v oooo}
+		%\item Encoding:  \texttt{0110 aaaa aabb bbbb  cccc ccdd dddv oooo}
+		\item Encoding:  \texttt{0110 aaaa aabb bbbb  0iii iijj jjjv oooo}
 			\begin{itemize}
 			%--------
 			\item \texttt{a}:  DLAR a
 			\item \texttt{b}:  ILAR b
+			%\item \texttt{c}:  DLAR c
 			\item \texttt{i}:  \texttt{iimm5} (zero-extended 5-bit
-			immediate i)
+			immediate \texttt{i})
 			\item \texttt{j}:  \texttt{jimm5} (zero-extended 5-bit
-			immediate j)
+			immediate \texttt{j})
 			\item \texttt{v}:
 				\begin{itemize}
 				%--------
@@ -820,10 +894,10 @@
 		\end{itemize}
 		\newpage
 
-	\subsection{Group 6 Instructions}
+	\subsection{Group 7 Instructions}
 		\begin{itemize}
 		%--------
-		\item Encoding:  \texttt{0110 aaaa aabb bbbb  cccc ccii iiii sooo}
+		\item Encoding:  \texttt{0111 aaaa aabb bbbb  cccc ccii iiii sooo}
 			\begin{itemize}
 			%--------
 			\item \texttt{a}:  ILAR a or DLAR a
@@ -960,16 +1034,16 @@
 		\end{itemize}
 		\newpage
 
-	\subsection{Group 7 Instructions}
+	\subsection{Group 8 Instructions}
 		\begin{itemize}
 		%--------
-		\item Encoding:  \texttt{0111 aaaa aabb bbbb  cccc ccdd dddd oooo}
+		\item Encoding:  \texttt{1000 aaaa aabb bbbb  cccc ccdd ddd0 oooo}
 			\begin{itemize}
 			%--------
 			\item \texttt{a}:  DLAR a
 			\item \texttt{b}:  DLAR b
 			\item \texttt{c}:  DLAR c
-			\item \texttt{d}:  DLAR d
+			\item \texttt{d}:  DLAR d (\texttt{d0} to \texttt{d31})
 			\item \texttt{o}:  Opcode
 			%--------
 			\end{itemize}
@@ -1001,10 +1075,10 @@
 		%--------
 		\end{itemize}
 
-	\subsection{Group 8 Instructions}
+	\subsection{Group 9 Instructions}
 		\begin{itemize}
 		%--------
-		\item Encoding:  \texttt{1000 aaaa aabb bbbb  cccc cc00 000v oooo}
+		\item Encoding:  \texttt{1001 aaaa aabb bbbb  cccc cc00 000v oooo}
 			\begin{itemize}
 			%--------
 			\item \texttt{a}:  DLAR a
