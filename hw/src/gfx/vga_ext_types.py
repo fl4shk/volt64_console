@@ -14,15 +14,12 @@ class VgaTiming:
 		#	reset=State.FRONT)
 		#self.__state_counter = Signal(unsigned(self.COUNTER_WIDTH()),
 		#	reset=0x0)
-
 	#--------
 	class State(Enum):
 		FRONT = 0
 		SYNC = auto()
 		BACK = auto()
 		VISIB = auto()
-	#--------
-
 	#--------
 	def visib(self):
 		return self.__visib
@@ -33,8 +30,6 @@ class VgaTiming:
 	def back(self):
 		return self.__back
 	#--------
-
-	#--------
 	# This is specifically the minimum width instead of like, 32-bit or
 	# something
 	def COUNTER_WIDTH(self):
@@ -44,8 +39,6 @@ class VgaTiming:
 				for arg in [self.visib(), self.front(), self.sync(),
 					self.back()]
 			])
-	#--------
-
 	#--------
 	def no_change_update_next_s(self, m, state_cnt):
 		m.d.comb += state_cnt["next_s"].eq(state_cnt["s"])

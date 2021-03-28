@@ -144,13 +144,9 @@ class VgaDriver(Elaboratable):
 		#--------
 		m = Module()
 		#--------
-
-		#--------
 		# Local variables
 		loc = Blank()
 		bus = self.bus()
-		#--------
-
 		#--------
 		fifo = m.submodules.fifo \
 			= AsyncReadFifo \
@@ -166,11 +162,7 @@ class VgaDriver(Elaboratable):
 		##m.d.comb += loc.fifo.bus().rst.eq(loc.fifo_rst)
 		#m.d.comb += loc.fifo.bus().rst.eq(ResetSignal())
 		#--------
-
-		#--------
 		loc.col = self.ColorT()()
-		#--------
-
 		#--------
 		# Implement the clock enable
 		loc.CLK_CNT_WIDTH = self.CLK_CNT_WIDTH()
@@ -192,8 +184,6 @@ class VgaDriver(Elaboratable):
 		m.d.comb += bus.pixel_en.eq(loc.clk_cnt == 0x0)
 		loc.PIXEL_EN_NEXT_CYCLE = (loc.clk_cnt_p_1 == self.CPP())
 		#--------
-
-		#--------
 		# Implement the State/Counter stuff
 		loc.Tstate = VgaTiming.State
 		loc.hsc \
@@ -208,8 +198,6 @@ class VgaDriver(Elaboratable):
 			"c": Signal(self.VTIMING().COUNTER_WIDTH()),
 			"next_s": Signal(width_from_len(loc.Tstate)),
 		}
-		#--------
-
 		#--------
 		## Implement HSYNC and VSYNC logic
 		with m.If(bus.pixel_en): 
@@ -245,8 +233,6 @@ class VgaDriver(Elaboratable):
 			self.HTIMING().no_change_update_next_s(m, loc.hsc)
 			self.VTIMING().no_change_update_next_s(m, loc.vsc)
 		#--------
-
-		#--------
 		# Implement drawing the picture
 
 		with m.If(bus.pixel_en):
@@ -273,8 +259,6 @@ class VgaDriver(Elaboratable):
 					bus.col.b.eq(0x0),
 				]
 		#--------
-
-		##--------
 		# Implement VgaDriver bus to Fifo bus transaction
 		m.d.comb \
 		+= [
@@ -282,8 +266,6 @@ class VgaDriver(Elaboratable):
 			fifo.bus().wr_en.eq(bus.buf.prep),
 			fifo.bus().wr_data.eq(bus.buf.col),
 		]
-		##--------
-
 		#--------
 		# Implement grabbing pixels from the FIFO.
 
@@ -308,11 +290,6 @@ class VgaDriver(Elaboratable):
 		#	loc.col.eq(bus.buf.col)
 		#]
 		#--------
-
-		#--------
-		#--------
-
-		#--------
 		m.d.comb \
 			+= [
 				#bus.visib.eq((loc.hsc["s"] == loc.Tstate.VISIB)
@@ -330,8 +307,6 @@ class VgaDriver(Elaboratable):
 				bus.past_visib.eq(bus.visib),
 				bus.past_draw_pos.eq(bus.draw_pos)
 			]
-		#--------
-
 		#--------
 		return m
 		#--------

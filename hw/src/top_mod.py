@@ -25,14 +25,10 @@ class Top(Elaboratable):
 		self.pins().sd_card = self.platform().request("sd_card_spi", 0)
 		self.pins().sdram = self.platform().request("sdram", 0)
 	#--------
-
-	#--------
 	def platform(self):
 		return self.__platform
 	def MAIN_CLK_RATE(self):
 		return self.__MAIN_CLK_RATE
-	#--------
-
 	#--------
 	def pins(self):
 		return self.__pins
@@ -49,13 +45,9 @@ class Top(Elaboratable):
 	#def sdram(self):
 	#	return self.__sdram
 	#--------
-
-	#--------
 	def __elab_build_pll100(self, m):
 		return inst_pll("pll_50_to_100_mod.v", "dom", "pll_50_to_100",
 			self.MAIN_CLK_RATE(), self.platform(), m)
-	#--------
-
 	#--------
 	def __elab_build_io(self, m):
 		ret = Blank()
@@ -84,12 +76,9 @@ class Top(Elaboratable):
 
 		return ret
 	#--------
-
 	def elaborate(self, platform: str):
 		#--------
 		m = Module()
-		#--------
-
 		#--------
 		pll100 = self.__elab_build_pll100(m)
 		io = self.__elab_build_io(m)
@@ -98,8 +87,6 @@ class Top(Elaboratable):
 		loc.dom_rst = ResetSignal("dom")
 		loc.past_dom_rst = Signal()
 		m.d.dom += loc.past_dom_rst.eq(loc.dom_rst)
-		#--------
-
 		#--------
 		# VGA
 		vga = Blank()
@@ -160,8 +147,6 @@ class Top(Elaboratable):
 			self.pins().vga.hs.eq(vga.drbus.hsync),
 			self.pins().vga.vs.eq(vga.drbus.vsync),
 		]
-		#--------
-
 		#--------
 		return m
 		#--------

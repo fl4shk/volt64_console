@@ -9,18 +9,12 @@ class VgaGradient(Elaboratable):
 	def __init__(self, vga_drbus, vga_dibus):
 		self.__drbus, self.__dibus = vga_drbus, vga_dibus
 	#--------
-
-	#--------
 	def elaborate(self, platform: str):
 		#--------
 		m = Module()
 		#--------
-
-		#--------
 		drbus, dibus = self.__drbus, self.__dibus
 		col = dibus.col_in
-		#--------
-
 		#--------
 		# Gradient
 		with m.If(drbus.buf.can_prep):
@@ -44,8 +38,6 @@ class VgaGradient(Elaboratable):
 				#drbus.buf.prep.eq(0b0),
 				dibus.en.eq(0b0),
 			]
-		#--------
-
 		#--------
 		return m
 		#--------

@@ -38,8 +38,6 @@ class SdramParams:
 	def T_RP(self):
 		return self.__T_RP
 #--------
-
-#--------
 class SdramBus:
 	def __init__(self, PARAMS):
 		self.__PARAMS = PARAMS
@@ -64,8 +62,6 @@ class SdramBus:
 	def PARAMS(self):
 		return self.__PARAMS
 #--------
-
-#--------
 class SdramCtrlPubBus:
 	def __init__(self, PARAMS):
 		self.__PARAMS = PARAMS
@@ -89,8 +85,6 @@ class SdramCtrlPubBus:
 			+ self.PARAMS().BANK_WIDTH()
 	def WORD_WIDTH(self):
 		return self.PARAMS().WORD_WIDTH()
-#--------
-
 #--------
 class SdramCtrlBus:
 	def __init__(self, PARAMS):
@@ -139,8 +133,6 @@ class SdramCtrlBus:
 		return addr[self.ROW_START():self.ROW_END_P_1()]
 	def __bank(self, addr):
 		return addr[self.BANK_START():self.BANK_END_P_1()]
-#--------
-
 #--------
 class SdramCtrl(Elaboratable):
 	def __init__(self, CLK_RATE, PARAMS):

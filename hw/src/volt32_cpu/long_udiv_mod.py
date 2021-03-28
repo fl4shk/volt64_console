@@ -22,8 +22,6 @@ class LongUdivPstageBus:
 			self.__DML_ENTRY_WIDTH = bus.DML_ENTRY_WIDTH()
 			self.__FORMAL = bus.FORMAL()
 			#--------
-
-			#--------
 			self.temp_numer = Signal(bus.TEMP_T_WIDTH(), attrs=sig_keep(),
 				name=f"temp_numer_{io_dir}")
 
@@ -32,8 +30,6 @@ class LongUdivPstageBus:
 			self.temp_rema = Signal(bus.TEMP_T_WIDTH(), attrs=sig_keep(),
 				name=f"temp_rema_{io_dir}")
 			#--------
-
-			#--------
 			#self.denom_mult_lut = Array([Signal
 			#	(bus.DML_ENTRY_WIDTH())
 			#	for _ in range(bus.RADIX())])
@@ -41,18 +37,12 @@ class LongUdivPstageBus:
 				((bus.DML_ENTRY_WIDTH() * self.__DML_LEN),
 				attrs=sig_keep(), name=f"denom_mult_lut_{io_dir}")
 			#--------
-
-			#--------
 			self.tag = Signal(bus.TAG_WIDTH(), attrs=sig_keep(),
 				name=f"tag_{io_dir}")
-			#--------
-
 			#--------
 			if self.__FORMAL:
 				#--------
 				self.formal = Blank()
-				#--------
-
 				#--------
 				self.formal.formal_numer = Signal(bus.TEMP_T_WIDTH(),
 					attrs=sig_keep(), name=f"formal_numer_{io_dir}")
@@ -64,16 +54,12 @@ class LongUdivPstageBus:
 				self.formal.oracle_rema = Signal(bus.TEMP_T_WIDTH(),
 					attrs=sig_keep(), name=f"oracle_rema_{io_dir}")
 				#--------
-
-				#--------
 				self.formal.formal_denom_mult_lut = Signal \
 					((bus.DML_ENTRY_WIDTH() * self.__DML_LEN),
 					attrs=sig_keep(),
 					name=f"formal_denom_mult_lut_{io_dir}")
 				#--------
 			#--------
-		#--------
-
 		#--------
 		def dml_elem(self, index):
 			return self.denom_mult_lut.word_select(index,
@@ -83,8 +69,6 @@ class LongUdivPstageBus:
 			return self.formal.formal_denom_mult_lut.word_select(index,
 				self.__DML_ENTRY_WIDTH)
 		#--------
-	#--------
-
 	#--------
 	def __init__(self, MAIN_WIDTH, DENOM_WIDTH, CHUNK_WIDTH, TAG_WIDTH,
 		PIPELINED, FORMAL):
@@ -96,21 +80,15 @@ class LongUdivPstageBus:
 		self.__PIPELINED = PIPELINED
 		self.__FORMAL = FORMAL
 		#--------
-
-		#--------
 		# Inputs
 
 		self.psd_in = LongUdivPstageBus.PsData(bus=self, io_dir="in")
 		self.chunk_start = Signal(self.CHUNK_WIDTH(), attrs=sig_keep())
 		#--------
-
-		#--------
 		# Outputs
 
 		self.psd_out = LongUdivPstageBus.PsData(bus=self, io_dir="out")
 		#--------
-	#--------
-
 	#--------
 	def MAIN_WIDTH(self):
 		return self.__MAIN_WIDTH
@@ -144,8 +122,6 @@ class LongUdivPstageBus:
 	#	return self.RADIX()
 	#--------
 #--------
-
-#--------
 class LongUdivPstage(Elaboratable):
 	#--------
 	def __init__(self, MAIN_WIDTH, DENOM_WIDTH, CHUNK_WIDTH, TAG_WIDTH,
@@ -161,12 +137,8 @@ class LongUdivPstage(Elaboratable):
 				FORMAL=FORMAL,
 			)
 	#--------
-
-	#--------
 	def bus(self):
 		return self.__bus
-	#--------
-
 	#--------
 	# Local signals
 	def __build_loc(self):
@@ -174,8 +146,6 @@ class LongUdivPstage(Elaboratable):
 		bus = self.bus()
 
 		loc = Blank()
-		#--------
-
 		#--------
 		# Current quotient digit
 		loc.quot_digit = Signal(bus.CHUNK_WIDTH(), attrs=sig_keep())
@@ -192,29 +162,19 @@ class LongUdivPstage(Elaboratable):
 
 		loc.temp_rema = Signal(bus.TEMP_T_WIDTH(), attrs=sig_keep())
 		#--------
-
-		#--------
 		if bus.FORMAL():
 			#--------
 			loc.formal = Blank()
 			#--------
-
-			#--------
 			loc.formal.past_valid = Signal(reset=0b0, attrs=sig_keep())
 			#--------
-		#--------
-
 		#--------
 		return loc
 		#--------
 	#--------
-
-	#--------
 	def elaborate(self, platform: str) -> Module:
 		#--------
 		m = Module()
-		#--------
-
 		#--------
 		bus = self.bus()
 
@@ -225,8 +185,6 @@ class LongUdivPstage(Elaboratable):
 
 		TEMP_T_WIDTH = bus.TEMP_T_WIDTH()
 		CHUNK_WIDTH = bus.CHUNK_WIDTH()
-		#--------
-
 		#--------
 		# Shift in the current chunk of `psd_in.temp_numer`
 		m.d.comb += loc.shift_in_rema.eq(Cat(psd_in.temp_numer.word_select
@@ -286,8 +244,6 @@ class LongUdivPstage(Elaboratable):
 		m.d.comb += loc.temp_rema_next.eq(loc.shift_in_rema
 			- psd_in.dml_elem(loc.quot_digit)),
 		#--------
-
-		#--------
 		with m.If(~ResetSignal()):
 			#for i in range(bus.TEMP_T_WIDTH() // bus.CHUNK_WIDTH()):
 			#	with m.If(bus.chunk_start == i):
@@ -311,21 +267,13 @@ class LongUdivPstage(Elaboratable):
 				psd_out.temp_quot.eq(loc.temp_quot_next),
 				psd_out.temp_rema.eq(loc.temp_rema_next),
 				#--------
-
-				#--------
 				psd_out.denom_mult_lut.eq(psd_in.denom_mult_lut),
 				#--------
-
-				#--------
 				psd_out.tag.eq(psd_in.tag),
-				#--------
-
 				#--------
 				#bus.chunk_start.eq(bus.chunk_start - 0x1),
 				#--------
 			]
-		#--------
-
 		#--------
 		if bus.FORMAL():
 			#--------
@@ -338,8 +286,6 @@ class LongUdivPstage(Elaboratable):
 			oracle_rema_in = psd_in.formal.oracle_rema
 
 			formal_denom_mult_lut_in = psd_in.formal.formal_denom_mult_lut
-			#--------
-
 			#--------
 			m.d.comb \
 			+= [
@@ -354,8 +300,6 @@ class LongUdivPstage(Elaboratable):
 				past_valid.eq(0b1),
 				#--------
 			]
-			#--------
-
 			#--------
 			with m.If(~ResetSignal()):
 				#--------
@@ -376,8 +320,6 @@ class LongUdivPstage(Elaboratable):
 						.eq(formal_denom_mult_lut_in),
 					#--------
 				]
-				#--------
-
 				#--------
 				m.d.comb \
 				+= [
@@ -401,8 +343,6 @@ class LongUdivPstage(Elaboratable):
 						#--------
 					]
 				#--------
-
-				#--------
 				with m.If(past_valid):
 					#--------
 					m.d.comb \
@@ -418,8 +358,6 @@ class LongUdivPstage(Elaboratable):
 						Assert(psd_out.formal.oracle_rema
 							== Past(oracle_rema_in)),
 						#--------
-
-						#--------
 						Assert(psd_out.formal.formal_denom_mult_lut
 							== Past(formal_denom_mult_lut_in)),
 						#--------
@@ -428,13 +366,9 @@ class LongUdivPstage(Elaboratable):
 				#--------
 			#--------
 		#--------
-
-		#--------
 		return m
 		#--------
 	#--------
-#--------
-
 #--------
 class LongUdivBus:
 	#--------
@@ -447,8 +381,6 @@ class LongUdivBus:
 		self.__PIPELINED = PIPELINED
 		self.__FORMAL = FORMAL
 		#--------
-
-		#--------
 		# Inputs
 
 		if not self.PIPELINED():
@@ -459,8 +391,6 @@ class LongUdivBus:
 
 		if self.PIPELINED():
 			self.tag_in = Signal(self.TAG_WIDTH())
-		#--------
-
 		#--------
 		# Outputs
 
@@ -474,8 +404,6 @@ class LongUdivBus:
 		if self.PIPELINED():
 			self.tag_out = Signal(self.TAG_WIDTH())
 		#--------
-	#--------
-
 	#--------
 	def MAIN_WIDTH(self):
 		return self.__MAIN_WIDTH

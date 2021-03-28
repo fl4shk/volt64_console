@@ -10,12 +10,9 @@ from nmigen.asserts import Past, Rose, Fell, Stable
 class FifoBus:
 	def __init__(self, ShapeT, SIZE):
 		self.__ShapeT, self.__SIZE = ShapeT, SIZE
-
 		#--------
 		#self.clk = Signal()
 		#self.rst = Signal()
-		#--------
-
 		#--------
 		# Inputs
 		self.wr_en = Signal()
@@ -23,8 +20,6 @@ class FifoBus:
 
 		self.rd_en = Signal()
 		self.rd_data = Signal(self.ShapeT())
-		#--------
-
 		#--------
 		# Outputs
 		self.empty = Signal()
@@ -42,8 +37,6 @@ class FifoBus:
 	#	return [ClockSignal(), ResetSignal(), self.wr_en, self.wr_data,
 	#		self.rd_en, self.rd_data, self.empty, self.full]
 #--------
-
-#--------
 class Fifo(Elaboratable):
 	def __init__(self, ShapeT, SIZE, FORMAL=False):
 		self.__bus = FifoBus(ShapeT=ShapeT, SIZE=SIZE)
@@ -60,8 +53,6 @@ class Fifo(Elaboratable):
 
 		#add_clk_domain(m, self.bus().clk)
 		#add_clk_from_domain(m, self.bus.clk())
-		#--------
-
 		#--------
 		# Local variables
 		bus = self.bus()
@@ -101,8 +92,6 @@ class Fifo(Elaboratable):
 			#loc.formal.full = Signal()
 			loc.formal.wd_cnt = Signal(bus.ShapeT(), reset=0xa0)
 		#--------
-
-		#--------
 		if self.FORMAL():
 			m.d.sync \
 			+= [
@@ -113,8 +102,6 @@ class Fifo(Elaboratable):
 			+= [
 				loc.formal.test_head.eq((loc.head + 0x1) % bus.SIZE()),
 			]
-		#--------
-
 		#--------
 		# Combinational logic
 
@@ -157,8 +144,6 @@ class Fifo(Elaboratable):
 				Cover((~bus.empty) & (~bus.full)),
 			]
 		#--------
-
-		#--------
 		# Clocked behavioral code
 		if self.FORMAL():
 			loc.formal.past_valid = Signal()
@@ -194,8 +179,6 @@ class Fifo(Elaboratable):
 				m.d.sync += bus.rd_data.eq(loc.arr[loc.tail])
 			with m.If(bus.wr_en & (~bus.full)):
 				m.d.sync += loc.arr[loc.head].eq(bus.wr_data)
-			#--------
-
 			#--------
 			if self.FORMAL():
 				with m.If(loc.formal.past_valid):
@@ -256,12 +239,8 @@ class Fifo(Elaboratable):
 					]
 			#--------
 		#--------
-
-		#--------
 		return m
 		#--------
-#--------
-
 #--------
 # Asynchronous Read FIFO
 class AsyncReadFifo(Fifo):
@@ -271,8 +250,6 @@ class AsyncReadFifo(Fifo):
 	def elaborate(self, platform: str) -> Module:
 		#--------
 		m = Module()
-		#--------
-
 		#--------
 		# Local variables
 		bus = self.bus()
@@ -301,8 +278,6 @@ class AsyncReadFifo(Fifo):
 			loc.formal.past_valid = Signal(reset=0b0)
 
 			loc.formal.test_head = ((loc.head + 0x1) % bus.SIZE())
-		#--------
-
 		#--------
 		# Combinational logic
 
@@ -375,8 +350,6 @@ class AsyncReadFifo(Fifo):
 		#		#	& (~bus.full)),
 		#	]
 		#--------
-
-		#--------
 		# Sequential logic
 		#with m.If(loc.rst):
 		#	if self.FORMAL():
@@ -402,9 +375,6 @@ class AsyncReadFifo(Fifo):
 		#		bus.full.eq(0b0),
 		#	]
 		#	#--------
-
-		#	#--------
-		#	#--------
 		#with m.Else(): # If(~loc.rst):
 		with m.If(~loc.rst):
 			#--------
@@ -412,8 +382,6 @@ class AsyncReadFifo(Fifo):
 			# Write into the FIFO
 			with m.If((~bus.full) & bus.wr_en):
 				m.d.sync += loc.arr[loc.head].eq(bus.wr_data)
-			#--------
-
 			#--------
 			if self.FORMAL():
 				#m.d.comb += Cover(loc.formal.past_valid)
@@ -497,8 +465,6 @@ class AsyncReadFifo(Fifo):
 						m.d.sync += Assert((~bus.empty)
 							& (~bus.full))
 			#--------
-		#--------
-
 		#--------
 		return m
 		#--------

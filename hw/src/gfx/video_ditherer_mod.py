@@ -92,12 +92,8 @@ class VideoDitherer(Elaboratable):
 		#--------
 		m = Module()
 		#--------
-
-		#--------
 		bus = self.bus()
 		loc = Blank()
-		#--------
-
 		#--------
 		loc.past_col_out = RgbColor(CHAN_WIDTH=bus.OUT_CHAN_WIDTH())
 		with m.If(bus.en):
@@ -186,8 +182,6 @@ class VideoDitherer(Elaboratable):
 				bus.col_out.eq(loc.past_col_out),
 				bus.next_pos.eq(bus.pos),
 			]
-		#--------
-
 		#--------
 		return m
 		#--------

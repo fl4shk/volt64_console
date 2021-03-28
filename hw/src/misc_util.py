@@ -28,8 +28,6 @@ def printerr(*args):
 def convert_enum_to_str(to_conv):
 	return str(to_conv)[str(to_conv).find(".") + 1:]
 #--------
-
-#--------
 def width_from_arg(arg):
 	return math.ceil(math.log2(arg))
 def width_from_len(arg):
@@ -48,8 +46,6 @@ def width_from_len(arg):
 #	m.d.comb += ClockSignal(domain=domain).eq(clk)
 def to_shape(RecOrArrayT):
 	return Value.cast(RecOrArrayT).shape()
-#--------
-
 #--------
 def inst_pll(pll_file_name, domain, pll_module_name, freq, platform, m):
 	ret = Blank()
@@ -76,8 +72,6 @@ def inst_pll(pll_file_name, domain, pll_module_name, freq, platform, m):
 	platform.add_clock_constraint(ret.pll_clk, freq)
 
 	return ret
-#--------
-
 #--------
 class Vec2Layout(Layout):
 	def __init__(self, ShapeT):
@@ -108,8 +102,6 @@ class PrevCurrPair:
 		self.__prev = self.curr()
 		self.__curr = curr
 #--------
-
-#--------
 ##class PackedArray(ValueCastable):
 #class PackedArray:
 #	#--------
@@ -118,8 +110,6 @@ class PrevCurrPair:
 #
 #		self.__data = Signal(self.ShapeT().width * self.SIZE())
 #	#--------
-#
-#	#--------
 #	def ShapeT(self):
 #		return self.__ShapeT
 #	def SIZE(self):
@@ -127,8 +117,6 @@ class PrevCurrPair:
 #
 #	def data(self):
 #		return self.__data
-#	#--------
-#
 #	#--------
 #	def __getitem__(self, key):
 #		return self.data().word_select(key, self.ShapeT().width)
