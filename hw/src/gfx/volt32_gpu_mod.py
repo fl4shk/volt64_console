@@ -5,3 +5,4 @@ from nmigen import *
 from nmigen.hdl.rec import *
 
 class Volt32Gpu(Elaboratable):
+	pass

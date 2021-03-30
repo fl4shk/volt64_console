@@ -34,7 +34,7 @@ class LongUdivPstageBus:
 			#	(bus.DML_ENTRY_WIDTH())
 			#	for _ in range(bus.RADIX())])
 			self.denom_mult_lut = Signal \
-				((bus.DML_ENTRY_WIDTH() * self.__DML_LEN),
+				((bus.DML_ENTRY_WIDTH() * bus.RADIX()),
 				attrs=sig_keep(), name=f"denom_mult_lut_{io_dir}")
 			#--------
 			self.tag = Signal(bus.TAG_WIDTH(), attrs=sig_keep(),
@@ -55,7 +55,7 @@ class LongUdivPstageBus:
 					attrs=sig_keep(), name=f"oracle_rema_{io_dir}")
 				#--------
 				self.formal.formal_denom_mult_lut = Signal \
-					((bus.DML_ENTRY_WIDTH() * self.__DML_LEN),
+					((bus.DML_ENTRY_WIDTH() * bus.RADIX()),
 					attrs=sig_keep(),
 					name=f"formal_denom_mult_lut_{io_dir}")
 				#--------
@@ -110,8 +110,8 @@ class LongUdivPstageBus:
 		#return (self.CHUNK_WIDTH() * ((self.MAIN_WIDTH()
 		#	// self.CHUNK_WIDTH()) + add_amount))
 
-	#def NUM_CHUNKS(self):
-	#	return (self.TEMP_T_WIDTH() // self.CHUNK_WIDTH())
+	def NUM_CHUNKS(self):
+		return (self.TEMP_T_WIDTH() // self.CHUNK_WIDTH())
 
 	def RADIX(self):
 		return (1 << self.CHUNK_WIDTH())
@@ -158,9 +158,10 @@ class LongUdivPstage(Elaboratable):
 		loc.gt_vec = Signal(bus.RADIX(), attrs=sig_keep())
 
 		# Next value of `temp_quot`
-		loc.temp_quot = Signal(bus.TEMP_T_WIDTH(), attrs=sig_keep())
+		loc.temp_quot_next = Signal(bus.TEMP_T_WIDTH(), attrs=sig_keep())
 
-		loc.temp_rema = Signal(bus.TEMP_T_WIDTH(), attrs=sig_keep())
+		# Next value of `temp_rema`
+		loc.temp_rema_next = Signal(bus.TEMP_T_WIDTH(), attrs=sig_keep())
 		#--------
 		if bus.FORMAL():
 			#--------
@@ -209,6 +210,7 @@ class LongUdivPstage(Elaboratable):
 			with m.Default():
 				m.d.comb += loc.quot_digit.eq(0)
 
+			# Here is an example of the expanded form of this `m.Switch()`
 			#with m.Case("1110"):
 			#	m.d.comb += loc.quot_digit.eq(0)
 			#with m.Case("1100"):
@@ -227,7 +229,7 @@ class LongUdivPstage(Elaboratable):
 		#	bus.rema.eq(loc.temp_rema[:len(bus.rema)]),
 		#]
 
-		for i in range(bus.TEMP_T_WIDTH() // bus.CHUNK_WIDTH()):
+		for i in range(bus.NUM_CHUNKS()):
 			with m.If(bus.chunk_start == i):
 				m.d.comb \
 				+= [
@@ -245,24 +247,10 @@ class LongUdivPstage(Elaboratable):
 			- psd_in.dml_elem(loc.quot_digit)),
 		#--------
 		with m.If(~ResetSignal()):
-			#for i in range(bus.TEMP_T_WIDTH() // bus.CHUNK_WIDTH()):
-			#	with m.If(bus.chunk_start == i):
-			#		m.d.sync += psd_out.temp_quot.word_select
-			#			(i, CHUNK_WIDTH).eq(loc.quot_digit)
-			#	with m.Else(): # If(bus.chunk_start != i):
-			#		m.d.sync += psd_out.temp_quot.word_select
-			#			(i, CHUNK_WIDTH).eq(psd_in.temp_quot.word_select
-			#				(i, CHUNK_WIDTH))
 			m.d.sync \
 			+= [
 				#--------
 				psd_out.temp_numer.eq(psd_in.temp_numer),
-
-				#loc.temp_quot.word_select(bus.chunk_start, CHUNK_WIDTH)
-				#	.eq(loc.quot_digit),
-
-				#psd_out.temp_rema.eq(loc.shift_in_rema
-				#	- psd_in.dml_elem(loc.quot_digit)),
 
 				psd_out.temp_quot.eq(loc.temp_quot_next),
 				psd_out.temp_rema.eq(loc.temp_rema_next),
@@ -336,9 +324,9 @@ class LongUdivPstage(Elaboratable):
 					m.d.comb \
 					+= [
 						#--------
-						Assert(loc.next_temp_quot == (formal_numer_in
+						Assert(loc.temp_quot_next == (formal_numer_in
 							// formal_denom_in)),
-						Assert(loc.next_temp_rema == (formal_numer_in
+						Assert(loc.temp_rema_next == (formal_numer_in
 							% formal_denom_in)),
 						#--------
 					]
@@ -425,5 +413,38 @@ class LongUdivBus:
 
 	def FORMAL(self):
 		return self.__FORMAL
+	#--------
+#--------
+class LongUdiv(Elaboratable)
+	#--------
+	def __init__(self, MAIN_WIDTH, DENOM_WIDTH, CHUNK_WIDTH,
+		PIPELINED=False, FORMAL=False):
+		self.__bus = LongUdivBus \
+			(
+				MAIN_WIDTH=MAIN_WIDTH,
+				DENOM_WIDTH=DENOM_WIDTH,
+				CHUNK_WIDTH=CHUNK_WIDTH,
+				PIPELINED=PIPELINED,
+				FORMAL=FORMAL
+			)
+	#--------
+	def bus(self):
+		return self.__bus
+	#--------
+	def elaborate(self, platform: str) -> Module:
+		#--------
+		m = Module()
+		#--------
+		bus = self.bus()
+
+		loc = Blank()
+
+		if bus.PIPELINED():
+			# Submodules go here in addition to `m.submodules`.
+			loc.m = Blank()
+		#--------
+		#--------
+		return m
+		#--------
 	#--------
 #--------

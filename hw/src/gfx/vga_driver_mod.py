@@ -73,7 +73,7 @@ VGA_TIMING_INFO_DICT \
 #		super().__init__(VgaDriverBusLayout())
 
 class VgaDriverBus:
-	def __init__(self):
+	def __init__(self, ColorT):
 		# Global VGA driving enable (white screen when off)
 		self.en = Signal()
 
