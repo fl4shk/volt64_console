@@ -45,11 +45,11 @@ class Top(Elaboratable):
 	#def sdram(self):
 	#	return self.__sdram
 	#--------
-	def __elab_build_pll100(self, m):
+	def __elab_build_pll100(self, m: Module):
 		return inst_pll("pll_50_to_100_mod.v", "dom", "pll_50_to_100",
 			self.MAIN_CLK_RATE(), self.platform(), m)
 	#--------
-	def __elab_build_io(self, m):
+	def __elab_build_io(self, m: Module) -> Blank:
 		ret = Blank()
 		ret.led, ret.button, ret.switch = Signal(10), Signal(4), Signal(10)
 
@@ -76,7 +76,7 @@ class Top(Elaboratable):
 
 		return ret
 	#--------
-	def elaborate(self, platform: str):
+	def elaborate(self, platform: str) -> Module:
 		#--------
 		m = Module()
 		#--------
