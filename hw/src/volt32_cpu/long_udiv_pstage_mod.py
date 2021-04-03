@@ -105,9 +105,6 @@ class LongUdivPstageData:
 		return self.formal.formal_denom_mult_lut.word_select(index,
 			self.__DML_ENTRY_WIDTH)
 	#--------
-	def chunk_ws(self, temp_data, index):
-		return temp_data.word_select(index, self.CHUNK_WIDTH())
-	#--------
 #--------
 class LongUdivPstageBus:
 	#--------
@@ -117,11 +114,17 @@ class LongUdivPstageBus:
 		#--------
 		# Inputs
 
+		# The `io_dir` argument is for the Verilog output's signals to have
+		# a suffix in the names of signals that prevents conflicts with
+		# `pst_out`'s signals' names.
 		self.psd_in = LongUdivPstageData(bus=self, io_dir="in")
 		self.chunk_start = Signal(self.CHUNK_WIDTH(), attrs=sig_keep())
 		#--------
 		# Outputs
 
+		# The `io_dir` argument is for the Verilog output's signals to have
+		# a suffix in the names of signals that prevents conflicts with
+		# `pst_in`'s signals' names.
 		self.psd_out = LongUdivPstageData(bus=self, io_dir="out")
 		#--------
 	#--------
@@ -146,11 +149,14 @@ class LongUdivPstageBus:
 
 	def RADIX(self):
 		return self.__constants.RADIX()
-
+	#--------
 	def DML_ENTRY_WIDTH(self):
 		return (self.DENOM_WIDTH() + self.CHUNK_WIDTH())
 	#def DML_LEN(self):
 	#	return self.RADIX()
+	#--------
+	def chunk_ws(self, temp_data, index):
+		return temp_data.word_select(index, self.CHUNK_WIDTH())
 	#--------
 #--------
 class LongUdivPstage(Elaboratable):
@@ -309,6 +315,11 @@ class LongUdivPstage(Elaboratable):
 			m.d.comb \
 			+= [
 				#--------
+				Assert(oracle_quot_in
+					== (formal_numer_in // formal_denom_in)),
+				Assert(oracle_rema_in
+					== (formal_numer_in % formal_denom_in)),
+
 				# This is just in case
 				Assume(formal_denom_in != 0),
 				Assume(formal_denom_mult_lut_in != 0),
