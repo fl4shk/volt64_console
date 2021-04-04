@@ -36,7 +36,7 @@ class LongUdivBus:
 
 		if not self.PIPELINED():
 			self.valid = Signal()
-			self.busy = Signal()
+			#self.busy = Signal()
 
 		self.quot = Signal(self.MAIN_WIDTH())
 		self.rema = Signal(self.MAIN_WIDTH())
@@ -77,22 +77,6 @@ class LongUdivBus:
 	def DENOM_MAX_VAL(self):
 		return (1 << self.DENOM_WIDTH())
 	#--------
-	def NUM_PSTAGES(self):
-		if not self.PIPELINED():
-			return 1
-		else: # if self.PIPELINED():
-			return self.NUM_CHUNKS()
-	def PS_ARR_SIZE(self):
-		#return (self.NUM_PSTAGES() + 1)
-		return self.NUM_PSTAGES()
-	def psd_arr(self, elem_width, name_prefix):
-		temp = []
-		for i in range(self.PS_ARR_SIZE()):
-			temp.append(Signal(elem_width, attrs=sig_keep(),
-				name=f"{name_prefix}_{i}"))
-
-		return Array(temp)
-	#--------
 #--------
 class LongUdiv(Elaboratable)
 	#--------
@@ -113,6 +97,20 @@ class LongUdiv(Elaboratable)
 	#--------
 	def bus(self):
 		return self.__bus
+
+	def NUM_PSTAGES(self):
+		return 1 \
+			if not self.PIPELINED() \
+			else self.NUM_CHUNKS()
+	def PSD_LST_SIZE(self):
+		return (self.NUM_PSTAGES() + 1)
+		#return self.NUM_PSTAGES()
+	def psd_lst(self, elem_width, name_prefix):
+		ret = []
+		for i in range(self.PSD_LST_SIZE()):
+			ret.append(Signal(elem_width, attrs=sig_keep(),
+				name=f"{name_prefix}_{i}"))
+		return ret
 	#--------
 	def elaborate(self, platform: str) -> Module:
 		#--------
@@ -124,55 +122,114 @@ class LongUdiv(Elaboratable)
 
 		# Submodules go here
 		loc.m = [LongUdivPstage(constants=self.__constants)
-			for i in range(bus.NUM_PSTAGES()]
+			for i in range(bus.NUM_PSTAGES())]
 		m.submodules += loc.m
 
-		loc.pa_temp_numer = bus.psd_arr(bus.TEMP_T_WIDTH(),
-			"pa_temp_numer")
-		loc.pa_temp_quot = bus.psd_arr(bus.TEMP_T_WIDTH(), "pa_temp_quot")
-		loc.pa_temp_rema = bus.psd_arr(bus.TEMP_T_WIDTH(), "pa_temp_rema")
-		loc.pa_denom_mult_lut \
-			= bus.psd_arr(bus.DML_ELEM_WIDTH() * bus.DML_SIZE(),
-			"pa_denom_mult_lut")
+		loc.pl_temp_numer = self.psd_lst(bus.TEMP_T_WIDTH(),
+			"pl_temp_numer")
+		loc.pl_temp_quot = self.psd_lst(bus.TEMP_T_WIDTH(), "pl_temp_quot")
+		loc.pl_temp_rema = self.psd_lst(bus.TEMP_T_WIDTH(), "pl_temp_rema")
+		loc.pl_denom_mult_lut \
+			= bus.psd_lst(bus.DML_ELEM_WIDTH() * bus.DML_SIZE(),
+			"pl_denom_mult_lut")
 
 		if bus.PIPELINED():
-			loc.pa_tag = bus.psd_arr(bus.TAG_WIDTH(), "pa_tag")
+			loc.pl_tag = self.psd_lst(bus.TAG_WIDTH(), "pl_tag")
 
 		if bus.FORMAL():
 			#--------
 			loc.formal = Blank()
 			#--------
-			loc.formal.pa_numer = bus.psd_arr(bus.TEMP_T_WIDTH(),
-				"formal_pa_numer")
-			loc.formal.pa_denom = bus.psd_arr(bus.DENOM_WIDTH(),
-				"formal_pa_denom")
+			loc.formal.pl_numer = self.psd_lst(bus.TEMP_T_WIDTH(),
+				"formal_pl_numer")
+			loc.formal.pl_denom = self.psd_lst(bus.DENOM_WIDTH(),
+				"formal_pl_denom")
 
-			loc.formal.pa_oracle_quot = bus.psd_arr(bus.TEMP_T_WIDTH(),
-				"formal_pa_oracle_quot")
-			loc.formal.pa_oracle_rema = bus.psd_arr(bus.TEMP_T_WIDTH(),
-				"formal_pa_oracle_rema")
+			loc.formal.pl_oracle_quot = self.psd_lst(bus.TEMP_T_WIDTH(),
+				"formal_pl_oracle_quot")
+			loc.formal.pl_oracle_rema = self.psd_lst(bus.TEMP_T_WIDTH(),
+				"formal_pl_oracle_rema")
 			#--------
-			loc.formal.pa_denom_mult_lut \
-				= bus.psd_arr(bus.DML_ELEM_WIDTH() * bus.DML_SIZE(),
-					"formal_pa_denom_mult_lut")
+			loc.formal.pl_denom_mult_lut \
+				= self.psd_lst(bus.DML_ELEM_WIDTH() * bus.DML_SIZE(),
+					"formal_pl_denom_mult_lut")
 			#--------
 
-		#if not bus.PIPELINED():
-		#	ps_bus = loc.m[0].bus()
-		#	m.d.comb \
-		#	+= [
-		#		ps_bus
-		#	]
 		# Connect the pstages together
-		#if bus.PIPELINED():
-		#	for i in range(len(loc.m) - 1):
-		#		curr_ps_bus = loc.m[i].bus()
-		#		next_ps_bus = loc.m[i + 1].bus()
-		#		m.d.comb \
-		#		+= [
-		#		]
+		def connect_ports(bus, loc, i)
+			ps_bus = loc.m[i].bus()
+			psd_in = ps_bus.psd_in
+			psd_out = ps_bus.psd_out
+
+			m.d.comb \
+			+= [
+				#--------
+				psd_in.temp_numer.eq(loc.pl_temp_numer[i]),
+				loc.pl_temp_numer[i + 1].eq(psd_out.temp_numer),
+				#--------
+				psd_in.temp_quot.eq(loc.pl_temp_quot[i]),
+				loc.pl_temp_quot[i + 1].eq(psd_out.temp_quot),
+				#--------
+				psd_in.temp_rema.eq(loc.pl_temp_rema[i]),
+				loc.pl_temp_rema[i + 1].eq(psd_out.temp_rema),
+				#--------
+				psd_in.denom_mult_lut.eq(loc.pl_denom_mult_lut[i]),
+				loc.pl_denom_mult_lut[i + 1]
+					.eq(psd_out.denom_mult_lut),
+				#--------
+			]
+
+			if bus.PIPELINED()():
+				m.d.comb \
+				+= [
+					#--------
+					psd_in.tag.eq(loc.pl_tag[i]),
+					loc.pl_tag[i + 1].eq(psd_out.tag),
+					#--------
+				]
+
+			if bus.FORMAL():
+				m.d.comb \
+				+= [
+					#--------
+					psd_in.formal.formal_numer.eq(loc.formal.pl_numer[i]),
+					loc.formal.pl_numer[i + 1]
+						.eq(psd_out.formal.formal_numer),
+					#--------
+					psd_in.formal.formal_denom.eq(loc.formal.pl_denom[i]),
+					loc.formal.pl_denom[i + 1]
+						.eq(psd_out.formal.formal_denom),
+					#--------
+					psd_in.formal.oracle_quot
+						.eq(loc.formal.pl_oracle_quot[i]),
+					loc.formal.pl_oracle_quot[i + 1]
+						.eq(psd_out.formal.oracle_quot),
+					#--------
+					psd_in.formal.oracle_rema
+						.eq(loc.formal.pl_oracle_rema[i]),
+					loc.formal.pl_oracle_rema[i + 1]
+						.eq(psd_out.formal.oracle_rema),
+					#--------
+					psd_in.formal.formal_denom_mult_lut
+						.eq(loc.formal.pl_formal_denom_mult_lut[i]),
+					loc.formal.pl_formal_denom_mult_lut[i + 1]
+						.eq(psd_out.formal.formal_denom_mult_lut),
+					#--------
+				]
+
+		for i in range(self.NUM_PSTAGES()):
+			connect_ports \
+			(
+				bus=bus,
+				loc=loc,
+				i=i
+			)
+
+
+		# Set the value of `bus.chunk_start` for all the pstages if we are
+		# pipelined 
+		if bus.PIPELINED():
 		#--------
-		# Connect the ports of the pstages
 
 		#--------
 		return m

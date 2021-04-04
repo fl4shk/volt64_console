@@ -95,9 +95,9 @@ class LongUdivPstageData:
 				attrs=sig_keep(), name=f"formal_denom_{io_dir}")
 
 			self.formal.oracle_quot = Signal(bus.TEMP_T_WIDTH(),
-				attrs=sig_keep(), name=f"formal_oracle_quot_{io_dir}")
+				attrs=sig_keep(), name=f"oracle_quot_{io_dir}")
 			self.formal.oracle_rema = Signal(bus.TEMP_T_WIDTH(),
-				attrs=sig_keep(), name=f"formal_oracle_rema_{io_dir}")
+				attrs=sig_keep(), name=f"oracle_rema_{io_dir}")
 			#--------
 			self.formal.formal_denom_mult_lut = Signal \
 				((bus.DML_ELEM_WIDTH() * bus.DML_SIZE()), attrs=sig_keep(),
