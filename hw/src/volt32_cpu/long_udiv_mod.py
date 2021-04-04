@@ -104,7 +104,6 @@ class LongUdiv(Elaboratable)
 			else self.NUM_CHUNKS()
 	def PSD_LST_SIZE(self):
 		return (self.NUM_PSTAGES() + 1)
-		#return self.NUM_PSTAGES()
 	def psd_lst(self, elem_width, name_prefix):
 		ret = []
 		for i in range(self.PSD_LST_SIZE()):
@@ -140,19 +139,19 @@ class LongUdiv(Elaboratable)
 			#--------
 			loc.formal = Blank()
 			#--------
-			loc.formal.pl_numer = self.psd_lst(bus.TEMP_T_WIDTH(),
-				"formal_pl_numer")
-			loc.formal.pl_denom = self.psd_lst(bus.DENOM_WIDTH(),
-				"formal_pl_denom")
+			loc.formal.pl_formal_numer = self.psd_lst(bus.TEMP_T_WIDTH(),
+				"pl_formal_numer")
+			loc.formal.pl_formal_denom = self.psd_lst(bus.DENOM_WIDTH(),
+				"pl_formal_denom")
 
 			loc.formal.pl_oracle_quot = self.psd_lst(bus.TEMP_T_WIDTH(),
-				"formal_pl_oracle_quot")
+				"pl_oracle_quot")
 			loc.formal.pl_oracle_rema = self.psd_lst(bus.TEMP_T_WIDTH(),
-				"formal_pl_oracle_rema")
+				"pl_oracle_rema")
 			#--------
-			loc.formal.pl_denom_mult_lut \
+			loc.formal.pl_formal_denom_mult_lut \
 				= self.psd_lst(bus.DML_ELEM_WIDTH() * bus.DML_SIZE(),
-					"formal_pl_denom_mult_lut")
+					"pl_formal_denom_mult_lut")
 			#--------
 
 		# Connect the pstages together
@@ -192,12 +191,14 @@ class LongUdiv(Elaboratable)
 				m.d.comb \
 				+= [
 					#--------
-					psd_in.formal.formal_numer.eq(loc.formal.pl_numer[i]),
-					loc.formal.pl_numer[i + 1]
+					psd_in.formal.formal_numer
+						.eq(loc.formal.pl_formal_numer[i]),
+					loc.formal.pl_formal_numer[i + 1]
 						.eq(psd_out.formal.formal_numer),
 					#--------
-					psd_in.formal.formal_denom.eq(loc.formal.pl_denom[i]),
-					loc.formal.pl_denom[i + 1]
+					psd_in.formal.formal_denom
+						.eq(loc.formal.pl_formal_denom[i]),
+					loc.formal.pl_formal_denom[i + 1]
 						.eq(psd_out.formal.formal_denom),
 					#--------
 					psd_in.formal.oracle_quot
@@ -225,12 +226,25 @@ class LongUdiv(Elaboratable)
 				i=i
 			)
 
-
-		# Set the value of `bus.chunk_start` for all the pstages if we are
-		# pipelined 
+		# Set the value of `ps_bus.chunk_start` for all the pstages if we
+		# are pipelined 
 		if bus.PIPELINED():
+			for i in range(self.NUM_PSTAGES()):
+				ps_bus = loc.m[i].bus()
+				m.d.comb \
+				+= [
+					ps_bus.chunk_start.eq((self.NUM_PSTAGES() - 1) - i)
+				]
 		#--------
-
+		# Code implementing the state machine
+		if not bus.PIPELINED():
+			with m.If(ResetSignal()):
+			with m.Else(): # If(~ResetSignal()):
+		else: # if bus.PIPELINED():
+			with m.If(~ResetSignal()):
+				m.d.comb \
+				+= [
+				]
 		#--------
 		return m
 		#--------

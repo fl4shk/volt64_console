@@ -96,14 +96,14 @@ class RgbColorLayout(Layout):
 			else RgbColor.DEF_CHAN_WIDTH()
 		super().__init__ \
 		([
-			("r", self.__unsgn_color()),
-			("g", self.__unsgn_color()),
-			("b", self.__unsgn_color()),
+			("r", self.__unsgn_chan()),
+			("g", self.__unsgn_chan()),
+			("b", self.__unsgn_chan()),
 		])
 
 	def CHAN_WIDTH(self):
 		return self.__CHAN_WIDTH
-	def __unsgn_color(self):
+	def __unsgn_chan(self):
 		return unsigned(self.CHAN_WIDTH())
 
 	def drive(self, other):
