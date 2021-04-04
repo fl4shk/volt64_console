@@ -36,7 +36,7 @@ class LongUdivConstants:
 		return self.__PIPELINED
 	def FORMAL(self):
 		return self.__FORMAL
-
+	#--------
 	def TEMP_T_WIDTH(self):
 		return (self.CHUNK_WIDTH() * ((self.MAIN_WIDTH()
 			// self.CHUNK_WIDTH()) + 1))
@@ -50,12 +50,20 @@ class LongUdivConstants:
 	def RADIX(self):
 		return (1 << self.CHUNK_WIDTH())
 	#--------
+	def DML_ELEM_WIDTH(self):
+		return (self.DENOM_WIDTH() + self.CHUNK_WIDTH())
+	def DML_SIZE(self):
+		return self.RADIX()
+	#--------
+	def chunk_ws(self, temp_data, index):
+		return temp_data.word_select(index, self.CHUNK_WIDTH())
+	#--------
 #--------
 class LongUdivPstageData:
 	#--------
 	def __init__(self, bus, io_dir: str):
 		#--------
-		self.__DML_ENTRY_WIDTH = bus.DML_ENTRY_WIDTH()
+		self.__DML_ENTRY_WIDTH = bus.DML_ELEM_WIDTH()
 		self.__FORMAL = bus.FORMAL()
 		#--------
 		self.temp_numer = Signal(bus.TEMP_T_WIDTH(), attrs=sig_keep(),
@@ -67,10 +75,10 @@ class LongUdivPstageData:
 			name=f"temp_rema_{io_dir}")
 		#--------
 		#self.denom_mult_lut = Array([Signal
-		#	(bus.DML_ENTRY_WIDTH())
+		#	(bus.DML_ELEM_WIDTH())
 		#	for _ in range(bus.RADIX())])
 		self.denom_mult_lut = Signal \
-			((bus.DML_ENTRY_WIDTH() * bus.RADIX()), attrs=sig_keep(),
+			((bus.DML_ELEM_WIDTH() * bus.DML_SIZE()), attrs=sig_keep(),
 				name=f"denom_mult_lut_{io_dir}")
 		#--------
 		if bus.PIPELINED():
@@ -92,7 +100,7 @@ class LongUdivPstageData:
 				attrs=sig_keep(), name=f"formal_oracle_rema_{io_dir}")
 			#--------
 			self.formal.formal_denom_mult_lut = Signal \
-				((bus.DML_ENTRY_WIDTH() * bus.RADIX()), attrs=sig_keep(),
+				((bus.DML_ELEM_WIDTH() * bus.DML_SIZE()), attrs=sig_keep(),
 					name=f"formal_denom_mult_lut_{io_dir}")
 			#--------
 		#--------
@@ -140,7 +148,7 @@ class LongUdivPstageBus:
 		return self.__constants.PIPELINED()
 	def FORMAL(self):
 		return self.__constants.FORMAL()
-
+	#--------
 	def TEMP_T_WIDTH(self):
 		return self.__constants.TEMP_T_WIDTH()
 
@@ -150,13 +158,13 @@ class LongUdivPstageBus:
 	def RADIX(self):
 		return self.__constants.RADIX()
 	#--------
-	def DML_ENTRY_WIDTH(self):
-		return (self.DENOM_WIDTH() + self.CHUNK_WIDTH())
-	#def DML_LEN(self):
-	#	return self.RADIX()
+	def DML_ELEM_WIDTH(self):
+		return self.__constants.DML_ELEM_WIDTH()
+	def DML_SIZE(self):
+		return self.__constants.DML_SIZE()
 	#--------
 	def chunk_ws(self, temp_data, index):
-		return temp_data.word_select(index, self.CHUNK_WIDTH())
+		return self.__constants.chunk_ws(temp_data, index)
 	#--------
 #--------
 class LongUdivPstage(Elaboratable):
