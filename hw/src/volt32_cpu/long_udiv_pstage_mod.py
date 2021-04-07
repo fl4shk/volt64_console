@@ -12,6 +12,8 @@ from nmigen.sim import Simulator, Delay, Tick
 
 from enum import Enum, auto
 
+from general.general_types import *
+
 #--------
 class LongUdivConstants:
 	#--------
@@ -59,9 +61,11 @@ class LongUdivConstants:
 		return temp_data.word_select(index, self.CHUNK_WIDTH())
 	#--------
 #--------
-class LongUdivPstageData:
+class LongUdivPstageData(SplitRecord):
 	#--------
 	def __init__(self, bus, io_dir: str):
+		#--------
+		super().__init__()
 		#--------
 		self.__DML_ENTRY_WIDTH = bus.DML_ELEM_WIDTH()
 		self.__FORMAL = bus.FORMAL()
@@ -77,9 +81,17 @@ class LongUdivPstageData:
 		#self.denom_mult_lut = Array([Signal
 		#	(bus.DML_ELEM_WIDTH())
 		#	for _ in range(bus.RADIX())])
-		self.denom_mult_lut = Signal \
-			((bus.DML_ELEM_WIDTH() * bus.DML_SIZE()), attrs=sig_keep(),
-				name=f"denom_mult_lut_{io_dir}")
+		#self.denom_mult_lut = Signal \
+		#	((bus.DML_ELEM_WIDTH() * bus.DML_SIZE()), attrs=sig_keep(),
+		#		name=f"denom_mult_lut_{io_dir}")
+		self.denom_mult_lut = PackedArray(ELEM_WIDTH=bus.DML_ELEM_WIDTH(),
+			SIZE=bus.DML_SIZE(),
+			extra_args=SigContrExtraArgs
+				(
+					attrs=sig_keep(),
+					name=f"denom_mult_lut_{io_dir}"
+				)
+			)
 		#--------
 		if bus.PIPELINED():
 			self.tag = Signal(bus.TAG_WIDTH(), attrs=sig_keep(),
@@ -87,7 +99,7 @@ class LongUdivPstageData:
 		#--------
 		if self.__FORMAL:
 			#--------
-			self.formal = Blank()
+			self.formal = SplitRecord()
 			#--------
 			self.formal.formal_numer = Signal(bus.TEMP_T_WIDTH(),
 				attrs=sig_keep(), name=f"formal_numer_{io_dir}")
@@ -99,19 +111,29 @@ class LongUdivPstageData:
 			self.formal.oracle_rema = Signal(bus.TEMP_T_WIDTH(),
 				attrs=sig_keep(), name=f"oracle_rema_{io_dir}")
 			#--------
-			self.formal.formal_denom_mult_lut = Signal \
-				((bus.DML_ELEM_WIDTH() * bus.DML_SIZE()), attrs=sig_keep(),
-					name=f"formal_denom_mult_lut_{io_dir}")
+			#self.formal.formal_denom_mult_lut = Signal \
+			#	((bus.DML_ELEM_WIDTH() * bus.DML_SIZE()), attrs=sig_keep(),
+			#		name=f"formal_denom_mult_lut_{io_dir}")
+			self.formal.formal_denom_mult_lut = PackedArray \
+				(ELEM_WIDTH=bus.DML_ELEM_WIDTH(), SIZE=bus.DML_SIZE(),
+				extra_args=SigContrExtraArgs
+					(
+						attrs=sig_keep(),
+						name=f"formal_denom_mult_lut_{io_dir}"
+					)
+				)
 			#--------
 		#--------
 	#--------
 	def dml_elem(self, index):
-		return self.denom_mult_lut.word_select(index,
-			self.__DML_ENTRY_WIDTH)
+		#return self.denom_mult_lut.word_select(index,
+		#	self.__DML_ENTRY_WIDTH)
+		return self.denom_mult_lut[index]
 	def formal_dml_elem(self, index):
 		assert self.__FORMAL
-		return self.formal.formal_denom_mult_lut.word_select(index,
-			self.__DML_ENTRY_WIDTH)
+		#return self.formal.formal_denom_mult_lut.word_select(index,
+		#	self.__DML_ENTRY_WIDTH)
+		return self.formal.formal_denom_mult_lut[index]
 	#--------
 #--------
 class LongUdivPstageBus:
@@ -223,8 +245,8 @@ class LongUdivPstage(Elaboratable):
 		CHUNK_WIDTH = bus.CHUNK_WIDTH()
 		#--------
 		# Shift in the current chunk of `psd_in.temp_numer`
-		m.d.comb += loc.shift_in_rema.eq(Cat(psd_in.temp_numer.word_select
-			(bus.chunk_start, CHUNK_WIDTH),
+		m.d.comb += loc.shift_in_rema.eq(Cat(bus.chunk_ws
+			(psd_in.temp_numer, bus.chunk_start, CHUNK_WIDTH),
 			psd_in.temp_rema[:TEMP_T_WIDTH - CHUNK_WIDTH])),
 
 		# Compare every element of the computed `denom * digit` array to
@@ -289,7 +311,8 @@ class LongUdivPstage(Elaboratable):
 				psd_out.temp_quot.eq(loc.temp_quot_next),
 				psd_out.temp_rema.eq(loc.temp_rema_next),
 				#--------
-				psd_out.denom_mult_lut.eq(psd_in.denom_mult_lut),
+				psd_out.denom_mult_lut.sig()
+					.eq(psd_in.denom_mult_lut.sig()),
 				#--------
 				#psd_out.tag.eq(psd_in.tag),
 				#--------
@@ -363,8 +386,8 @@ class LongUdivPstage(Elaboratable):
 					psd_out.formal.oracle_quot.eq(oracle_quot_in),
 					psd_out.formal.oracle_rema.eq(oracle_rema_in),
 					#--------
-					psd_out.formal.formal_denom_mult_lut
-						.eq(formal_denom_mult_lut_in),
+					psd_out.formal.formal_denom_mult_lut.sig()
+						.eq(formal_denom_mult_lut_in.sig()),
 					#--------
 				]
 				#--------
@@ -412,8 +435,8 @@ class LongUdivPstage(Elaboratable):
 						Assert(psd_out.temp_rema
 							== Past(loc.temp_rema_next)),
 						#--------
-						Assert(psd_out.denom_mult_lut
-							== Past(psd_in.denom_mult_lut))
+						Assert(psd_out.denom_mult_lut.sig()
+							== Past(psd_in.denom_mult_lut.sig()))
 						#--------
 						Assert(psd_out.formal.formal_numer
 							== Past(formal_numer_in)),
@@ -425,8 +448,8 @@ class LongUdivPstage(Elaboratable):
 						Assert(psd_out.formal.oracle_rema
 							== Past(oracle_rema_in)),
 						#--------
-						Assert(psd_out.formal.formal_denom_mult_lut
-							== Past(formal_denom_mult_lut_in)),
+						Assert(psd_out.formal.formal_denom_mult_lut.sig()
+							== Past(formal_denom_mult_lut_in.sig())),
 						#--------
 					]
 					#--------

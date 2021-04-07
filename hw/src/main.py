@@ -5,6 +5,7 @@ import sys
 from misc_util import *
 from top_mod import *
 from general.fifo_mods import *
+from general.comp_types import *
 from volt32_cpu.long_udiv_mod import *
 
 
@@ -23,9 +24,14 @@ def ports(bus):
 		for key in bus.__dict__:
 			val = bus.__dict__[key]
 			if key[0] != "_":
-				ret += [val] \
-					if (type(val) == Signal) or (type(val) == Record) \
-					else inner_ports(val)
+				if isinstance(val, Signal) or isinstance(val, Record):
+					ret += [val]
+				elif isinstance(val, Packarr):
+					ret += [val.data()]
+				elif isinstance(val, SplitRecord):
+					ret += val.flattened()
+				else:
+					ret += inner_ports(val)
 		return ret
 	return ([ClockSignal(), ResetSignal()] + inner_ports(bus))
 
