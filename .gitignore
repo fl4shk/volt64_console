@@ -2,8 +2,11 @@
 tags
 *.taghl
 *.ignore
-hw/src/__pycache__
-hw/src/*/__pycache__
+__pycache__
+
+#hw/src/__pycache__
+#hw/src/*/__pycache__
+
 hw/src/build
 hw/src/*_bmc
 hw/src/*_cover
@@ -12,8 +15,12 @@ hw/src/*/*_bmc
 hw/src/*/*_cover
 hw/src/*/*_prove
 *.il
+
 *.tar
 *.gz
 *.tar.*
 *.zip
 *.vcd
+
+*.o
+*.a

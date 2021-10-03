@@ -5,9 +5,9 @@ import sys
 from misc_util import *
 from top_mod import *
 from general.fifo_mods import *
-from general.comp_types import *
+from general.container_types import *
+from general.tests.container_types_mods import VectorAdd
 from volt32_cpu.long_udiv_mod import *
-
 
 from nmigen import *
 from nmigen.sim import *
@@ -18,6 +18,10 @@ from nmigen_boards.de0_cv import *
 from nmigen.asserts import Assert, Assume, Cover
 from nmigen.asserts import Past, Rose, Fell, Stable
 
+from nmigen.back import verilog
+
+from tracemalloc import *
+
 def ports(bus):
 	def inner_ports(bus):
 		ret = []
@@ -26,9 +30,12 @@ def ports(bus):
 			if key[0] != "_":
 				if isinstance(val, Signal) or isinstance(val, Record):
 					ret += [val]
-				elif isinstance(val, Packarr):
-					ret += [val.data()]
-				elif isinstance(val, SplitRecord):
+				elif isinstance(val, Packrec):
+					#ret += val.flattened()
+					ret += [val.sig()]
+				#elif isinstance(val, Packarr):
+				#	ret += [val.sig()]
+				elif isinstance(val, Splitrec):
 					ret += val.flattened()
 				else:
 					ret += inner_ports(val)
@@ -36,19 +43,16 @@ def ports(bus):
 	return ([ClockSignal(), ResetSignal()] + inner_ports(bus))
 
 def to_verilog(dut_mod, **kw_args):
-	#alu = Alu(8)
-	#main(alu, 
-	#	ports
-	#	=[
-	#		alu.bus.a, alu.bus.b, alu.bus.carry_in, alu.bus.op,
-	#		alu.bus.result, alu.bus.carry_out
-	#	])
 	dut = dut_mod(**kw_args)
-	main(dut, ports=ports(dut.bus()))
+	# ./main.py generate -t verilog
+	#main(dut, ports=ports(dut.bus()))
+	with open("dut.v.ignore", "w") as f:
+		f.write(verilog.convert(dut, ports=ports(dut.bus())))
 
 def formal(dut_mod, **kw_args):
 	parser = main_parser()
 	args = parser.parse_args()
+
 	m = Module()
 	m.submodules.dut = dut = dut_mod(**kw_args, FORMAL=True)
 
@@ -73,29 +77,40 @@ def program(mod_name, **kw_args):
 	mod.platform().build(mod, do_program=True)
 
 if __name__ == "__main__":
-	#formal(Fifo, ShapeT=unsigned(8), SIZE=4)
-	#formal(AsyncReadFifo, ShapeT=unsigned(8), SIZE=4)
-	#program(Top)
+	#to_verilog(VectorAdd, ElemKindT=4, SIZE=2)
+	e = Packrec \
+		([
+			("b", 6),
+			("a", [("c", 3), ("d", 9)]),
+			("f", Packarr.Shape(5, 7))
+		])
+	printerr(e.a.c.word_select(0, 3), "\n")
+	printerr(e.b.word_select(1, 3), "\n")
+	#printerr(type(Value.cast(e.a)), "\n")
 
-	#formal(LongUdiv, MAIN_WIDTH=4, DENOM_WIDTH=4, CHUNK_WIDTH=3)
-	#formal(LongUdiv, MAIN_WIDTH=7, DENOM_WIDTH=3, CHUNK_WIDTH=2)
+	##formal(Fifo, ShapeT=unsigned(8), SIZE=4)
+	##formal(AsyncReadFifo, ShapeT=unsigned(8), SIZE=4)
+	##program(Top)
 
-	formal(LongUdiv, MAIN_WIDTH=8, DENOM_WIDTH=8, CHUNK_WIDTH=3,
-		PIPELINED=False)
+	##formal(LongUdiv, MAIN_WIDTH=4, DENOM_WIDTH=4, CHUNK_WIDTH=3)
+	##formal(LongUdiv, MAIN_WIDTH=7, DENOM_WIDTH=3, CHUNK_WIDTH=2)
+
 	#formal(LongUdiv, MAIN_WIDTH=8, DENOM_WIDTH=8, CHUNK_WIDTH=3,
-	#	PIPELINED=True)
+	#	PIPELINED=False)
+	##formal(LongUdiv, MAIN_WIDTH=8, DENOM_WIDTH=8, CHUNK_WIDTH=3,
+	##	PIPELINED=True)
 
-	#for CHUNK_WIDTH in range(1, 4 + 1):
-	#	formal(LongUdiv, MAIN_WIDTH=8, DENOM_WIDTH=8,
-	#		CHUNK_WIDTH=CHUNK_WIDTH)
-	#formal(LongUdiv, MAIN_WIDTH=16, DENOM_WIDTH=12, CHUNK_WIDTH=3)
-	#formal(LongUdiv, MAIN_WIDTH=16, DENOM_WIDTH=10, CHUNK_WIDTH=5)
-	#for MAIN_WIDTH in range(1, 16 + 1):
-	#	for DENOM_WIDTH in range(1, 16 + 1):
-	#		for CHUNK_WIDTH in range(1, 8 + 1):
-	#			formal(LongUdiv, MAIN_WIDTH=MAIN_WIDTH,
-	#				DENOM_WIDTH=DENOM_WIDTH, CHUNK_WIDTH=CHUNK_WIDTH)
-	#formal(LongUdiv, MAIN_WIDTH=7, DENOM_WIDTH=7, CHUNK_WIDTH=2)
+	##for CHUNK_WIDTH in range(1, 4 + 1):
+	##	formal(LongUdiv, MAIN_WIDTH=8, DENOM_WIDTH=8,
+	##		CHUNK_WIDTH=CHUNK_WIDTH)
+	##formal(LongUdiv, MAIN_WIDTH=16, DENOM_WIDTH=12, CHUNK_WIDTH=3)
+	##formal(LongUdiv, MAIN_WIDTH=16, DENOM_WIDTH=10, CHUNK_WIDTH=5)
+	##for MAIN_WIDTH in range(1, 16 + 1):
+	##	for DENOM_WIDTH in range(1, 16 + 1):
+	##		for CHUNK_WIDTH in range(1, 8 + 1):
+	##			formal(LongUdiv, MAIN_WIDTH=MAIN_WIDTH,
+	##				DENOM_WIDTH=DENOM_WIDTH, CHUNK_WIDTH=CHUNK_WIDTH)
+	##formal(LongUdiv, MAIN_WIDTH=7, DENOM_WIDTH=7, CHUNK_WIDTH=2)
 
 
 #temp = [enc_simm(x, 5) for x in [-0xa, 0xa, 0x0, 0xff, -0x1f]]

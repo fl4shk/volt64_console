@@ -12,7 +12,7 @@ from nmigen.sim import Simulator, Delay, Tick
 
 from enum import Enum, auto
 
-from general.general_types import *
+from general.container_types import *
 
 #--------
 class LongUdivConstants:
@@ -61,7 +61,7 @@ class LongUdivConstants:
 		return temp_data.word_select(index, self.CHUNK_WIDTH())
 	#--------
 #--------
-class LongUdivPstageData(SplitRecord):
+class LongUdivPstageData(Splitrec):
 	#--------
 	def __init__(self, bus, io_dir: str):
 		#--------
@@ -84,13 +84,13 @@ class LongUdivPstageData(SplitRecord):
 		#self.denom_mult_lut = Signal \
 		#	((bus.DML_ELEM_WIDTH() * bus.DML_SIZE()), attrs=sig_keep(),
 		#		name=f"denom_mult_lut_{io_dir}")
-		self.denom_mult_lut = PackedArray(ELEM_WIDTH=bus.DML_ELEM_WIDTH(),
-			SIZE=bus.DML_SIZE(),
-			extra_args=SigContrExtraArgs
-				(
-					attrs=sig_keep(),
-					name=f"denom_mult_lut_{io_dir}"
-				)
+		self.denom_mult_lut \
+			= Packarr \
+			(
+				ELEM_WIDTH=bus.DML_ELEM_WIDTH(),
+				SIZE=bus.DML_SIZE(),
+				attrs=sig_keep(),
+				name=f"denom_mult_lut_{io_dir}"
 			)
 		#--------
 		if bus.PIPELINED():
@@ -99,7 +99,7 @@ class LongUdivPstageData(SplitRecord):
 		#--------
 		if self.__FORMAL:
 			#--------
-			self.formal = SplitRecord()
+			self.formal = Splitrec()
 			#--------
 			self.formal.formal_numer = Signal(bus.TEMP_T_WIDTH(),
 				attrs=sig_keep(), name=f"formal_numer_{io_dir}")
@@ -114,13 +114,13 @@ class LongUdivPstageData(SplitRecord):
 			#self.formal.formal_denom_mult_lut = Signal \
 			#	((bus.DML_ELEM_WIDTH() * bus.DML_SIZE()), attrs=sig_keep(),
 			#		name=f"formal_denom_mult_lut_{io_dir}")
-			self.formal.formal_denom_mult_lut = PackedArray \
-				(ELEM_WIDTH=bus.DML_ELEM_WIDTH(), SIZE=bus.DML_SIZE(),
-				extra_args=SigContrExtraArgs
-					(
-						attrs=sig_keep(),
-						name=f"formal_denom_mult_lut_{io_dir}"
-					)
+			self.formal.formal_denom_mult_lut \
+				= Packarr \
+				(
+					ELEM_WIDTH=bus.DML_ELEM_WIDTH(),
+					SIZE=bus.DML_SIZE(),
+					attrs=sig_keep(),
+					name=f"formal_denom_mult_lut_{io_dir}"
 				)
 			#--------
 		#--------
@@ -148,7 +148,8 @@ class LongUdivPstageBus:
 		# a suffix in the names of signals that prevents conflicts with
 		# `pst_out`'s signals' names.
 		self.psd_in = LongUdivPstageData(bus=self, io_dir="in")
-		self.chunk_start = Signal(self.CHUNK_WIDTH(), attrs=sig_keep())
+		self.chunk_start = Signal(shape=signed(self.CHUNK_WIDTH() + 1),
+			attrs=sig_keep())
 		#--------
 		# Outputs
 
@@ -246,7 +247,7 @@ class LongUdivPstage(Elaboratable):
 		#--------
 		# Shift in the current chunk of `psd_in.temp_numer`
 		m.d.comb += loc.shift_in_rema.eq(Cat(bus.chunk_ws
-			(psd_in.temp_numer, bus.chunk_start, CHUNK_WIDTH),
+			(psd_in.temp_numer, bus.chunk_start),
 			psd_in.temp_rema[:TEMP_T_WIDTH - CHUNK_WIDTH])),
 
 		# Compare every element of the computed `denom * digit` array to
@@ -311,8 +312,7 @@ class LongUdivPstage(Elaboratable):
 				psd_out.temp_quot.eq(loc.temp_quot_next),
 				psd_out.temp_rema.eq(loc.temp_rema_next),
 				#--------
-				psd_out.denom_mult_lut.sig()
-					.eq(psd_in.denom_mult_lut.sig()),
+				psd_out.denom_mult_lut.eq(psd_in.denom_mult_lut),
 				#--------
 				#psd_out.tag.eq(psd_in.tag),
 				#--------
@@ -386,8 +386,8 @@ class LongUdivPstage(Elaboratable):
 					psd_out.formal.oracle_quot.eq(oracle_quot_in),
 					psd_out.formal.oracle_rema.eq(oracle_rema_in),
 					#--------
-					psd_out.formal.formal_denom_mult_lut.sig()
-						.eq(formal_denom_mult_lut_in.sig()),
+					psd_out.formal.formal_denom_mult_lut
+						.eq(formal_denom_mult_lut_in),
 					#--------
 				]
 				#--------
@@ -435,8 +435,8 @@ class LongUdivPstage(Elaboratable):
 						Assert(psd_out.temp_rema
 							== Past(loc.temp_rema_next)),
 						#--------
-						Assert(psd_out.denom_mult_lut.sig()
-							== Past(psd_in.denom_mult_lut.sig()))
+						Assert(psd_out.denom_mult_lut
+							== Past(psd_in.denom_mult_lut)),
 						#--------
 						Assert(psd_out.formal.formal_numer
 							== Past(formal_numer_in)),
@@ -448,8 +448,8 @@ class LongUdivPstage(Elaboratable):
 						Assert(psd_out.formal.oracle_rema
 							== Past(oracle_rema_in)),
 						#--------
-						Assert(psd_out.formal.formal_denom_mult_lut.sig()
-							== Past(formal_denom_mult_lut_in.sig())),
+						Assert(psd_out.formal.formal_denom_mult_lut
+							== Past(formal_denom_mult_lut_in)),
 						#--------
 					]
 					#--------

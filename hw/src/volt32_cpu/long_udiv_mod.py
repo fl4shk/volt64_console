@@ -80,7 +80,7 @@ class LongUdivBus:
 		return (1 << self.DENOM_WIDTH())
 	#--------
 #--------
-class LongUdiv(Elaboratable)
+class LongUdiv(Elaboratable):
 	#--------
 	def __init__(self, MAIN_WIDTH, DENOM_WIDTH, CHUNK_WIDTH,
 		PIPELINED=False, FORMAL=False):
@@ -104,14 +104,10 @@ class LongUdiv(Elaboratable)
 		return 1 \
 			if not self.PIPELINED() \
 			else self.NUM_CHUNKS()
-	#def PSD_LST_SIZE(self):
-	#	return (self.NUM_PSTAGES() + 1)
-	#def psd_lst(self, elem_width, name_prefix):
-	#	ret = []
-	#	for i in range(self.PSD_LST_SIZE()):
-	#		ret.append(Signal(elem_width, attrs=sig_keep(),
-	#			name=f"{name_prefix}_{i}"))
-	#	return ret
+	#--------
+	class State(Enum):
+		IDLE = 0
+		RUNNING = auto()
 	#--------
 	def elaborate(self, platform: str) -> Module:
 		#--------
@@ -126,120 +122,19 @@ class LongUdiv(Elaboratable)
 			for i in range(bus.NUM_PSTAGES())]
 		m.submodules += loc.m
 
-		#loc.pl_temp_numer = self.psd_lst(bus.TEMP_T_WIDTH(),
-		#	"pl_temp_numer")
-		#loc.pl_temp_quot = self.psd_lst(bus.TEMP_T_WIDTH(), "pl_temp_quot")
-		#loc.pl_temp_rema = self.psd_lst(bus.TEMP_T_WIDTH(), "pl_temp_rema")
-		#loc.pl_denom_mult_lut \
-		#	= bus.psd_lst(bus.DML_ELEM_WIDTH() * bus.DML_SIZE(),
-		#	"pl_denom_mult_lut")
-
-		#if bus.PIPELINED():
-		#	loc.pl_tag = self.psd_lst(bus.TAG_WIDTH(), "pl_tag")
-
-		#if bus.FORMAL():
-		#	#--------
-		#	loc.formal = Blank()
-		#	#--------
-		#	loc.formal.pl_formal_numer = self.psd_lst(bus.TEMP_T_WIDTH(),
-		#		"pl_formal_numer")
-		#	loc.formal.pl_formal_denom = self.psd_lst(bus.DENOM_WIDTH(),
-		#		"pl_formal_denom")
-
-		#	loc.formal.pl_oracle_quot = self.psd_lst(bus.TEMP_T_WIDTH(),
-		#		"pl_oracle_quot")
-		#	loc.formal.pl_oracle_rema = self.psd_lst(bus.TEMP_T_WIDTH(),
-		#		"pl_oracle_rema")
-		#	#--------
-		#	loc.formal.pl_formal_denom_mult_lut \
-		#		= self.psd_lst(bus.DML_ELEM_WIDTH() * bus.DML_SIZE(),
-		#			"pl_formal_denom_mult_lut")
-		#	#--------
-
-		## Connect the pstages together
-		#def connect_ports(bus, loc, i):
-		#	ps_bus = loc.m[i].bus()
-		#	next_psd_in = ps_bus.psd_in
-		#	psd_out = ps_bus.psd_out
-
-		#	m.d.comb \
-		#	+= [
-		#	]
-
-		#	#m.d.comb \
-		#	#+= [
-		#	#	#--------
-		#	#	psd_in.temp_numer.eq(loc.pl_temp_numer[i]),
-		#	#	loc.pl_temp_numer[i + 1].eq(psd_out.temp_numer),
-		#	#	#--------
-		#	#	psd_in.temp_quot.eq(loc.pl_temp_quot[i]),
-		#	#	loc.pl_temp_quot[i + 1].eq(psd_out.temp_quot),
-		#	#	#--------
-		#	#	psd_in.temp_rema.eq(loc.pl_temp_rema[i]),
-		#	#	loc.pl_temp_rema[i + 1].eq(psd_out.temp_rema),
-		#	#	#--------
-		#	#	psd_in.denom_mult_lut.eq(loc.pl_denom_mult_lut[i]),
-		#	#	loc.pl_denom_mult_lut[i + 1]
-		#	#		.eq(psd_out.denom_mult_lut),
-		#	#	#--------
-		#	#]
-
-		#	#if bus.PIPELINED()():
-		#	#	m.d.comb \
-		#	#	+= [
-		#	#		#--------
-		#	#		psd_in.tag.eq(loc.pl_tag[i]),
-		#	#		loc.pl_tag[i + 1].eq(psd_out.tag),
-		#	#		#--------
-		#	#	]
-
-		#	#if bus.FORMAL():
-		#	#	m.d.comb \
-		#	#	+= [
-		#	#		#--------
-		#	#		psd_in.formal.formal_numer
-		#	#			.eq(loc.formal.pl_formal_numer[i]),
-		#	#		loc.formal.pl_formal_numer[i + 1]
-		#	#			.eq(psd_out.formal.formal_numer),
-		#	#		#--------
-		#	#		psd_in.formal.formal_denom
-		#	#			.eq(loc.formal.pl_formal_denom[i]),
-		#	#		loc.formal.pl_formal_denom[i + 1]
-		#	#			.eq(psd_out.formal.formal_denom),
-		#	#		#--------
-		#	#		psd_in.formal.oracle_quot
-		#	#			.eq(loc.formal.pl_oracle_quot[i]),
-		#	#		loc.formal.pl_oracle_quot[i + 1]
-		#	#			.eq(psd_out.formal.oracle_quot),
-		#	#		#--------
-		#	#		psd_in.formal.oracle_rema
-		#	#			.eq(loc.formal.pl_oracle_rema[i]),
-		#	#		loc.formal.pl_oracle_rema[i + 1]
-		#	#			.eq(psd_out.formal.oracle_rema),
-		#	#		#--------
-		#	#		psd_in.formal.formal_denom_mult_lut
-		#	#			.eq(loc.formal.pl_formal_denom_mult_lut[i]),
-		#	#		loc.formal.pl_formal_denom_mult_lut[i + 1]
-		#	#			.eq(psd_out.formal.formal_denom_mult_lut),
-		#	#		#--------
-		#	#	]
-
-		for i in range(self.NUM_PSTAGES()):
-			#connect_ports \
-			#(
-			#	bus=bus,
-			#	loc=loc,
-			#	i=i
-			#)
+		# Connect the pipeline stages to one another.
+		for i in range(self.NUM_PSTAGES() - 1):
 			m.d.comb \
 			+= [
-				loc.m[i + 1].bus().psd_in.cat()
-					.eq(loc.m[i].bus().psd_out.cat())
+				loc.m[i + 1].bus().psd_in.eq(loc.m[i].bus().psd_out)
 			]
 
-		# Set the value of `ps_bus.chunk_start` for all the pstages if we
-		# are pipelined 
-		if bus.PIPELINED():
+		if not bus.PIPELINED():
+			loc.state = Signal(shape=Shape.cast(LongUdiv.State),
+				reset=LongUdiv.State.IDLE, attrs=sig_keep())
+		else: # if bus.PIPELINED():
+			# Set the value of `ps_bus.chunk_start` for all the pstages if
+			# we are pipelined 
 			for i in range(self.NUM_PSTAGES()):
 				ps_bus = loc.m[i].bus()
 				m.d.comb \
@@ -247,15 +142,88 @@ class LongUdiv(Elaboratable)
 					ps_bus.chunk_start.eq((self.NUM_PSTAGES() - 1) - i)
 				]
 		#--------
-		# Code implementing the state machine
-		if not bus.PIPELINED():
-			with m.If(ResetSignal()):
-			with m.Else(): # If(~ResetSignal()):
-		else: # if bus.PIPELINED():
-			with m.If(~ResetSignal()):
+		psd_in_first = loc.m[0].bus().psd_in
+		psd_out_last = loc.m[-1].bus().psd_out
+
+		m.d.comb \
+		+= [
+			#--------
+			psd_in_first.temp_numer.eq(bus.numer),
+			#psd_in_first.temp_quot.eq(0x0),
+			#psd_in_first.temp_rema.eq(0x0),
+			#--------
+			bus.quot.eq(psd_out_last.temp_quot[:len(bus.quot)]),
+			bus.rema.eq(psd_out_last.temp_rema[:len(bus.rema)]),
+			#--------
+		]
+		for i in range(loc.m[0].bus().DML_SIZE()):
+			m.d.comb \
+			+= [
+				psd_in_first.dml_elem(i).eq(bus.denom * i),
+			]
+
+		if bus.FORMAL():
+			m.d.comb \
+			+= [
+				psd_in_first.formal.formal_numer.eq(bus.numer),
+				psd_in_first.formal.formal_denom.eq(bus.denom),
+				psd_in_first.formal.oracle_quot.eq(bus.numer // bus.denom),
+				psd_in_first.formal.oracle_rema.eq(bus.numer % bus.denom),
+			]
+			for i in range(loc.m[0].bus().DML_SIZE()):
 				m.d.comb \
 				+= [
+					psd_in_first.formal.formal_dml_elem(i)
+						.eq(psd_in_first.formal.formal_denom * i),
 				]
+		#--------
+		if not bus.PIPELINED():
+			chunk_start_first = loc.m[0].bus().chunk_start
+
+			with m.If(ResetSignal()):
+				m.d.comb \
+				+= [
+					psd_in_first.temp_quot.eq(0x0),
+					psd_in_first.temp_rema.eq(0x0),
+				]
+			with m.Else(): # If(~ResetSignal())
+				with m.If(loc.state == LongUdiv.State.IDLE):
+					m.d.comb \
+					+= [
+						psd_in_first.temp_quot.eq(0x0),
+						psd_in_first.temp_rema.eq(0x0),
+					]
+
+					with m.If(bus.start):
+						m.d.sync \
+						+= [
+							bus.valid.eq(0b0),
+							chunk_start_first.eq(bus.NUM_CHUNKS() - 1),
+							loc.state.eq(LongUdiv.State.RUNNING),
+						]
+				with m.Else(): # If(loc.state == LongUdiv.State.RUNNING):
+					m.d.comb \
+					+= [
+						psd_in_first.temp_quot.eq(psd_out_last.temp_quot),
+						psd_in_first.temp_rema.eq(psd_out_last.temp_rema),
+					]
+
+					with m.If(chunk_start >= 0x0):
+						m.d.sync \
+						+= [
+							chunk_start_first.eq(chunk_start_first - 1)
+						]
+					with m.Else: # If(chunk_start_first < 0x0):
+						m.d.sync \
+						+= [
+							bus.valid.eq(0b1),
+							loc.state.eq(LongUdiv.State.IDLE)
+						]
+						
+		else: # if bus.PIPELINED():
+			m.d.comb \
+			+= [
+			]
 		#--------
 		return m
 		#--------

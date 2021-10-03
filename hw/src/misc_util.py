@@ -102,28 +102,6 @@ class PrevCurrPair:
 		self.__prev = self.curr()
 		self.__curr = curr
 #--------
-##class PackedArray(ValueCastable):
-#class PackedArray:
-#	#--------
-#	def __init__(self, ShapeT, SIZE):
-#		self.__ShapeT, self.__SIZE = ShapeT, SIZE
-#
-#		self.__data = Signal(self.ShapeT().width * self.SIZE())
-#	#--------
-#	def ShapeT(self):
-#		return self.__ShapeT
-#	def SIZE(self):
-#		return self.__SIZE
-#
-#	def data(self):
-#		return self.__data
-#	#--------
-#	def __getitem__(self, key):
-#		return self.data().word_select(key, self.ShapeT().width)
-#	#--------
-#--------
-
-#--------
 def sig_keep():
 	return {"keep": 1}
 #--------
