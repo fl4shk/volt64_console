@@ -59,12 +59,26 @@ class VectorAddBus:
 
 		#self.a = Packarr(Packarr.Shape(ElemKindT, SIZE, name="a"))
 		#self.b = Packarr.like(self.a, name="b")
+		#self.inp \
+		#	= Packrec \
+		#	([
+		#		("a", Packarr.Shape(ElemKindT, SIZE)),
+		#		("b", Packarr.Shape(ElemKindT, SIZE)),
+		#	])
 		self.inp \
-			= Packrec \
-			([
-				("a", Packarr.Shape(ElemKindT, SIZE)),
-				("b", Packarr.Shape(ElemKindT, SIZE)),
-			])
+			= Packarr \
+			(
+				Packarr.Shape
+				(
+					Packrec.Layout
+					([
+						("a", ElemKindT),
+						("b", ElemKindT)
+					]),
+					SIZE
+				),
+				name="inp"
+			)
 		self.sum = Packarr(Packarr.Shape(ElemKindT, SIZE), name="sum")
 		#self.sum = Packarr.like(self.a, name="sum")
 		self.sum_next = Packarr.like(self.sum, name="sum_next")
@@ -89,7 +103,9 @@ class VectorAdd(Elaboratable):
 		#--------
 		m.d.comb \
 		+= [
-			bus.sum_next[i].eq(bus.inp.a[i] + bus.inp.b[i])
+			#bus.sum_next[i].eq(bus.inp.a[i] + bus.inp.b[i])
+			#	for i in range(bus.SIZE())
+			bus.sum_next[i].eq(bus.inp[i].a + bus.inp[i].b)
 				for i in range(bus.SIZE())
 			#bus.sum_next[i].eq(bus.a[i] + bus.b[i])
 			#	for i in range(bus.SIZE())

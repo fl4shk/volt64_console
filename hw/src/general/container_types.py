@@ -4,7 +4,7 @@ from misc_util import *
 from nmigen import *
 import nmigen.tracer as tracer
 from nmigen.hdl.ast import ValueCastable, Slice
-from nmigen.hdl.rec import Record, Layout
+#from nmigen.hdl.rec import Record, Layout
 from nmigen.asserts import Assert, Assume, Cover
 from nmigen.asserts import Past, Rose, Fell, Stable
 
@@ -277,7 +277,7 @@ class Packrec(ValueCastable):
 			self.__signed = signed
 			self.__SIG_WIDTH = 0
 
-			for field in fields:
+			for field in list(reversed(fields)):
 				if (not isinstance(field, tuple)) or (len(field) != 2):
 					raise TypeError(("Field {!r} has invalid layout: "
 						+ "should be (name, shape)").format(field))

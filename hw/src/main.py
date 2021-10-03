@@ -2,11 +2,14 @@
 
 import sys
 
+#from libcheesevoyage.misc_util import *
 from misc_util import *
 from top_mod import *
 from general.fifo_mods import *
+#from libcheesevoyage.general.container_types import *
+#from libcheesevoyage.general.tests.container_types_mods import VectorAdd
 from general.container_types import *
-from general.tests.container_types_mods import VectorAdd
+from general.tests.container_types_mods import VectorAdd, Adc
 from volt32_cpu.long_udiv_mod import *
 
 from nmigen import *
@@ -20,53 +23,6 @@ from nmigen.asserts import Past, Rose, Fell, Stable
 
 from nmigen.back import verilog
 
-from tracemalloc import *
-
-def ports(bus):
-	def inner_ports(bus):
-		ret = []
-		for key in bus.__dict__:
-			val = bus.__dict__[key]
-			if key[0] != "_":
-				if isinstance(val, Signal) or isinstance(val, Record):
-					ret += [val]
-				elif isinstance(val, Packrec):
-					#ret += val.flattened()
-					ret += [val.sig()]
-				#elif isinstance(val, Packarr):
-				#	ret += [val.sig()]
-				elif isinstance(val, Splitrec):
-					ret += val.flattened()
-				else:
-					ret += inner_ports(val)
-		return ret
-	return ([ClockSignal(), ResetSignal()] + inner_ports(bus))
-
-def to_verilog(dut_mod, **kw_args):
-	dut = dut_mod(**kw_args)
-	# ./main.py generate -t verilog
-	#main(dut, ports=ports(dut.bus()))
-	with open("dut.v.ignore", "w") as f:
-		f.write(verilog.convert(dut, ports=ports(dut.bus())))
-
-def formal(dut_mod, **kw_args):
-	parser = main_parser()
-	args = parser.parse_args()
-
-	m = Module()
-	m.submodules.dut = dut = dut_mod(**kw_args, FORMAL=True)
-
-	main_runner(parser, args, m, ports=ports(dut.bus()))
-
-def verify(dut_mod, **kw_args):
-	dut = dut_mod(**kw_args, DBG=True)
-
-	sim = Simulator(dut)
-	sim.add_clock(1e-6) # 1 MHz
-	sim.add_process(dut.verify_process)
-	with sim.write_vcd("test.vcd"):
-		#sim.run_until(1e-3)
-		sim.run()
 
 def program(mod_name, **kw_args):
 	#top = Top(DE0CVPlatform())
@@ -77,15 +33,15 @@ def program(mod_name, **kw_args):
 	mod.platform().build(mod, do_program=True)
 
 if __name__ == "__main__":
-	#to_verilog(VectorAdd, ElemKindT=4, SIZE=2)
-	e = Packrec \
-		([
-			("b", 6),
-			("a", [("c", 3), ("d", 9)]),
-			("f", Packarr.Shape(5, 7))
-		])
-	printerr(e.a.c.word_select(0, 3), "\n")
-	printerr(e.b.word_select(1, 3), "\n")
+	to_verilog(VectorAdd, ElemKindT=4, SIZE=2)
+	#e = Packrec \
+	#	([
+	#		("a", 6),
+	#		("b", [("c", 3), ("d", 9)]),
+	#		("f", Packarr.Shape(5, 7))
+	#	])
+	#printerr(e.a.word_select(e.f[0], 3), "\n")
+	#printerr(e.b.c.word_select(0, 3), "\n")
 	#printerr(type(Value.cast(e.a)), "\n")
 
 	##formal(Fifo, ShapeT=unsigned(8), SIZE=4)

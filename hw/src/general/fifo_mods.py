@@ -2,7 +2,6 @@
 
 from misc_util import *
 from nmigen import *
-from nmigen.hdl.rec import Record, Layout
 from nmigen.asserts import Assert, Assume, Cover
 from nmigen.asserts import Past, Rose, Fell, Stable
 
