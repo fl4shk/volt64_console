@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 #--------
 from general.container_types import *
+
+import math
 #--------
 class AdcBus:
 	def __init__(self, ELEM_WIDTH):
@@ -16,7 +18,7 @@ class AdcBus:
 		self.outp \
 			= Packrec \
 			([
-				("carry", 1)
+				("carry", 1),
 				("sum", ELEM_WIDTH),
 			])
 		self.clocked_sum = Signal(ELEM_WIDTH)
@@ -113,6 +115,57 @@ class VectorAdd(Elaboratable):
 		m.d.sync \
 		+= [
 			bus.sum.eq(bus.sum_next)
+		]
+		#--------
+		return m
+		#--------
+	#--------
+#--------
+class AddChosenScalarsBus:
+	def __init__(self, ElemKindT, SIZE):
+		self.__ElemKindT = ElemKindT
+		self.__SIZE = SIZE
+
+		self.inp \
+			= Packrec \
+			([
+				("a", Packarr.Shape(ElemKindT, SIZE)),
+				("b", Packarr.Shape(ElemKindT, SIZE)),
+				("sel", math.ceil(math.log2(ElemKindT))),
+			])
+		self.outp \
+			= Splitrec \
+			([
+				("sum_next", Signal(ElemKindT, name="outp_sum_next")),
+				("sum", Signal(ElemKindT, name="outp_sum")),
+			])
+	def ElemKindT(self):
+		return self.__ElemKindT
+	def SIZE(self):
+		return self.__SIZE
+
+class AddChosenScalars(Elaboratable):
+	#--------
+	def __init__(self, ElemKindT, SIZE):
+		self.__bus = AddChosenScalarsBus(ElemKindT, SIZE)
+	#--------
+	def bus(self):
+		return self.__bus
+	#--------
+	def elaborate(self, platform: str) -> Module:
+		#--------
+		m = Module()
+		#--------
+		bus = self.bus()
+		inp = bus.inp
+		#--------
+		m.d.comb \
+		+= [
+			bus.outp.sum_next.eq(inp.a[inp.sel] + inp.b[inp.sel]),
+		]
+		m.d.sync \
+		+= [
+			bus.outp.sum.eq(bus.outp.sum_next),
 		]
 		#--------
 		return m

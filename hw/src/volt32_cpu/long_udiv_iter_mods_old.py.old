@@ -4,7 +4,6 @@ import math
 from misc_util import *
 
 from nmigen import *
-from nmigen.hdl.rec import Record, Layout
 from nmigen.asserts import Assert, Assume, Cover
 from nmigen.asserts import Past, Rose, Fell, Stable
 
@@ -78,17 +77,13 @@ class LongUdivPstageData(Splitrec):
 		self.temp_rema = Signal(bus.TEMP_T_WIDTH(), attrs=sig_keep(),
 			name=f"temp_rema_{io_dir}")
 		#--------
-		#self.denom_mult_lut = Array([Signal
-		#	(bus.DML_ELEM_WIDTH())
-		#	for _ in range(bus.RADIX())])
 		#self.denom_mult_lut = Signal \
 		#	((bus.DML_ELEM_WIDTH() * bus.DML_SIZE()), attrs=sig_keep(),
 		#		name=f"denom_mult_lut_{io_dir}")
 		self.denom_mult_lut \
 			= Packarr \
 			(
-				ELEM_WIDTH=bus.DML_ELEM_WIDTH(),
-				SIZE=bus.DML_SIZE(),
+				Packarr.Shape(bus.DML_ELEM_WIDTH(), bus.DML_SIZE()),
 				attrs=sig_keep(),
 				name=f"denom_mult_lut_{io_dir}"
 			)
@@ -117,8 +112,7 @@ class LongUdivPstageData(Splitrec):
 			self.formal.formal_denom_mult_lut \
 				= Packarr \
 				(
-					ELEM_WIDTH=bus.DML_ELEM_WIDTH(),
-					SIZE=bus.DML_SIZE(),
+					Packarr.Shape(bus.DML_ELEM_WIDTH(), bus.DML_SIZE()),
 					attrs=sig_keep(),
 					name=f"formal_denom_mult_lut_{io_dir}"
 				)
@@ -167,8 +161,8 @@ class LongUdivPstageBus:
 		return self.__constants.CHUNK_WIDTH()
 	def TAG_WIDTH(self):
 		return self.__constants.TAG_WIDTH()
-	def PIPELINED(self):
-		return self.__constants.PIPELINED()
+	#def PIPELINED(self):
+	#	return self.__constants.PIPELINED()
 	def FORMAL(self):
 		return self.__constants.FORMAL()
 	#--------
@@ -252,14 +246,15 @@ class LongUdivPstage(Elaboratable):
 
 		# Compare every element of the computed `denom * digit` array to
 		# `shift_in_rema`, computing `gt_vec`.
-		# This creates around a single LUT delay for the comparisons given
-		# the existence of hard carry chains in FPGAs.
+		# This creates perhaps a single LUT delay for the greater-than
+		# comparisons given the existence of hard carry chains in FPGAs.
 		for i in range(bus.RADIX()):
 			m.d.comb += loc.gt_vec[i].eq(psd_in.dml_elem(i)
 				> loc.shift_in_rema)
 
 		# Find the current quotient digit with something resembling a
 		# priority encoder.
+		# This implements binary search.
 		with m.Switch(loc.gt_vec):
 			for i in range(len(loc.gt_vec)):
 				with m.Case(("1" * (len(loc.gt_vec) - (i + 1)))

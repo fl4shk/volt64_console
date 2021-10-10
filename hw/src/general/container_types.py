@@ -18,35 +18,13 @@ from collections import OrderedDict
 class ElemRef(ValueCastable):
 	#--------
 	def __init__(self, obj, shape, key):
-		#dbg_printerr("ElemRef() obj", obj)
-		#dbg_printerr("ElemRef() shape", shape)
-		#dbg_printerr("ElemRef() key", key)
-		#printerr("ElemRef() 2: ", isinstance(obj, ElemRef), "\n")
-
 		if not isinstance(obj, ElemRef):
-			#printerr("ElemRef() not isinstance(obj, ElemRef)\n")
 			try:
 				Value.cast(obj)
 			except Exception:
 				raise TypeError("`obj` {!r} is not castable to `Value`"
 					.format(obj)) from None
 
-		#printerr("\n")
-
-		#if (not isinstance(shape, Packrec.Layout)) \
-		#	and (not isinstance(shape, Packarr.Shape)):
-		#	#try:
-		#	#	# Check provided shape by calling Shape.cast and checking
-		#	#	# for exception
-		#	#	Shape.cast(shape, src_loc_at=src_loc_at + 1)
-		#	#except Exception:
-		#	#	raise TypeError(("`shape` {!r} is invalid shape: "
-		#	#		+ "should be castable to `Shape` "
-		#	#		+ "or be a `Packrec.Layout` or a `Packarr.Shape`")
-		#	#		.format(shape)) from None
-		#	raise TypeError(("`shape` {!r} is invalid shape: "
-		#		+ "should be a `Packrec.Layout` or a `Packarr.Shape`")
-		#		.format(shape))
 		if isinstance(shape, Packrec.Layout):
 			if not isinstance(key, str):
 				raise TypeError(("`key` {!r} has invalid type: "
@@ -56,10 +34,6 @@ class ElemRef(ValueCastable):
 			if not key in shape.fields():
 				raise AttributeError("`key` {} is not a member"
 					.format(key))
-			#assert isinstance(key, str), \
-			#	psconcat(type(key), ", ", key)
-
-		#printout("testificate")
 
 		self.__obj = obj
 		self.__shape = shape
@@ -89,8 +63,6 @@ class ElemRef(ValueCastable):
 	def eq(self, other):
 		return self.as_value().eq(other)
 	def word_select(self, index, elem_width):
-		#dbg_printerr("ElemRef.word_select() index", index)
-		#dbg_printerr("ElemRef.word_select() elem_width", elem_width)
 		return self.as_value().word_select(index, elem_width)
 	#--------
 	def __add__(self, other):
@@ -157,88 +129,78 @@ class ElemRef(ValueCastable):
 		# I believe that `obj` will always be a `Signal` or `Slice`, though
 		# `self.obj()` could be a `Signal`, `Slice`, `ElemRef`, `Packrec`,
 		# or `Packarr`. That's at least how it's supposed to work.
-		###obj = self.obj().as_value()
-		#printerr("ElemRef.as_value(): testificate\n")
-
 		obj = Value.cast(self.obj())
-		#dbg_printerr("ElemRef.as_value() obj", obj)
-		#dbg_printerr("ElemRef.as_value() self.shape()", self.shape())
-		#dbg_printerr("ElemRef.as_value() self.key()", self.key())
 
 		if isinstance(self.shape(), Packrec.Layout):
-			if not isinstance(self.key(), str):
-				raise TypeError("`self.key()` `{}` is not `str`"
-					.format(self.key()))
-			if self.key() not in self.fields():
-				raise AttributeError(("`self.shape()` `{}` does not have "
-					+ "a field `{}. Did you mean one of `{}`?")
-					.format(self.shape(), self.key(),
-						", ".join(self.fields())))
+			if isinstance(self.key(), str):
+				if self.key() not in self.fields():
+					raise AttributeError(("`self.shape()` `{}` does not "
+						+ "have a field `{}. Did you mean one of `{}`?")
+						.format(self.shape(), self.key(),
+							", ".join(self.fields())))
 
-			# This is the `shape` of the field
-			shape = self.fields()[self.key()]
-			start_stop_pair = self.__calc_packrec_start_stop_pair \
-				(shape, self.key())
-			#printerr("start_stop_pair: ", start_stop_pair, "\n")
-			return obj[start_stop_pair[0]:start_stop_pair[1]]
+				# This is the `shape` of the field
+				shape = self.fields()[self.key()]
+				start_stop_pair = self.__calc_packrec_start_stop_pair \
+					(shape, self.key())
+				return obj[start_stop_pair[0]:start_stop_pair[1]]
+			elif isinstance(self.key(), slice):
+				return obj[self.key]
+			else:
+				try:
+					Value.cast(self.key())
+				except Exception:
+					raise TypeError(("`self.key()` `{!r}` is not one of "
+						+ "`str`, `slice`, or castable to `Value`")
+						.format(self.key())) from None
 		else: # if isinstance(self.shape(), Packarr.Shape):
-			shape = self.ElemKindT()
-			return obj.word_select(self.key(),
-				shape
-					if isinstance(shape, int)
-					else len(shape))
+			if isinstance(self.key(), slice):
+				return obj[self.key()]
+			else:
+				try:
+					Value.cast(self.key())
+				except Exception:
+					raise TypeError(("`self.key()` `{!r}` is neither "
+						+ "a `slice` nor castable to `Value`")
+						.format(self.key())) from None
+
+				shape = self.ElemKindT()
+				return obj.word_select(self.key(),
+					shape
+						if isinstance(shape, int)
+						else len(shape))
 	def __len__(self):
 		return len(self.as_value())
 	def __repr__(self):
 		return "ElemRef([{}, {}, {}])" \
 			.format(self.obj(), self.shape(), self.key())
 	def __getattr__(self, key):
-		#dbg_printerr("ElemRef.__getattr__() self.shape()", self.shape())
-		#dbg_printerr("ElemRef.__getattr__() key", key)
-		#if not isinstance(self.shape(), Packrec.Layout):
-		#	raise TypeError("`shape` {!r} is not a `Packrec.Layout`"
-		#		.format(self.shape()))
-		return self[key]
+		if key[0] == "_":
+			return self.__dict__[key]
+		else: # if key[0] != "_":
+			return self[key]
 	def __getitem__(self, key):
-		#printerr("ElemRef.__getitem__(): ", key, "\n")
-		#dbg_printerr("ElemRef.__getitem__() self.shape()", self.shape())
-		#dbg_printerr("ElemRef.__getitem__() self.key()", self.key())
-		#dbg_printerr("ElemRef.__getitem__() key", key)
-		#printerr("\n")
 		if isinstance(self.shape(), Packrec.Layout):
-			if not isinstance(self.key(), str):
-				raise TypeError("`self.key()` `{}` is not `str`"
-					.format(self.key()))
-			if self.key() not in self.fields():
-				raise AttributeError(("`{}` does not have a field `{}. "
-					+ "Did you mean one of `{}`?")
-					.format(self.shape(), self.key(),
-						", ".join(self.fields())))
-			shape = self.fields()[self.key()]
-			#printerr("testificate: ", shape, "\n")
-
-			#if isinstance(shape, int):
-			#	start_stop_pair = self.__calc_packrec_start_stop_pair \
-			#		(shape, key)
-			#	return self.as_value() \
-			#		[start_stop_pair[0]:start_stop_pair[1]]
-			#else: # if not isinstance(shape, int):
-			#	return ElemRef(self.as_value(), shape, key)
+			if isinstance(self.key(), str):
+				if self.key() not in self.fields():
+					raise AttributeError(("`{}` does not have a field `{}. "
+						+ "Did you mean one of `{}`?")
+						.format(self.shape(), self.key(),
+							", ".join(self.fields())))
+				shape = self.fields()[self.key()]
+			elif isinstance(self.key(), slice):
+				return self.as_value()[self.key()]
+			else:
+				try:
+					Value.cast(self.key())
+				except Exception:
+					raise TypeError(("`self.key()` {!r} is not one of "
+						+ "`str`, `slice`, or castable to `Value`")
+						.format(self.key())) from None
+				return self.as_value()[self.key()]
 		else: # if isinstance(self.shape(), Packarr.Shape):
-			#try:
-			#	Value.cast(key)
-			#except Exception:
-			#	raise TypeError("`obj` {!r} is not castable to `Value`"
-			#		.format(key)) from None
-
 			shape = self.ElemKindT()
-
-			#if isinstance(shape, int):
-			#	return self.word_select(key, shape)
-			#else: # if not isinstance(shape, int):
-			#	return ElemRef(self.as_value(), shape, key)
 		return ElemRef(self, shape, key)
-		#return "asdf"
 	#--------
 	def __calc_packrec_start_stop_pair(self, shape, key):
 		start = 0
@@ -336,8 +298,8 @@ class Packrec(ValueCastable):
 		#--------
 		def __len__(self):
 			return self.SIG_WIDTH()
-		def __getitem__(self, item):
-			return self.fields()[item]
+		def __getitem__(self, key):
+			return self.fields()[key]
 		def __iter__(self):
 			for name, shape in self.fields().items():
 				yield (name, shape)
@@ -511,11 +473,13 @@ class Packrec(ValueCastable):
 	def __len__(self):
 		return len(self.as_value())
 	def __getattr__(self, key):
-		#dbg_printerr("Packrec.__getattr__() self", self)
-		#dbg_printerr("Packrec.__getattr__() key", key)
-		return self[key]
+		if key[0] == "_":
+			return self.__dict__[key]
+		else: # if key[0] != "_":
+			return self[key]
 	def __getitem__(self, key):
-		return ElemRef(self.sig(), self.layout(), key)
+		if isinstance(key, str):
+			return ElemRef(self.sig(), self.layout(), key)
 	#--------
 #--------
 class Packarr(ValueCastable):
@@ -544,25 +508,10 @@ class Packarr(ValueCastable):
 					+ "should be a `Packrec.Layout`, a `Packarr.Shape`, "
 					+ "or an `int`")
 					.format(ElemKindT))
-				#try:
-				#	# Check provided shape by calling Shape.cast
-				#	# and checking for exception
-				#	Shape.cast(ElemKindT, src_loc_at=src_loc_at + 1)
-				#except Exception:
-				#	raise TypeError(("`ElemKindT` {!r} has invalid shape: "
-				#		+ "should be castable to `Shape` "
-				#		+ "or be a `Packrec.Layout` or a `Packarr.Shape`")
-				#		.format(ElemKindT)) from None
 		#--------
 		def ElemKindT(self):
 			return self.__ElemKindT
 		def ELEM_WIDTH(self):
-			#return self.ElemKindT().width \
-			#	if isinstance(self.ElemKindT(), Shape) \
-			#	else self.SIG_WIDTH()
-			#return self.ElemKindT() \
-			#	if isinstance(self.ElemKindT(), int) \
-			#	else self.SIG_WIDTH()
 			return self.__ELEM_WIDTH
 		def SIZE(self):
 			return self.__SIZE
@@ -592,7 +541,7 @@ class Packarr(ValueCastable):
 			new_name = other.name() + str(name_suffix)
 		else:
 			new_name = tracer.get_var_name(depth=src_loc_at + 2, 
-				default="like")
+				default=None)
 
 		kw \
 			= dict \
@@ -616,10 +565,11 @@ class Packarr(ValueCastable):
 
 		return Packarr(**kw)
 	#--------
-	def __init__(self, shape, *, name=None,
-		reset=0, reset_less=False, attrs=None, decoder=None, src_loc_at=0):
+	def __init__(self, shape, *, name=None, reset=0, reset_less=False,
+		attrs=None, decoder=None, src_loc_at=0):
 		#self.__ElemKindT = ElemKindT
 		#self.__SIZE = SIZE
+
 		self.__shape = shape
 
 		self.__extra_args_name = name
@@ -768,8 +718,6 @@ class Packarr(ValueCastable):
 		#return repr(self.sig())
 		return "Packarr([{}, {}])".format(self.ElemKindT(), self.SIZE())
 	def __getitem__(self, key):
-		#return self.sig().word_select(key, self.ELEM_WIDTH())
-		#printerr("Packarr.__getitem__(): ", self, "\n")
 		return ElemRef(self.sig(), self.shape(), key)
 	#--------
 #--------
@@ -777,60 +725,167 @@ class Packarr(ValueCastable):
 # attributes of every signal.
 class Splitrec(ValueCastable):
 	#--------
-	def __init__(self, fields: dict={}):
-		self.__fields = fields
+	#@staticmethod
+	#def like(other, name=None, name_suffix=None, src_loc_at=0, **kwargs):
+	#	if name is not None:
+	#		new_name = str(name)
+	#	elif name_suffix is not None:
+	#		new_name = other.name() + str(name_suffix)
+	#	else:
+	#		new_name = tracer.get_var_name(depth=src_loc_at + 2, 
+	#			default=None)
+
+	#	fields = {}
+
+	#	for name, field in other.fields():
+	#		if isinstance(field, Signal):
+	#			fields[name] = Signal.like(field, name=)
+	#		elif isinstance(field, Packrec):
+	#			fields[name] = Packrec.like(field)
+
+	#	kw \
+	#		= dict \
+	#		(
+	#			fields=fields
+	#		)
+
+	#	kw.update(kwargs)
+
+	#	return Splitrec(**kw)
+	
+	def __init__(self, fields: dict={}, *, name=None, src_loc_at=0):
+		#self.__dict__["__fields"] = fields
+		#self.__dict__["_Splitrec__fields"] = fields
+
+		#self.__fields = fields
+		for name, field in fields:
+			self.__setattr__(name, field)
+
+		self.__extra_args_name = name
+		self.__extra_args_src_loc_at = src_loc_at
 	#--------
 	def fields(self):
-		return self.__fields
-	#--------
-	def __getattr__(self, name):
-		return self[name]
-	def __getitem__(self, name):
-		if name[0] == "_":
-			return self.__dict__[name]
-		else: # if name[0] != "_":
-			return self.fields()[name]
+		#return self.__fields
+		ret = {}
+		for name in self.__dict__:
+			if name[0] != "_":
+				ret[name] = self.__dict__[name]
+		return ret
 
-	def __setattr__(self, name, val):
-		self[name] = val
-	def __setitem__(self, name, val):
-		self.__check_val_type("Splitrec.__setitem___()", val)
-
-		if name[0] == "_":
-			return self.__dict__[name]
-		else: # if name[0] != "_":
-			self.fields()[name] = val
+	def extra_args_name(self):
+		return self.__extra_args_name
+	def extra_args_src_loc_at(self):
+		return self.__extra_args_src_loc_at
 	#--------
-	def eq(self, val):
-		assert isinstance(other, self.__class__)
-		return self.as_value().eq(other.as_value())
+	#def __getattr__(self, key):
+	#	return self[key]
+	#def __getitem__(self, key):
+	#	if key[0] == "_":
+	#		return self.__dict__[temp_key]
+	#	else: # if key[0] != "_":
+	#		val = self.fields()[key]
+	#		#printout("Splitrec.__getitem__(): ",
+	#		#	key, " ", val, " ", Value.cast(val).name, "\n")
+	#		return val
+
+	#def __setattr__(self, key, val):
+	#	self[key] = val
+	#def __setitem__(self, key, val):
+	#	if key[0] == "_":
+	#		self.__dict__[key] = val
+	#	else: # if key[0] != "_":
+	#		self.__check_val_type("Splitrec.__setitem___()", val)
+	#		#printout("Splitrec.__setitem__(): ",
+	#		#	key, " ", val, " ", Value.cast(val).name, "\n")
+	#		self.fields()[key] = val
+	#--------
+	def eq(self, other):
+		#printout("Splitrec.eq(): ", type(other), ", ", other, "\n")
+		try:
+			Value.cast(other)
+		except Exception:
+			raise TypeError(psconcat
+				("Need to be able to cast `other`, {!r}, ".format(other),
+				"to `Value"))
+		return self.as_value().eq(Value.cast(other))
 	#--------
 	@ValueCastable.lowermethod
 	def as_value(self):
+		#printout("Splitrec.as_value(): ", self.flattened(), "\n")
 		return Cat(*self.flattened())
 	def __len__(self):
 		return len(self.as_value())
 	#def __repr__(self):
 	#--------
 	def __check_val_type(self, prefix_str, val):
-		assert (isinstance(val, Signal) or isinstance(val, Packarr) 
-			or isinstance(val, Packrec) or isinstance(val, Splitrec)), \
-			psconcat(prefix_str, " Error:  Need a `Signal`, `Packarr`, ",
-				"`Packrec`, or `Splitrec` for `val`, and `val`'s type ",
-				"is \"", type(val), "\".")
+		#assert (isinstance(val, Signal) or isinstance(val, Packarr) 
+		#	or isinstance(val, Packrec) or isinstance(val, Splitrec)), \
+		#	psconcat(prefix_str, " Error:  Need a `Signal`, `Packarr`, ",
+		#		"`Packrec`, or `Splitrec` for `val`, and `val`'s type ",
+		#		"is \"", type(val), "\". Also, `val` is \"", val, "\".")
+		if (not isinstance(val, Signal)) \
+			and (not isinstance(val, Packrec)) \
+			and (not isinstance(val, Packarr)) \
+			and (not isinstance(val, Splitrec)):
+			raise TypeError(psconcat(prefix_str, " ",
+				"Need a `Signal`, `Packrec`, `Packarr`, or `Splitrec` ",
+				"for `val` {!r}".format(val)))
 	def flattened(self):
 		ret = []
 		for val in self.fields().values():
 			self.__check_val_type("Splitrec.flattened()", val)
 
-			if isinstance(val, Signal) or isinstance(val, Record) \
+			if isinstance(val, Signal) or isinstance(val, Packrec) \
 				or isinstance(val, Packarr):
 				#ret.append(SigContrBase.get_nmigen_val(val))
+				#printout("Splitrec.flattened(): ",
+				#	Value.cast(val).name, "\n")
 				ret.append(val)
 			else: # if isinstance(val, Splitrec):
 				ret.append(val.flattened())
+		#printout("\n")
 		return ret
 	#def cat(self):
 	#	return eval(psconcat("Cat(" + ",".join(self.flattened()) + ")"))
 	#--------
+#--------
+class Vec2Layout(Packrec.Layout):
+	def __init__(self, ElemKindT, signed=False):
+		self.__ElemKindT = ElemKindT
+		self.__signed = signed
+		super().__init__ \
+		(
+			[
+				("x", self.ElemKindT()),
+				("y", self.ElemKindT()),
+			],
+			signed=signed
+		)
+	def ElemKindT(self):
+		return self.__ElemKindT
+	def signed(self):
+		return self.__signed
+class Vec2(Packrec):
+	def __init__(self, ElemKindT, signed):
+		super().__init__(Vec2Layout(ElemKindT=ElemKindT))
+	def ElemKindT(self):
+		return self.layout().ElemKindT()
+	def signed(self):
+		return self.layout().signed()
+#--------
+class PrevCurrPair:
+	def __init__(self, curr=None):
+		self.__prev, self.__curr = None, curr
+
+	def prev(self):
+		return self.__prev
+	def curr(self):
+		return self.__curr
+
+	def back_up(self):
+		self.__prev = self.curr()
+
+	def back_up_and_update(self, curr):
+		self.__prev = self.curr()
+		self.__curr = curr
 #--------
