@@ -126,16 +126,16 @@ class LongUdivMultiCycle(Elaboratable):
 				)
 			past_valid = loc.formal.past_valid
 		#--------
-		its_bus = loc.m[0].bus()
-		chunk_start = its_bus.chunk_start
-		itd_in = its_bus.itd_in
-		itd_out = its_bus.itd_out
+		it_bus = loc.m[0].bus()
+		chunk_start = it_bus.chunk_start
+		itd_in = it_bus.itd_in
+		itd_out = it_bus.itd_out
 		#--------
 		if bus.FORMAL():
 			#--------
 			m.d.sync += past_valid.eq(0b1)
 			#--------
-			skip_cond = (itd_in.formal.formal_denom == 0)
+			skip_cond = itd_in.formal.formal_denom == 0
 			#--------
 		#--------
 		with m.If(~ResetSignal()):
@@ -176,8 +176,7 @@ class LongUdivMultiCycle(Elaboratable):
 						]
 						m.d.sync \
 						+= [
-							itd_in.formal.formal_denom_mult_lut[i]
-								.eq(bus.denom * i)
+							itd_in.formal_dml_elem(i).eq(bus.denom * i)
 								for i in range(bus.DML_SIZE())
 						]
 					#--------
@@ -265,15 +264,6 @@ class LongUdivMultiCycle(Elaboratable):
 								#--------
 								Assert(itd_out.temp_numer
 									== Past(itd_in.temp_numer)),
-
-								#Assert(itd_out.temp_quot
-								#	== Past(bus.temp_quot)),
-								#Assert(itd_out.temp_rema
-								#	== Past(bus.temp_rema)),
-								#Assert(itd_out.temp_quot
-								#	== Past(itd_out.temp_quot)),
-								#Assert(itd_out.temp_rema
-								#	== Past(itd_out.temp_rema)),
 								#--------
 								Assert(itd_out.denom_mult_lut
 									== Past(itd_in.denom_mult_lut)),
@@ -309,6 +299,143 @@ class LongUdivMultiCycle(Elaboratable):
 									for i in range(bus.DML_SIZE())
 							]
 					#--------
+		#--------
+		return m
+		#--------
+	#--------
+#--------
+class LongUdivPipelined(Elaboratable):
+	#--------
+	def __init__(self, MAIN_WIDTH, DENOM_WIDTH, CHUNK_WIDTH, FORMAL=False):
+		self.__constants \
+			= LongUdivConstants \
+			(
+				MAIN_WIDTH=MAIN_WIDTH,
+				DENOM_WIDTH=DENOM_WIDTH,
+				CHUNK_WIDTH=CHUNK_WIDTH,
+				# This `TAG_WIDTH` is just a heuristic
+				TAG_WIDTH=math.ceil(math.log2(MAIN_WIDTH // CHUNK_WIDTH)
+					+ 2),
+				PIPELINED=True,
+				FORMAL=FORMAL
+			)
+		self.__bus = LongUdivBus(self.__constants)
+	#--------
+	def bus(self):
+		return self.__bus
+	#--------
+	def elaborate(self, platform: str) -> Module:
+		#--------
+		m = Module()
+		#--------
+		bus = self.bus()
+
+		#NUM_PSTAGES = bus.NUM_CHUNKS() + 1
+		NUM_PSTAGES = bus.NUM_CHUNKS()
+
+		loc = Blank()
+
+		# Submodules go here
+		loc.m \
+			= [
+				LongUdivIterSync
+				(
+					constants=self.__constants,
+					chunk_start_val=(NUM_PSTAGES - 1) - i
+				)
+					for i in range(NUM_PSTAGES)
+			]
+		m.submodules += loc.m
+		#--------
+		if bus.FORMAL():
+			loc.formal = Blank()
+			loc.formal.past_valid \
+				= Signal \
+				(
+					attrs=sig_keep(),
+					name="formal_past_valid"
+				)
+			past_valid = loc.formal.past_valid
+		#--------
+		its_bus = [loc.m[i].bus() for i in range(len(loc.m))]
+
+		itd_in = [its_bus[i].itd_in for i in range(len(loc.m))]
+		itd_out = [its_bus[i].itd_out for i in range(len(loc.m))]
+		#--------
+		# Connect the pipeline stages together
+		m.d.comb \
+		+= [
+			itd_in[i + 1].eq(itd_out[i]) for i in range(len(loc.m) - 1)
+		]
+		#--------
+		if bus.FORMAL():
+			#--------
+			m.d.sync += past_valid.eq(0b1)
+			#--------
+			skip_cond = itd_out[-1].formal.formal_denom == 0
+			#--------
+		#--------
+		m.d.sync \
+		+= [
+			itd_in[0].temp_numer.eq(bus.numer),
+
+			itd_in[0].temp_quot.eq(0x0),
+			itd_in[0].temp_rema.eq(0x0),
+
+			itd_in[0].tag.eq(bus.tag_in),
+		]
+		m.d.sync \
+		+= [
+			itd_in[0].denom_mult_lut[i].eq(bus.denom * i)
+				for i in range(bus.DML_SIZE())
+		]
+		m.d.comb \
+		+= [
+			bus.quot.eq(itd_out[-1].temp_quot),
+			bus.rema.eq(itd_out[-1].temp_rema),
+
+			bus.tag_out.eq(itd_out[-1].tag)
+		]
+		if bus.FORMAL():
+			m.d.sync \
+			+= [
+				itd_in[0].formal.formal_numer.eq(bus.numer),
+				itd_in[0].formal.formal_denom.eq(bus.denom),
+
+				itd_in[0].formal.oracle_quot.eq(bus.numer // bus.denom),
+				itd_in[0].formal.oracle_rema.eq(bus.numer % bus.denom),
+			]
+			m.d.sync \
+			+= [
+				itd_in[0].formal_dml_elem(i).eq(bus.denom * i)
+					for i in range(bus.DML_SIZE())
+			]
+			with m.If((~ResetSignal()) & past_valid):
+				m.d.comb \
+				+= [
+					#--------
+					Assert(itd_in[0].temp_numer == Past(bus.numer)),
+					Assert(itd_in[0].temp_quot == 0x0),
+					Assert(itd_in[0].temp_rema == 0x0),
+					#--------
+					Assert(itd_in[0].formal.formal_numer
+						== Past(bus.numer)),
+					Assert(itd_in[0].formal.formal_denom
+						== Past(bus.denom)),
+
+					Assert(itd_in[0].formal.oracle_quot
+						== (Past(bus.numer) // Past(bus.denom))),
+					Assert(itd_in[0].formal.oracle_rema
+						== (Past(bus.numer) % Past(bus.denom))),
+					#--------
+					Assert(skip_cond
+						| (itd_out[-1].temp_quot
+							== itd_out[-1].formal.oracle_quot)),
+					Assert(skip_cond
+						| (itd_out[-1].temp_rema
+							== itd_out[-1].formal.oracle_rema)),
+					#--------
+				]
 		#--------
 		return m
 		#--------

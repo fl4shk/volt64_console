@@ -108,14 +108,18 @@ if __name__ == "__main__":
 	#	DENOM_WIDTH=8,
 	#	CHUNK_WIDTH=2)
 
-	#formal(LongUdivMultiCycle,
+	#formal(LongUdivPipelined,
 	#	MAIN_WIDTH=4,
 	#	DENOM_WIDTH=4,
-	#	CHUNK_WIDTH=2)
-	formal(LongUdivMultiCycle,
+	#	CHUNK_WIDTH=3)
+	formal(LongUdivPipelined,
 		MAIN_WIDTH=8,
 		DENOM_WIDTH=8,
-		CHUNK_WIDTH=4)
+		CHUNK_WIDTH=3)
+	#formal(LongUdivPipelined,
+	#	MAIN_WIDTH=8,
+	#	DENOM_WIDTH=8,
+	#	CHUNK_WIDTH=4)
 
 	#for CHUNK_WIDTH in range(1, 4 + 1):
 	#	formal(LongUdiv, MAIN_WIDTH=8, DENOM_WIDTH=8,

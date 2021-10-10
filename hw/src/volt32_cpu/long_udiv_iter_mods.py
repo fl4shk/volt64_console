@@ -104,6 +104,7 @@ class LongUdivIterData(Splitrec):
 		self.__constants = constants
 		self.__DML_ENTRY_WIDTH = constants.DML_ELEM_WIDTH()
 		self.__FORMAL = constants.FORMAL()
+		self.__PIPELINED = constants.PIPELINED()
 		#--------
 		build_temp_t = constants.build_temp_t
 		#--------
@@ -123,9 +124,9 @@ class LongUdivIterData(Splitrec):
 				name=f"denom_mult_lut_{io_str}"
 			)
 		#--------
-		#if bus.PIPELINED():
-		#	self.tag = Signal(bus.TAG_WIDTH(), attrs=sig_keep(),
-		#		name=f"tag_{io_str}")
+		if self.__PIPELINED:
+			self.tag = Signal(constants.TAG_WIDTH(), attrs=sig_keep(),
+				name=f"tag_{io_str}")
 		#--------
 		if self.__FORMAL:
 			#--------
@@ -406,20 +407,20 @@ class LongUdivIterSyncBus:
 		super().__init__()
 		#--------
 		self.__constants = constants
-		self.itd_in_sync \
+		self.itd_in \
 			= LongUdivIterData \
 			(
 				constants=constants,
 				io_str="in_sync",
 			)
-		self.itd_out_sync \
+		self.itd_out \
 			= LongUdivIterData \
 			(
 				constants=constants,
 				io_str="out_sync",
 			)
-		self.chunk_start_sync \
-			= self.__constants.build_chunk_start_t(name_suffix="_sync")
+		#self.chunk_start \
+		#	= self.__constants.build_chunk_start_t(name_suffix="_sync")
 		#printout("LongUdivIterSyncBus.__init__(): ",
 		#	[Value.cast(val).name for val in self.itd_in_sync.flattened()],
 		#	"\n")
@@ -465,15 +466,12 @@ class LongUdivIterSyncBus:
 #--------
 class LongUdivIterSync(Elaboratable):
 	#--------
-	def __init__(self, constants: LongUdivConstants):
+	def __init__(self, constants: LongUdivConstants,
+		chunk_start_val: int):
 		self.__constants = constants
 
 		self.__bus = LongUdivIterSyncBus(constants=constants)
-		#global dbg_sync_bus
-		#dbg_sync_bus = self.bus()
-		#self.__it = LongUdivIter(constants=self.__constants)
-
-		#dbg_printout("LongUdivIterSync().__init__() test")
+		self.__chunk_start_val = chunk_start_val
 	#--------
 	def bus(self):
 		return self.__bus
@@ -487,72 +485,90 @@ class LongUdivIterSync(Elaboratable):
 		it = LongUdivIter(constants=self.__constants)
 		m.submodules += it
 		#--------
-		itd_in = it.bus().itd_in
-		itd_out = it.bus().itd_out
+		it_bus = it.bus()
+		itd_in = it_bus.itd_in
+		itd_out = it_bus.itd_out
 
-		itd_in_sync = bus.itd_in_sync
-		itd_out_sync = bus.itd_out_sync
+		itd_in_sync = bus.itd_in
+		itd_out_sync = bus.itd_out
 		#--------
 		m.d.comb \
 		+= [
 			itd_in.eq(itd_in_sync),
-			it.bus().chunk_start.eq(bus.chunk_start_sync),
+			it_bus.chunk_start.eq(self.__chunk_start_val),
 		]
 		m.d.sync += itd_out_sync.eq(itd_out)
 		#--------
 		if bus.FORMAL():
 			#--------
-			m.d.sync += bus.formal.past_valid.eq(0b1),
+			skip_cond = itd_in.formal.formal_denom == 0
+			past_valid = bus.formal.past_valid
 			#--------
-			with m.If(~ResetSignal()):
-				with m.If(bus.formal.past_valid):
+			m.d.sync += past_valid.eq(0b1),
+			#--------
+			with m.If((~ResetSignal()) & past_valid):
+				#--------
+				m.d.comb \
+				+= [
 					#--------
-					#for i in range(bus.NUM_CHUNKS()):
-					#	with m.If((i > it.bus().chunk_start)
-					#		and (i < bus.NUM_CHUNKS())):
-					#		m.d.comb \
-					#		+= [
-					#			Assert(itd_out_sync.temp_quot[i]
-					#				== Past(itd_in_sync.temp_quot[i])),
-					#		]
-					m.d.comb \
-					+= [
-						#--------
-						Assert(itd_out_sync.temp_numer
-							== Past(itd_in_sync.temp_numer)),
+					Assert(itd_in.temp_numer == itd_in_sync.temp_numer),
 
-						#Assert(itd_out_sync.temp_quot
-						#	== Past(bus.temp_quot)),
-						#Assert(itd_out_sync.temp_rema
-						#	== Past(bus.temp_rema)),
-						Assert(itd_out_sync.temp_quot
-							== Past(itd_out.temp_quot)),
-						Assert(itd_out_sync.temp_rema
-							== Past(itd_out.temp_rema)),
-						#--------
-						Assert(itd_out_sync.denom_mult_lut
-							== Past(itd_in_sync.denom_mult_lut)),
-						#--------
-						Assert(itd_out_sync.formal.formal_numer
-							== Past(itd_in_sync.formal
-								.formal_numer)),
-						Assert(itd_out_sync.formal.formal_denom
-							== Past(itd_in_sync.formal
-								.formal_denom)),
+					Assert(itd_in.temp_quot == itd_in_sync.temp_quot),
+					Assert(itd_in.temp_rema == itd_in_sync.temp_rema),
 
-						Assert(itd_out_sync.formal.oracle_quot
-							== Past(itd_in_sync.formal
-								.oracle_quot)),
-						Assert(itd_out_sync.formal.oracle_rema
-							== Past(itd_in_sync.formal
-								.oracle_rema)),
-						#--------
-						Assert(itd_out_sync.formal
-							.formal_denom_mult_lut
-							== Past(itd_in_sync.formal
-								.formal_denom_mult_lut)),
-						#--------
-					]
+					Assert(itd_in.tag == itd_in_sync.tag),
+
+					Assert(itd_in.formal.formal_numer
+						== itd_in_sync.formal.formal_numer),
+					Assert(itd_in.formal.formal_denom
+						== itd_in_sync.formal.formal_denom),
+
+					Assert(itd_in.formal.oracle_quot
+						== itd_in_sync.formal.oracle_quot),
+					Assert(itd_in.formal.oracle_rema
+						== itd_in_sync.formal.oracle_rema),
+					#--------
+					Assert(itd_out_sync.temp_numer
+						== Past(itd_in.temp_numer)),
+					#Assert(itd_out_sync.formal == Past(itd_in.formal)),
+					Assert(itd_out_sync.formal.formal_numer
+						== Past(itd_in.formal.formal_numer)),
+					Assert(itd_out_sync.formal.formal_denom
+						== Past(itd_in.formal.formal_denom)),
+
+					Assert(itd_out_sync.formal.oracle_quot
+						== Past(itd_in.formal.oracle_quot)),
+					Assert(itd_out_sync.formal.oracle_rema
+						== Past(itd_in.formal.oracle_rema)),
+
+					Assert(itd_out_sync.formal.formal_denom_mult_lut
+						== Past(itd_in.formal.formal_denom_mult_lut)),
+					#--------
+					Assert(itd_out_sync.temp_numer
+						== Past(itd_in_sync.temp_numer)),
+
+					Assert(itd_out_sync.temp_quot
+						== Past(itd_out.temp_quot)),
+					Assert(itd_out_sync.temp_rema
+						== Past(itd_out.temp_rema)),
+					#--------
+					Assert(itd_out_sync.denom_mult_lut
+						== Past(itd_in_sync.denom_mult_lut)),
+					#--------
+					Assert(itd_out_sync.formal.formal_numer
+						== Past(itd_in_sync.formal.formal_numer)),
+					Assert(itd_out_sync.formal.formal_denom
+						== Past(itd_in_sync.formal.formal_denom)),
+
+					Assert(itd_out_sync.formal.oracle_quot
+						== Past(itd_in_sync.formal.oracle_quot)),
+					Assert(itd_out_sync.formal.oracle_rema
+						== Past(itd_in_sync.formal.oracle_rema)),
+					#--------
+					Assert(itd_out_sync.formal.formal_denom_mult_lut
+						== Past(itd_in_sync.formal.formal_denom_mult_lut)),
+					#--------
+				]
 			#--------
 		#--------
 		return m
