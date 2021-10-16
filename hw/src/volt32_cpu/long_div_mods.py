@@ -12,75 +12,50 @@ from nmigen.sim import Simulator, Delay, Tick
 from enum import Enum, auto
 
 from general.container_types import *
-from volt32_cpu.long_udiv_iter_mods import *
+from volt32_cpu.long_div_iter_mods import *
 #--------
-class LongUdivBus:
+class LongDivBus:
 	#--------
-	def __init__(self, constants):
+	def __init__(self, constants, *, shape_func=unsigned):
 		#--------
 		self.__constants = constants
+		self.__shape_func = shape_func
 		#--------
 		# Inputs
 
-		if not self.PIPELINED():
+		if not constants.PIPELINED():
 			self.ready = Signal()
 
-		self.numer = Signal(self.MAIN_WIDTH())
-		self.denom = Signal(self.DENOM_WIDTH())
+		self.numer = Signal(shape_func(constants.MAIN_WIDTH()))
+		self.denom = Signal(shape_func(constants.DENOM_WIDTH()))
 
-		if self.PIPELINED():
-			self.tag_in = Signal(self.TAG_WIDTH())
+		if constants.PIPELINED():
+			self.tag_in = Signal(constants.TAG_WIDTH())
 		#--------
 		# Outputs
 
-		if not self.PIPELINED():
+		if not constants.PIPELINED():
 			self.valid = Signal()
 
-		self.quot = Signal(self.MAIN_WIDTH())
-		self.rema = Signal(self.MAIN_WIDTH())
+		self.quot = Signal(shape_func(constants.MAIN_WIDTH()))
+		self.rema = Signal(shape_func(constants.MAIN_WIDTH()))
 
-		if self.PIPELINED():
-			self.tag_out = Signal(self.TAG_WIDTH())
+		if constants.PIPELINED():
+			self.tag_out = Signal(constants.TAG_WIDTH())
 		#--------
 	#--------
-	def MAIN_WIDTH(self):
-		return self.__constants.MAIN_WIDTH()
-	def DENOM_WIDTH(self):
-		return self.__constants.DENOM_WIDTH()
-	def CHUNK_WIDTH(self):
-		return self.__constants.CHUNK_WIDTH()
-	def TAG_WIDTH(self):
-		return self.__constants.TAG_WIDTH()
-	def PIPELINED(self):
-		return self.__constants.PIPELINED()
-	def FORMAL(self):
-		return self.__constants.FORMAL()
-	#--------
-	def TEMP_T_WIDTH(self):
-		return self.__constants.TEMP_T_WIDTH()
-
-	def NUM_CHUNKS(self):
-		return self.__constants.NUM_CHUNKS()
-
-	def RADIX(self):
-		return self.__constants.RADIX()
-	#--------
-	def DML_ELEM_WIDTH(self):
-		return self.__constants.DML_ELEM_WIDTH()
-	def DML_SIZE(self):
-		return self.__constants.DML_SIZE()
-	#--------
-	def MAIN_MAX_VAL(self):
-		return (1 << self.MAIN_WIDTH())
-	def DENOM_MAX_VAL(self):
-		return (1 << self.DENOM_WIDTH())
+	def constants(self):
+		return self.__constants
+	def shape_func(self):
+		return self.__shape_func
 	#--------
 #--------
-class LongUdivMultiCycle(Elaboratable):
+class LongDivMultiCycle(Elaboratable):
 	#--------
-	def __init__(self, MAIN_WIDTH, DENOM_WIDTH, CHUNK_WIDTH, FORMAL=False):
+	def __init__(self, MAIN_WIDTH, DENOM_WIDTH, CHUNK_WIDTH, FORMAL=False,
+		*, shape_func=unsigned):
 		self.__constants \
-			= LongUdivConstants \
+			= LongDivConstants \
 			(
 				MAIN_WIDTH=MAIN_WIDTH,
 				DENOM_WIDTH=DENOM_WIDTH,
@@ -88,7 +63,7 @@ class LongUdivMultiCycle(Elaboratable):
 				PIPELINED=False,
 				FORMAL=FORMAL,
 			)
-		self.__bus = LongUdivBus(self.__constants)
+		self.__bus = LongDivBus(self.__constants, shape_func=shape_func)
 	#--------
 	def bus(self):
 		return self.__bus
@@ -103,20 +78,17 @@ class LongUdivMultiCycle(Elaboratable):
 		#--------
 		bus = self.bus()
 
-		zero_d = (bus.denom == 0)
-
-		State = LongUdivMultiCycle.State
+		zero_d = bus.denom == 0
+		State = LongDivMultiCycle.State
 
 		loc = Blank()
-
 		# Submodules go here
 		loc.m = [LongUdivIter(constants=self.__constants)]
 		m.submodules += loc.m
-
 		loc.state = Signal(shape=Shape.cast(State),
 			reset=State.IDLE, attrs=sig_keep())
 
-		if bus.FORMAL():
+		if bus.constants().FORMAL():
 			loc.formal = Blank()
 			loc.formal.past_valid \
 				= Signal \
@@ -131,7 +103,7 @@ class LongUdivMultiCycle(Elaboratable):
 		itd_in = it_bus.itd_in
 		itd_out = it_bus.itd_out
 		#--------
-		if bus.FORMAL():
+		if bus.constants().FORMAL():
 			#--------
 			m.d.sync += past_valid.eq(0b1)
 			#--------
@@ -139,19 +111,12 @@ class LongUdivMultiCycle(Elaboratable):
 			#--------
 		#--------
 		with m.If(~ResetSignal()):
-			if bus.FORMAL():
-				with m.If(past_valid):
-					m.d.comb \
-					+= [
-						Assume(Stable(bus.numer)),
-						Assume(Stable(bus.denom)),
-					]
 			with m.Switch(loc.state):
 				with m.Case(State.IDLE):
 					#--------
 					m.d.sync \
 					+= [
-						chunk_start.eq(bus.NUM_CHUNKS() - 1),
+						chunk_start.eq(bus.constants().NUM_CHUNKS() - 1),
 
 						itd_in.temp_numer.eq(bus.numer),
 						itd_in.temp_quot.eq(0x0),
@@ -160,25 +125,8 @@ class LongUdivMultiCycle(Elaboratable):
 					m.d.sync \
 					+= [
 						itd_in.denom_mult_lut[i].eq(bus.denom * i)
-							for i in range(bus.DML_SIZE())
+							for i in range(bus.constants().DML_SIZE())
 					]
-					#--------
-					if bus.FORMAL():
-						m.d.sync \
-						+= [
-							itd_in.formal.formal_numer.eq(bus.numer),
-							itd_in.formal.formal_denom.eq(bus.denom),
-
-							itd_in.formal.oracle_quot
-								.eq(bus.numer // bus.denom),
-							itd_in.formal.oracle_rema
-								.eq(bus.numer % bus.denom),
-						]
-						m.d.sync \
-						+= [
-							itd_in.formal_dml_elem(i).eq(bus.denom * i)
-								for i in range(bus.DML_SIZE())
-						]
 					#--------
 					with m.If(bus.ready):
 						m.d.sync \
@@ -190,28 +138,12 @@ class LongUdivMultiCycle(Elaboratable):
 							loc.state.eq(State.RUNNING),
 						]
 					#--------
-					if bus.FORMAL():
-						with m.If(past_valid & (~Stable(loc.state))):
-							m.d.comb \
-							+= [
-								#--------
-								Assert(skip_cond
-									| (bus.quot
-										== Past(itd_out.temp_quot))),
-								Assert(skip_cond
-									| (bus.rema
-										== Past(itd_out.temp_rema))),
-								Assert(bus.valid),
-								#--------
-							]
-						#with m.Elif(past_valid & Stable(loc.state)):
-					#--------
 				with m.Case(State.RUNNING):
 					#--------
 					with m.If(chunk_start > 0):
 						# Since `itd_in` and `itd_out` are `Splitrec`s, we
 						# can do a simple `.eq()` regardless of whether or
-						# not `bus.FORMAL()` is true.
+						# not `bus.constants().FORMAL()` is true.
 						m.d.sync += itd_in.eq(itd_out)
 
 					with m.Else(): # m.If(chunk_start <= 0):
@@ -228,13 +160,51 @@ class LongUdivMultiCycle(Elaboratable):
 						chunk_start.eq(chunk_start - 1),
 					]
 					#--------
-					if bus.FORMAL():
+			if bus.constants().FORMAL():
+				with m.If(past_valid):
+					m.d.comb \
+					+= [
+						Assume(Stable(bus.numer)),
+						Assume(Stable(bus.denom)),
+					]
+				with m.Switch(loc.state):
+					with m.Case(State.IDLE):
+						m.d.sync \
+						+= [
+							itd_in.formal.formal_numer.eq(bus.numer),
+							itd_in.formal.formal_denom.eq(bus.denom),
+
+							itd_in.formal.oracle_quot
+								.eq(bus.numer // bus.denom),
+							itd_in.formal.oracle_rema
+								.eq(bus.numer % bus.denom),
+						]
+						m.d.sync \
+						+= [
+							itd_in.formal_dml_elem(i).eq(bus.denom * i)
+								for i in range(bus.constants().DML_SIZE())
+						]
+						with m.If(past_valid & (~Stable(loc.state))):
+							m.d.comb \
+							+= [
+								#--------
+								Assert(skip_cond
+									| (bus.quot
+										== Past(itd_out.temp_quot))),
+								Assert(skip_cond
+									| (bus.rema
+										== Past(itd_out.temp_rema))),
+								Assert(bus.valid),
+								#--------
+							]
+						#with m.Elif(past_valid & Stable(loc.state)):
+					with m.Case(State.RUNNING):
 						with m.If(past_valid & (~Stable(loc.state))):
 							m.d.comb \
 							+= [
 								#--------
 								Assert(chunk_start
-									== (bus.NUM_CHUNKS() - 1)),
+									== (bus.constants().NUM_CHUNKS() - 1)),
 								#--------
 								Assert(itd_in.temp_numer
 									== Past(bus.numer)),
@@ -290,25 +260,26 @@ class LongUdivMultiCycle(Elaboratable):
 							+= [
 								Assert(itd_in.denom_mult_lut[i]
 									== (itd_in.formal.formal_denom * i))
-									for i in range(bus.DML_SIZE())
+									for i in range
+										(bus.constants().DML_SIZE())
 							]
 							m.d.comb \
 							+= [
 								Assert(itd_in.formal_dml_elem(i)
 									== (itd_in.formal.formal_denom * i))
-									for i in range(bus.DML_SIZE())
+									for i in range
+										(bus.constants().DML_SIZE())
 							]
-					#--------
 		#--------
 		return m
 		#--------
 	#--------
 #--------
-class LongUdivPipelined(Elaboratable):
+class LongDivPipelined(Elaboratable):
 	#--------
 	def __init__(self, MAIN_WIDTH, DENOM_WIDTH, CHUNK_WIDTH, FORMAL=False):
 		self.__constants \
-			= LongUdivConstants \
+			= LongDivConstants \
 			(
 				MAIN_WIDTH=MAIN_WIDTH,
 				DENOM_WIDTH=DENOM_WIDTH,
@@ -319,7 +290,7 @@ class LongUdivPipelined(Elaboratable):
 				PIPELINED=True,
 				FORMAL=FORMAL
 			)
-		self.__bus = LongUdivBus(self.__constants)
+		self.__bus = LongDivBus(self.__constants)
 	#--------
 	def bus(self):
 		return self.__bus
@@ -330,8 +301,8 @@ class LongUdivPipelined(Elaboratable):
 		#--------
 		bus = self.bus()
 
-		#NUM_PSTAGES = bus.NUM_CHUNKS() + 1
-		NUM_PSTAGES = bus.NUM_CHUNKS()
+		#NUM_PSTAGES = bus.constants().NUM_CHUNKS() + 1
+		NUM_PSTAGES = bus.constants().NUM_CHUNKS()
 
 		loc = Blank()
 
@@ -347,7 +318,7 @@ class LongUdivPipelined(Elaboratable):
 			]
 		m.submodules += loc.m
 		#--------
-		if bus.FORMAL():
+		if bus.constants().FORMAL():
 			loc.formal = Blank()
 			loc.formal.past_valid \
 				= Signal \
@@ -368,7 +339,7 @@ class LongUdivPipelined(Elaboratable):
 			itd_in[i + 1].eq(itd_out[i]) for i in range(len(loc.m) - 1)
 		]
 		#--------
-		if bus.FORMAL():
+		if bus.constants().FORMAL():
 			#--------
 			m.d.sync += past_valid.eq(0b1)
 			#--------
@@ -387,7 +358,7 @@ class LongUdivPipelined(Elaboratable):
 		m.d.sync \
 		+= [
 			itd_in[0].denom_mult_lut[i].eq(bus.denom * i)
-				for i in range(bus.DML_SIZE())
+				for i in range(bus.constants().DML_SIZE())
 		]
 		m.d.comb \
 		+= [
@@ -396,7 +367,7 @@ class LongUdivPipelined(Elaboratable):
 
 			bus.tag_out.eq(itd_out[-1].tag)
 		]
-		if bus.FORMAL():
+		if bus.constants().FORMAL():
 			m.d.sync \
 			+= [
 				itd_in[0].formal.formal_numer.eq(bus.numer),
@@ -408,7 +379,7 @@ class LongUdivPipelined(Elaboratable):
 			m.d.sync \
 			+= [
 				itd_in[0].formal_dml_elem(i).eq(bus.denom * i)
-					for i in range(bus.DML_SIZE())
+					for i in range(bus.constants().DML_SIZE())
 			]
 			with m.If((~ResetSignal()) & past_valid):
 				m.d.comb \

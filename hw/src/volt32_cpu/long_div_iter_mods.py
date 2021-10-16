@@ -26,7 +26,7 @@ from general.container_types import *
 #				fields[name], "; ",)
 #		printout("\n\n")
 #--------
-class LongUdivConstants:
+class LongDivConstants:
 	#--------
 	def __init__(self, MAIN_WIDTH, DENOM_WIDTH, CHUNK_WIDTH, *,
 		TAG_WIDTH=1, PIPELINED=False, FORMAL=False):
@@ -95,7 +95,7 @@ class LongUdivConstants:
 #--------
 class LongUdivIterData(Splitrec):
 	#--------
-	def __init__(self, constants: LongUdivConstants, io_str: str):
+	def __init__(self, constants: LongDivConstants, io_str: str):
 		#--------
 		super().__init__()
 		#printout("LongUdivIterData.__init__(): ", io_str, "\n")
@@ -169,7 +169,7 @@ class LongUdivIterData(Splitrec):
 #--------
 class LongUdivIterBus:
 	#--------
-	def __init__(self, constants: LongUdivConstants):
+	def __init__(self, constants: LongDivConstants):
 		#--------
 		self.__constants = constants
 		#--------
@@ -185,7 +185,7 @@ class LongUdivIterBus:
 		#printout("testificate: ", dbg_sync_bus, "\n")
 		#dbg_printout("LongUdivIterBus().__init__()")
 
-		self.chunk_start = self.__constants.build_chunk_start_t()
+		self.chunk_start = constants.build_chunk_start_t()
 		#--------
 		# Outputs
 
@@ -195,55 +195,25 @@ class LongUdivIterBus:
 		self.itd_out = LongUdivIterData(constants=constants, io_str="out")
 		#--------
 		# Current quotient digit
-		self.quot_digit = Signal(self.CHUNK_WIDTH(), attrs=sig_keep())
+		self.quot_digit = Signal(constants.CHUNK_WIDTH(), attrs=sig_keep())
 
 		# Remainder with the current chunk of `self.ps_data_in.temp_numer`
 		# shifted in
-		self.shift_in_rema = self.build_temp_t(name="shift_in_rema")
+		self.shift_in_rema = constants.build_temp_t(name="shift_in_rema")
 
 		# The vector of greater than comparison values
-		self.gt_vec = Signal(self.RADIX(), attrs=sig_keep())
+		self.gt_vec = Signal(constants.RADIX(), attrs=sig_keep())
 		#--------
 	#--------
-	def MAIN_WIDTH(self):
-		return self.__constants.MAIN_WIDTH()
-	def DENOM_WIDTH(self):
-		return self.__constants.DENOM_WIDTH()
-	def CHUNK_WIDTH(self):
-		return self.__constants.CHUNK_WIDTH()
-	def TAG_WIDTH(self):
-		return self.__constants.TAG_WIDTH()
-	def PIPELINED(self):
-		return self.__constants.PIPELINED()
-	def FORMAL(self):
-		return self.__constants.FORMAL()
-	#--------
-	def TEMP_T_WIDTH(self):
-		return self.__constants.TEMP_T_WIDTH()
-	def build_temp_t(self, *, attrs=sig_keep(), name=""):
-		return self.__constants.build_temp_t(attrs=attrs, name=name)
-
-	def NUM_CHUNKS(self):
-		return self.__constants.NUM_CHUNKS()
-
-	def RADIX(self):
-		return self.__constants.RADIX()
-	#--------
-	def DML_ELEM_WIDTH(self):
-		return self.__constants.DML_ELEM_WIDTH()
-	def DML_SIZE(self):
-		return self.__constants.DML_SIZE()
-	#--------
-	#def chunk_ws(self, temp_data, index):
-	#	return self.__constants.chunk_ws(temp_data, index)
+	def constants(self):
+		return self.__constants
 	#--------
 #--------
 # The combinational logic for an iteration of `LongUdiv`
 class LongUdivIter(Elaboratable):
 	#--------
-	def __init__(self, constants: LongUdivConstants):
+	def __init__(self, constants: LongDivConstants):
 		#dbg_printout("LongUdivIter.__init__()")
-
 		self.__bus = LongUdivIterBus(constants=constants)
 
 		#dbg_printout("LongUdivIter.__init__()")
@@ -259,17 +229,20 @@ class LongUdivIter(Elaboratable):
 
 		itd_in = bus.itd_in
 		itd_out = bus.itd_out
+
+		constants = bus.constants()
 		#--------
 		# Shift in the current chunk of `itd_in.temp_numer`
 		m.d.comb += bus.shift_in_rema.eq(Cat
 			(itd_in.temp_numer[bus.chunk_start],
-			itd_in.temp_rema[:bus.TEMP_T_WIDTH() - bus.CHUNK_WIDTH()]))
+			itd_in.temp_rema[:constants.TEMP_T_WIDTH()
+				- constants.CHUNK_WIDTH()]))
 
 		# Compare every element of the computed `denom * digit` array to
 		# `shift_in_rema`, computing `gt_vec`.
 		# This creates perhaps a single LUT delay for the greater-than
 		# comparisons given the existence of hard carry chains in FPGAs.
-		for i in range(bus.RADIX()):
+		for i in range(constants.RADIX()):
 			m.d.comb += bus.gt_vec[i].eq(itd_in.denom_mult_lut[i]
 				> bus.shift_in_rema)
 
@@ -297,7 +270,7 @@ class LongUdivIter(Elaboratable):
 			#	m.d.comb += bus.quot_digit.eq(0)
 
 		# Drive `itd_out.temp_quot` and `itd_out.temp_rema`
-		for i in range(bus.NUM_CHUNKS()):
+		for i in range(constants.NUM_CHUNKS()):
 			with m.If(bus.chunk_start == i):
 				m.d.comb += itd_out.temp_quot[i].eq(bus.quot_digit)
 			with m.Else(): # If(bus.chunk_start != i):
@@ -314,7 +287,7 @@ class LongUdivIter(Elaboratable):
 			#--------
 		]
 		#--------
-		if bus.FORMAL():
+		if constants.FORMAL():
 			#--------
 			formal_numer_in = itd_in.formal.formal_numer
 			formal_denom_in = itd_in.formal.formal_denom
@@ -345,7 +318,7 @@ class LongUdivIter(Elaboratable):
 				#--------
 			]
 
-			for i in range(bus.RADIX()):
+			for i in range(constants.RADIX()):
 				m.d.comb \
 				+= [
 					#--------
@@ -402,7 +375,7 @@ class LongUdivIter(Elaboratable):
 #--------
 class LongUdivIterSyncBus:
 	#--------
-	def __init__(self, constants: LongUdivConstants):
+	def __init__(self, constants: LongDivConstants):
 		#--------
 		super().__init__()
 		#--------
@@ -425,7 +398,7 @@ class LongUdivIterSyncBus:
 		#	[Value.cast(val).name for val in self.itd_in_sync.flattened()],
 		#	"\n")
 		#--------
-		if self.FORMAL():
+		if constants.FORMAL():
 			#--------
 			self.formal = Blank()
 			#--------
@@ -434,39 +407,13 @@ class LongUdivIterSyncBus:
 			#--------
 		#--------
 	#--------
-	def MAIN_WIDTH(self):
-		return self.__constants.MAIN_WIDTH()
-	def DENOM_WIDTH(self):
-		return self.__constants.DENOM_WIDTH()
-	def CHUNK_WIDTH(self):
-		return self.__constants.CHUNK_WIDTH()
-	def TAG_WIDTH(self):
-		return self.__constants.TAG_WIDTH()
-	def PIPELINED(self):
-		return self.__constants.PIPELINED()
-	def FORMAL(self):
-		return self.__constants.FORMAL()
-	#--------
-	def TEMP_T_WIDTH(self):
-		return self.__constants.TEMP_T_WIDTH()
-	def build_temp_t(self, *, attrs=sig_keep(), name=""):
-		return self.__constants.build_temp_t(attrs=attrs, name=name)
-
-	def NUM_CHUNKS(self):
-		return self.__constants.NUM_CHUNKS()
-
-	def RADIX(self):
-		return self.__constants.RADIX()
-	#--------
-	def DML_ELEM_WIDTH(self):
-		return self.__constants.DML_ELEM_WIDTH()
-	def DML_SIZE(self):
-		return self.__constants.DML_SIZE()
+	def constants(self):
+		return self.__constants
 	#--------
 #--------
 class LongUdivIterSync(Elaboratable):
 	#--------
-	def __init__(self, constants: LongUdivConstants,
+	def __init__(self, constants: LongDivConstants,
 		chunk_start_val: int):
 		self.__constants = constants
 
@@ -482,7 +429,7 @@ class LongUdivIterSync(Elaboratable):
 		#--------
 		bus = self.bus()
 		#--------
-		it = LongUdivIter(constants=self.__constants)
+		it = LongUdivIter(constants=bus.constants())
 		m.submodules += it
 		#--------
 		it_bus = it.bus()
@@ -491,6 +438,8 @@ class LongUdivIterSync(Elaboratable):
 
 		itd_in_sync = bus.itd_in
 		itd_out_sync = bus.itd_out
+
+		constants = bus.constants()
 		#--------
 		m.d.comb \
 		+= [
@@ -499,7 +448,7 @@ class LongUdivIterSync(Elaboratable):
 		]
 		m.d.sync += itd_out_sync.eq(itd_out)
 		#--------
-		if bus.FORMAL():
+		if constants.FORMAL():
 			#--------
 			skip_cond = itd_in.formal.formal_denom == 0
 			past_valid = bus.formal.past_valid

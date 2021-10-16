@@ -2,7 +2,7 @@
 
 import math
 from misc_util import *
-from volt32_cpu.long_udiv_pstage_mod import *
+from volt32_cpu.long_div_pstage_mod import *
 
 from nmigen import *
 from nmigen.asserts import Assert, Assume, Cover
@@ -12,7 +12,7 @@ from nmigen.sim import Simulator, Delay, Tick
 
 from enum import Enum, auto
 
-from volt32_cpu.long_udiv_pstage_mod import *
+from volt32_cpu.long_div_pstage_mod import *
 
 
 #--------

@@ -11,7 +11,7 @@ from general.fifo_mods import *
 #from libcheesevoyage.general.tests.container_types_mods import VectorAdd
 from general.container_types import *
 from general.tests.container_types_mods import *
-from volt32_cpu.long_udiv_mods import *
+from volt32_cpu.long_div_mods import *
 
 from nmigen import *
 from nmigen.sim import *
@@ -100,22 +100,26 @@ if __name__ == "__main__":
 	#main(dut, ports=ports(bus))
 
 	#to_verilog(LongUdivMultiCycle,
-	#	MAIN_WIDTH=3,
-	#	DENOM_WIDTH=3,
+	#	MAIN_WIDTH=4,
+	#	DENOM_WIDTH=4,
 	#	CHUNK_WIDTH=2)
-	#formal(LongUdivMultiCycle,
-	#	MAIN_WIDTH=8,
-	#	DENOM_WIDTH=8,
+	#to_verilog(LongUdivPipelined,
+	#	MAIN_WIDTH=4,
+	#	DENOM_WIDTH=4,
 	#	CHUNK_WIDTH=2)
+	formal(LongDivMultiCycle,
+		MAIN_WIDTH=8,
+		DENOM_WIDTH=8,
+		CHUNK_WIDTH=2)
 
 	#formal(LongUdivPipelined,
 	#	MAIN_WIDTH=4,
 	#	DENOM_WIDTH=4,
 	#	CHUNK_WIDTH=3)
-	formal(LongUdivPipelined,
-		MAIN_WIDTH=8,
-		DENOM_WIDTH=8,
-		CHUNK_WIDTH=3)
+	#formal(LongUdivPipelined,
+	#	MAIN_WIDTH=8,
+	#	DENOM_WIDTH=8,
+	#	CHUNK_WIDTH=3)
 	#formal(LongUdivPipelined,
 	#	MAIN_WIDTH=8,
 	#	DENOM_WIDTH=8,
