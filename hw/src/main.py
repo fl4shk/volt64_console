@@ -47,23 +47,6 @@ if __name__ == "__main__":
 	#printerr(e.b.c.word_select(0, 3), "\n")
 	#printerr(type(Value.cast(e.a)), "\n")
 
-	#formal(Fifo, ShapeT=unsigned(8), SIZE=4)
-	#formal(AsyncReadFifo, ShapeT=unsigned(8), SIZE=4)
-	#program(Top)
-
-	#formal(LongDiv, MAIN_WIDTH=4, DENOM_WIDTH=4, CHUNK_WIDTH=3)
-	#formal(LongDiv, MAIN_WIDTH=7, DENOM_WIDTH=3, CHUNK_WIDTH=2)
-
-	#formal(LongDiv, MAIN_WIDTH=8, DENOM_WIDTH=8, CHUNK_WIDTH=3)
-	#formal(LongDiv, MAIN_WIDTH=8, DENOM_WIDTH=8, CHUNK_WIDTH=3)
-	#formal(LongDivIterSync,
-	#	constants=LongDivConstants
-	#	(
-	#		MAIN_WIDTH=3,
-	#		DENOM_WIDTH=3,
-	#		CHUNK_WIDTH=2,
-	#	))
-
 	#parser = main_parser()
 	#args = parser.parse_args()
 
@@ -79,26 +62,6 @@ if __name__ == "__main__":
 	#m.submodules.dut = dut = LongDivIterSync(constants=dut_constants)
 	#main_runner(parser, args, m, ports=ports(dut.bus()))
 
-	#dut \
-	#	= LongDivIterSync \
-	#	(
-	#		constants=LongDivConstants
-	#		(
-	#			MAIN_WIDTH=3,
-	#			DENOM_WIDTH=3,
-	#			CHUNK_WIDTH=2
-	#		)
-	#	)
-	#bus = dut.bus()
-	##dut_ports = [ClockSignal(), ResetSignal()]
-	##dut_ports += [bus.itd_out_sync]
-	##main(dut, ports=(ports(bus.it_bus.itd_in)
-	##	+ inner_ports(bus.it_bus.itd_out)
-	##	+ inner_ports(bus.itd_out_sync)))
-	##main(dut, ports=ports(bus))
-	##dut_ports = inner_ports(bus)
-	#main(dut, ports=ports(bus))
-
 	#to_verilog(LongDivMultiCycle,
 	#	MAIN_WIDTH=4,
 	#	DENOM_WIDTH=4,
@@ -107,47 +70,16 @@ if __name__ == "__main__":
 	#	MAIN_WIDTH=4,
 	#	DENOM_WIDTH=4,
 	#	CHUNK_WIDTH=2)
-	formal(LongDivMultiCycle,
-		MAIN_WIDTH=4,
-		DENOM_WIDTH=4,
-		CHUNK_WIDTH=2,
-		shape_func=unsigned)
-	#formal(LongDivMultiCycle,
+	#formal(LongDivPipelined,
 	#	MAIN_WIDTH=4,
 	#	DENOM_WIDTH=4,
 	#	CHUNK_WIDTH=2,
-	#	shape_func=unsigned)
-	#formal(LongDivMultiCycle,
-	#	MAIN_WIDTH=8,
-	#	DENOM_WIDTH=8,
-	#	CHUNK_WIDTH=3,
-	#	shape_func=signed)
-
-	#formal(LongDivPipelined,
-	#	MAIN_WIDTH=4,
-	#	DENOM_WIDTH=4,
-	#	CHUNK_WIDTH=3,
-	#	shape_func=signed)
-	#formal(LongDivPipelined,
-	#	MAIN_WIDTH=8,
-	#	DENOM_WIDTH=8,
-	#	CHUNK_WIDTH=3)
-	#formal(LongDivPipelined,
-	#	MAIN_WIDTH=8,
-	#	DENOM_WIDTH=8,
-	#	CHUNK_WIDTH=4)
-
-	#for CHUNK_WIDTH in range(1, 4 + 1):
-	#	formal(LongDiv, MAIN_WIDTH=8, DENOM_WIDTH=8,
-	#		CHUNK_WIDTH=CHUNK_WIDTH)
-	#formal(LongDiv, MAIN_WIDTH=16, DENOM_WIDTH=12, CHUNK_WIDTH=3)
-	#formal(LongDiv, MAIN_WIDTH=16, DENOM_WIDTH=10, CHUNK_WIDTH=5)
-	#for MAIN_WIDTH in range(1, 16 + 1):
-	#	for DENOM_WIDTH in range(1, 16 + 1):
-	#		for CHUNK_WIDTH in range(1, 8 + 1):
-	#			formal(LongDiv, MAIN_WIDTH=MAIN_WIDTH,
-	#				DENOM_WIDTH=DENOM_WIDTH, CHUNK_WIDTH=CHUNK_WIDTH)
-	#formal(LongDiv, MAIN_WIDTH=7, DENOM_WIDTH=7, CHUNK_WIDTH=2)
+	#	signed_reset=0b1)
+	formal(LongDivPipelined,
+		MAIN_WIDTH=8,
+		DENOM_WIDTH=8,
+		CHUNK_WIDTH=4,
+		signed_reset=0b1)
 
 
 #temp = [enc_simm(x, 5) for x in [-0xa, 0xa, 0x0, 0xff, -0x1f]]
