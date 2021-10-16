@@ -51,13 +51,13 @@ if __name__ == "__main__":
 	#formal(AsyncReadFifo, ShapeT=unsigned(8), SIZE=4)
 	#program(Top)
 
-	#formal(LongUdiv, MAIN_WIDTH=4, DENOM_WIDTH=4, CHUNK_WIDTH=3)
-	#formal(LongUdiv, MAIN_WIDTH=7, DENOM_WIDTH=3, CHUNK_WIDTH=2)
+	#formal(LongDiv, MAIN_WIDTH=4, DENOM_WIDTH=4, CHUNK_WIDTH=3)
+	#formal(LongDiv, MAIN_WIDTH=7, DENOM_WIDTH=3, CHUNK_WIDTH=2)
 
-	#formal(LongUdiv, MAIN_WIDTH=8, DENOM_WIDTH=8, CHUNK_WIDTH=3)
-	#formal(LongUdiv, MAIN_WIDTH=8, DENOM_WIDTH=8, CHUNK_WIDTH=3)
-	#formal(LongUdivIterSync,
-	#	constants=LongUdivConstants
+	#formal(LongDiv, MAIN_WIDTH=8, DENOM_WIDTH=8, CHUNK_WIDTH=3)
+	#formal(LongDiv, MAIN_WIDTH=8, DENOM_WIDTH=8, CHUNK_WIDTH=3)
+	#formal(LongDivIterSync,
+	#	constants=LongDivConstants
 	#	(
 	#		MAIN_WIDTH=3,
 	#		DENOM_WIDTH=3,
@@ -68,7 +68,7 @@ if __name__ == "__main__":
 	#args = parser.parse_args()
 
 	#dut_constants \
-	#	= LongUdivConstants \
+	#	= LongDivConstants \
 	#	(
 	#		MAIN_WIDTH=3,
 	#		DENOM_WIDTH=3,
@@ -76,13 +76,13 @@ if __name__ == "__main__":
 	#		FORMAL=True,
 	#	)
 	#m = Module()
-	#m.submodules.dut = dut = LongUdivIterSync(constants=dut_constants)
+	#m.submodules.dut = dut = LongDivIterSync(constants=dut_constants)
 	#main_runner(parser, args, m, ports=ports(dut.bus()))
 
 	#dut \
-	#	= LongUdivIterSync \
+	#	= LongDivIterSync \
 	#	(
-	#		constants=LongUdivConstants
+	#		constants=LongDivConstants
 	#		(
 	#			MAIN_WIDTH=3,
 	#			DENOM_WIDTH=3,
@@ -99,43 +99,55 @@ if __name__ == "__main__":
 	##dut_ports = inner_ports(bus)
 	#main(dut, ports=ports(bus))
 
-	#to_verilog(LongUdivMultiCycle,
+	#to_verilog(LongDivMultiCycle,
 	#	MAIN_WIDTH=4,
 	#	DENOM_WIDTH=4,
 	#	CHUNK_WIDTH=2)
-	#to_verilog(LongUdivPipelined,
+	#to_verilog(LongDivPipelined,
 	#	MAIN_WIDTH=4,
 	#	DENOM_WIDTH=4,
 	#	CHUNK_WIDTH=2)
 	formal(LongDivMultiCycle,
-		MAIN_WIDTH=8,
-		DENOM_WIDTH=8,
-		CHUNK_WIDTH=2)
-
-	#formal(LongUdivPipelined,
+		MAIN_WIDTH=4,
+		DENOM_WIDTH=4,
+		CHUNK_WIDTH=2,
+		shape_func=unsigned)
+	#formal(LongDivMultiCycle,
 	#	MAIN_WIDTH=4,
 	#	DENOM_WIDTH=4,
-	#	CHUNK_WIDTH=3)
-	#formal(LongUdivPipelined,
+	#	CHUNK_WIDTH=2,
+	#	shape_func=unsigned)
+	#formal(LongDivMultiCycle,
+	#	MAIN_WIDTH=8,
+	#	DENOM_WIDTH=8,
+	#	CHUNK_WIDTH=3,
+	#	shape_func=signed)
+
+	#formal(LongDivPipelined,
+	#	MAIN_WIDTH=4,
+	#	DENOM_WIDTH=4,
+	#	CHUNK_WIDTH=3,
+	#	shape_func=signed)
+	#formal(LongDivPipelined,
 	#	MAIN_WIDTH=8,
 	#	DENOM_WIDTH=8,
 	#	CHUNK_WIDTH=3)
-	#formal(LongUdivPipelined,
+	#formal(LongDivPipelined,
 	#	MAIN_WIDTH=8,
 	#	DENOM_WIDTH=8,
 	#	CHUNK_WIDTH=4)
 
 	#for CHUNK_WIDTH in range(1, 4 + 1):
-	#	formal(LongUdiv, MAIN_WIDTH=8, DENOM_WIDTH=8,
+	#	formal(LongDiv, MAIN_WIDTH=8, DENOM_WIDTH=8,
 	#		CHUNK_WIDTH=CHUNK_WIDTH)
-	#formal(LongUdiv, MAIN_WIDTH=16, DENOM_WIDTH=12, CHUNK_WIDTH=3)
-	#formal(LongUdiv, MAIN_WIDTH=16, DENOM_WIDTH=10, CHUNK_WIDTH=5)
+	#formal(LongDiv, MAIN_WIDTH=16, DENOM_WIDTH=12, CHUNK_WIDTH=3)
+	#formal(LongDiv, MAIN_WIDTH=16, DENOM_WIDTH=10, CHUNK_WIDTH=5)
 	#for MAIN_WIDTH in range(1, 16 + 1):
 	#	for DENOM_WIDTH in range(1, 16 + 1):
 	#		for CHUNK_WIDTH in range(1, 8 + 1):
-	#			formal(LongUdiv, MAIN_WIDTH=MAIN_WIDTH,
+	#			formal(LongDiv, MAIN_WIDTH=MAIN_WIDTH,
 	#				DENOM_WIDTH=DENOM_WIDTH, CHUNK_WIDTH=CHUNK_WIDTH)
-	#formal(LongUdiv, MAIN_WIDTH=7, DENOM_WIDTH=7, CHUNK_WIDTH=2)
+	#formal(LongDiv, MAIN_WIDTH=7, DENOM_WIDTH=7, CHUNK_WIDTH=2)
 
 
 #temp = [enc_simm(x, 5) for x in [-0xa, 0xa, 0x0, 0xff, -0x1f]]

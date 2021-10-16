@@ -73,6 +73,10 @@ class ElemRef(ValueCastable):
 		return (self.as_value() - Value.cast(other))
 	def __rsub__(self, other):
 		return (Value.cast(other) - self.as_value())
+	def __pos__(self):
+		return self.as_value()
+	def __neg__(self):
+		return (-self.as_value())
 
 	def __mul__(self, other):
 		return (self.as_value() * Value.cast(other))
@@ -414,6 +418,10 @@ class Packrec(ValueCastable):
 		return (self.as_value() - Value.cast(other))
 	def __rsub__(self, other):
 		return (Value.cast(other) - self.as_value())
+	def __pos__(self):
+		return self.as_value()
+	def __neg__(self):
+		return (-self.as_value())
 
 	def __mul__(self, other):
 		return (self.as_value() * Value.cast(other))
@@ -654,6 +662,10 @@ class Packarr(ValueCastable):
 		return (self.as_value() - Value.cast(other))
 	def __rsub__(self, other):
 		return (Value.cast(other) - self.as_value())
+	def __pos__(self):
+		return self.as_value()
+	def __neg__(self):
+		return (-self.as_value())
 
 	def __mul__(self, other):
 		return (self.as_value() * Value.cast(other))
