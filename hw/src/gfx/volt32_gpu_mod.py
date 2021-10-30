@@ -2,7 +2,12 @@
 
 from misc_util import *
 from nmigen import *
-from nmigen.hdl.rec import *
+
+class Volt32GpuBus:
+	def __init__(self):
+		pass
+
 
 class Volt32Gpu(Elaboratable):
-	pass
+	def __init__(self):
+		self.__bus = Volt32GpuBus()

@@ -2,22 +2,15 @@
 
 import sys
 
-#from libcheesevoyage.misc_util import *
-from misc_util import *
-from misc_util_running import *
+from libcheesevoyage import *
 from top_mod import *
-from general.fifo_mods import *
-#from libcheesevoyage.general.container_types import *
-#from libcheesevoyage.general.tests.container_types_mods import VectorAdd
-from general.container_types import *
-from general.tests.container_types_mods import *
-from volt32_cpu.long_div_mods import *
 
 from nmigen import *
 from nmigen.sim import *
 
 from nmigen.cli import main, main_parser, main_runner
-from nmigen_boards.de0_cv import *
+#from nmigen_boards.de0_cv import *
+from nmigen_boards import *
 
 from nmigen.asserts import Assert, Assume, Cover
 from nmigen.asserts import Past, Rose, Fell, Stable
@@ -25,15 +18,17 @@ from nmigen.asserts import Past, Rose, Fell, Stable
 from nmigen.back import verilog
 
 
-def program(mod_name, **kw_args):
+def program(mod_name, platform=DE0CVPlatform(), **kw_args):
 	#top = Top(DE0CVPlatform())
 
 	#top.platform().build(top, do_program=True)
 
-	mod = mod_name(platform=DE0CVPlatform(), **kw_args)
+	mod = mod_name(platform=platform, **kw_args)
 	mod.platform().build(mod, do_program=True)
 
 if __name__ == "__main__":
+	#help(DE0CVPlatform)
+	program(Top)
 	#to_verilog(VectorAdd, ElemKindT=4, SIZE=2)
 	#to_verilog(AddChosenScalars, ElemKindT=4, SIZE=2)
 	#e = Packrec \
@@ -75,11 +70,11 @@ if __name__ == "__main__":
 	#	DENOM_WIDTH=4,
 	#	CHUNK_WIDTH=2,
 	#	signed_reset=0b1)
-	formal(LongDivPipelined,
-		MAIN_WIDTH=8,
-		DENOM_WIDTH=8,
-		CHUNK_WIDTH=4,
-		signed_reset=0b1)
+	#formal(LongDivPipelined,
+	#	MAIN_WIDTH=8,
+	#	DENOM_WIDTH=8,
+	#	CHUNK_WIDTH=4,
+	#	signed_reset=0b1)
 
 
 #temp = [enc_simm(x, 5) for x in [-0xa, 0xa, 0x0, 0xff, -0x1f]]

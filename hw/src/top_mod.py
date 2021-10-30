@@ -1,14 +1,10 @@
 #!/usr/bin/env python3
 
-from misc_util import *
 from nmigen import *
-from nmigen.hdl.rec import *
+from nmigen_boards import *
+from nmigen.build.dsl import *
 
-from gfx.vga_ext_types import *
-from gfx.vga_driver_mod import *
-from gfx.video_ditherer_mod import *
-from gfx.vga_gradient_mod import *
-from general.sdram_ctrl_mod import *
+from libcheesevoyage import *
 #from bram_mod import *
 
 class Top(Elaboratable):
@@ -20,10 +16,18 @@ class Top(Elaboratable):
 		self.__pins = Blank()
 		#self.pins().clk50 = self.platform().request("clk50", 0)
 		self.pins().vga = self.platform().request("vga", 0)
-		self.pins().ps2_kb = self.platform().request("ps2_host", 0)
-		self.pins().ps2_mouse = self.platform().request("ps2_host", 1)
+		self.pins().ps2_kb = self.platform().request("ps2", 0)
+		self.pins().ps2_mouse = self.platform().request("ps2", 1)
 		self.pins().sd_card = self.platform().request("sd_card_spi", 0)
 		self.pins().sdram = self.platform().request("sdram", 0)
+
+		#self.platform().add_resources \
+		#([
+		#	Resource("vga_rgb6", 0,
+		#		Subsignal("r", Pins("1 2 3 4 5 6", dir="o",
+		#			conn=("j", 1))))
+		#])
+		#self.pins().vga_rgb6 = self.platform().request("vga_rgb6", 0)
 	#--------
 	def platform(self):
 		return self.__platform
@@ -93,6 +97,9 @@ class Top(Elaboratable):
 		vga.m = Blank()
 
 		vga.TIMING_INFO = VGA_TIMING_INFO_DICT["640x480@60"]
+		#vga.TIMING_INFO = VGA_TIMING_INFO_DICT["800x600@60"]
+		#vga.TIMING_INFO = VGA_TIMING_INFO_DICT["1024x768@60"]
+		#vga.TIMING_INFO = VGA_TIMING_INFO_DICT["1280x800@60"]
 		vga.FIFO_SIZE = 16
 
 		# Use the 100 MHz clock rate by setting the "sync" domain to "dom"
@@ -136,16 +143,16 @@ class Top(Elaboratable):
 
 		m.d.comb \
 		+= [
-			vga.drbus.en.eq(io.switch[0]),
-			vga.drbus.buf.col.eq(vga.dibus.col_out),
+			vga.drbus.inp.en.eq(io.switch[0]),
+			vga.drbus.inp.buf.col.eq(vga.dibus.outp.col),
 
 			#vga.dibus.en.eq(0b1),
 
-			self.pins().vga.r.eq(vga.drbus.col.r),
-			self.pins().vga.g.eq(vga.drbus.col.g),
-			self.pins().vga.b.eq(vga.drbus.col.b),
-			self.pins().vga.hs.eq(vga.drbus.hsync),
-			self.pins().vga.vs.eq(vga.drbus.vsync),
+			self.pins().vga.r.eq(vga.drbus.outp.col.r),
+			self.pins().vga.g.eq(vga.drbus.outp.col.g),
+			self.pins().vga.b.eq(vga.drbus.outp.col.b),
+			self.pins().vga.hs.eq(vga.drbus.outp.hsync),
+			self.pins().vga.vs.eq(vga.drbus.outp.vsync),
 		]
 		#--------
 		return m
