@@ -38,12 +38,12 @@ host_alias=x86_64-pc-linux-gnu
 host_vendor=pc
 host_os=linux-gnu
 host=x86_64-pc-linux-gnu
-target_alias=volt32-elf
-target_vendor=unknown
+target_alias=volt32-none-elf
+target_vendor=none
 target_os=elf
-target=volt32-unknown-elf
+target=volt32-none-elf
 
-program_transform_name = s&^&volt32-elf-&
+program_transform_name = s&^&volt32-none-elf-&
 
 prefix = /home/fl4shk/local
 exec_prefix = ${prefix}
@@ -82,19 +82,19 @@ INSTALL_SCRIPT = ${INSTALL}
 INSTALL_DATA = ${INSTALL} -m 644
 LN = ln
 LN_S = ln -s
-MAINT = #
-MAINTAINER_MODE_FALSE = 
-MAINTAINER_MODE_TRUE = #
+MAINT = 
+MAINTAINER_MODE_FALSE = #
+MAINTAINER_MODE_TRUE = 
 
 # -------------------------------------------------
 # Miscellaneous non-standard autoconf-set variables
 # -------------------------------------------------
 
 # The gcc driver likes to know the arguments it was configured with.
-TOPLEVEL_CONFIGURE_ARGUMENTS=./configure --target=volt32-elf --prefix=/home/fl4shk/local
+TOPLEVEL_CONFIGURE_ARGUMENTS=./configure --enable-maintainer-mode --target=volt32-none-elf --prefix=/home/fl4shk/local
 
-tooldir = ${exec_prefix}/volt32-elf
-build_tooldir = ${exec_prefix}/volt32-elf
+tooldir = ${exec_prefix}/volt32-none-elf
+build_tooldir = ${exec_prefix}/volt32-none-elf
 
 # This is the name of the environment variable used for the path to
 # the libraries.
@@ -109,7 +109,7 @@ GCC_SHLIB_SUBDIR =
 BUILD_SUBDIR = build-x86_64-pc-linux-gnu
 # This is set by the configure script to the arguments to use when configuring
 # directories built for the build system.
-BUILD_CONFIGARGS =  --cache-file=./config.cache '--prefix=/home/fl4shk/local' --program-transform-name='s&^&volt32-elf-&' --disable-option-checking --with-build-subdir="$(BUILD_SUBDIR)"
+BUILD_CONFIGARGS =  --cache-file=./config.cache '--enable-maintainer-mode' '--prefix=/home/fl4shk/local' --program-transform-name='s&^&volt32-none-elf-&' --disable-option-checking --with-build-subdir="$(BUILD_SUBDIR)"
 
 # Linker flags to use on the host, for stage1 or when not
 # bootstrapping.
@@ -167,11 +167,11 @@ EXTRA_BUILD_FLAGS = \
 	LDFLAGS="$(LDFLAGS_FOR_BUILD)"
 
 # This is the list of directories to built for the host system.
-SUBDIRS =  intl libiberty bfd readline zlib libdecnumber libctf etc
+SUBDIRS =  intl libiberty opcodes bfd readline zlib libdecnumber libctf binutils gas ld sim gdb gprof etc gnulib gdbsupport
 TARGET_CONFIGDIRS = 
 # This is set by the configure script to the arguments to use when configuring
 # directories built for the host system.
-HOST_CONFIGARGS =  --cache-file=./config.cache  '--prefix=/home/fl4shk/local' --program-transform-name='s&^&volt32-elf-&' --disable-option-checking
+HOST_CONFIGARGS =  --cache-file=./config.cache  --with-gnu-as --with-gnu-ld '--enable-maintainer-mode' '--prefix=/home/fl4shk/local' --program-transform-name='s&^&volt32-none-elf-&' --disable-option-checking
 # Host programs are put under this directory, which is . except if building
 # with srcdir=..
 HOST_SUBDIR = .
@@ -240,10 +240,10 @@ POSTSTAGE1_HOST_EXPORTS = \
 	HOST_LIBS="$(POSTSTAGE1_LIBS)"; export HOST_LIBS;
 
 # Target libraries are put under this directory:
-TARGET_SUBDIR = volt32-elf
+TARGET_SUBDIR = volt32-none-elf
 # This is set by the configure script to the arguments to use when configuring
 # directories built for the target.
-TARGET_CONFIGARGS = --cache-file=./config.cache --enable-multilib --with-cross-host=x86_64-pc-linux-gnu   '--prefix=/home/fl4shk/local' --program-transform-name='s&^&volt32-elf-&' --disable-option-checking --with-target-subdir="$(TARGET_SUBDIR)"
+TARGET_CONFIGARGS = --cache-file=./config.cache --enable-multilib --with-cross-host=x86_64-pc-linux-gnu   '--enable-maintainer-mode' '--prefix=/home/fl4shk/local' --program-transform-name='s&^&volt32-none-elf-&' --disable-option-checking --with-target-subdir="$(TARGET_SUBDIR)"
 # This is the list of variables to export in the environment when
 # configuring subdirectories for the target system.
 BASE_TARGET_EXPORTS = \
@@ -286,7 +286,7 @@ HOST_GMPLIBS = -lmpc -lmpfr -lgmp
 HOST_GMPINC = 
 
 # Where to find isl
-HOST_ISLLIBS = 
+HOST_ISLLIBS =  -lisl
 HOST_ISLINC = 
 HOST_ISLVER = @islver@
 
@@ -471,31 +471,31 @@ do-compare3 = $(do-compare)
 # Programs producing files for the TARGET machine
 # -----------------------------------------------
 
-AR_FOR_TARGET=volt32-elf-ar
-AS_FOR_TARGET=volt32-elf-as
-CC_FOR_TARGET=$(STAGE_CC_WRAPPER) volt32-elf-cc
+AR_FOR_TARGET=$$r/$(HOST_SUBDIR)/binutils/ar
+AS_FOR_TARGET=$$r/$(HOST_SUBDIR)/gas/as-new
+CC_FOR_TARGET=$(STAGE_CC_WRAPPER) volt32-none-elf-cc
 
 # If GCC_FOR_TARGET is not overriden on the command line, then this
 # variable is passed down to the gcc Makefile, where it is used to
 # build libgcc2.a.  We define it here so that it can itself be
 # overridden on the command line.
-GCC_FOR_TARGET=$(STAGE_CC_WRAPPER) volt32-elf-gcc
-CXX_FOR_TARGET=$(STAGE_CC_WRAPPER) volt32-elf-c++
-RAW_CXX_FOR_TARGET=$(STAGE_CC_WRAPPER) volt32-elf-c++
-GFORTRAN_FOR_TARGET=$(STAGE_CC_WRAPPER) volt32-elf-gfortran
-GOC_FOR_TARGET=$(STAGE_CC_WRAPPER) volt32-elf-gccgo
-DLLTOOL_FOR_TARGET=volt32-elf-dlltool
-LD_FOR_TARGET=volt32-elf-ld
+GCC_FOR_TARGET=$(STAGE_CC_WRAPPER) volt32-none-elf-gcc
+CXX_FOR_TARGET=$(STAGE_CC_WRAPPER) volt32-none-elf-c++
+RAW_CXX_FOR_TARGET=$(STAGE_CC_WRAPPER) volt32-none-elf-c++
+GFORTRAN_FOR_TARGET=$(STAGE_CC_WRAPPER) volt32-none-elf-gfortran
+GOC_FOR_TARGET=$(STAGE_CC_WRAPPER) volt32-none-elf-gccgo
+DLLTOOL_FOR_TARGET=$$r/$(HOST_SUBDIR)/binutils/dlltool
+LD_FOR_TARGET=$$r/$(HOST_SUBDIR)/ld/ld-new
 
-LIPO_FOR_TARGET=volt32-elf-lipo
-NM_FOR_TARGET=volt32-elf-nm
-OBJDUMP_FOR_TARGET=volt32-elf-objdump
-OBJCOPY_FOR_TARGET=volt32-elf-objcopy
-RANLIB_FOR_TARGET=volt32-elf-ranlib
-READELF_FOR_TARGET=volt32-elf-readelf
-STRIP_FOR_TARGET=volt32-elf-strip
-WINDRES_FOR_TARGET=volt32-elf-windres
-WINDMC_FOR_TARGET=volt32-elf-windmc
+LIPO_FOR_TARGET=volt32-none-elf-lipo
+NM_FOR_TARGET=$$r/$(HOST_SUBDIR)/binutils/nm-new
+OBJDUMP_FOR_TARGET=$$r/$(HOST_SUBDIR)/binutils/objdump
+OBJCOPY_FOR_TARGET=$$r/$(HOST_SUBDIR)/binutils/objcopy
+RANLIB_FOR_TARGET=$$r/$(HOST_SUBDIR)/binutils/ranlib
+READELF_FOR_TARGET=$$r/$(HOST_SUBDIR)/binutils/readelf
+STRIP_FOR_TARGET=$$r/$(HOST_SUBDIR)/binutils/strip-new
+WINDRES_FOR_TARGET=$$r/$(HOST_SUBDIR)/binutils/windres
+WINDMC_FOR_TARGET=$$r/$(HOST_SUBDIR)/binutils/windmc
 
 COMPILER_AS_FOR_TARGET=$(AS_FOR_TARGET)
 COMPILER_LD_FOR_TARGET=$(LD_FOR_TARGET)
@@ -509,7 +509,7 @@ LIBCXXFLAGS_FOR_TARGET = $(CXXFLAGS_FOR_TARGET) -fno-implicit-templates
 LDFLAGS_FOR_TARGET = 
 GOCFLAGS_FOR_TARGET = -O2 -g
 
-FLAGS_FOR_TARGET = 
+FLAGS_FOR_TARGET =  -L$$r/$(HOST_SUBDIR)/ld
 SYSROOT_CFLAGS_FOR_TARGET = 
 DEBUG_PREFIX_CFLAGS_FOR_TARGET = 
 
@@ -868,16 +868,20 @@ all-build: maybe-all-build-libcpp
 .PHONY: all-host
 
 all-host: maybe-all-bfd
+all-host: maybe-all-opcodes
+all-host: maybe-all-binutils
 all-host: maybe-all-bison
 all-host: maybe-all-cgen
 all-host: maybe-all-dejagnu
 all-host: maybe-all-etc
 all-host: maybe-all-fastjar
 all-host: maybe-all-flex
+all-host: maybe-all-gas
 all-host: maybe-all-gprof
 all-host: maybe-all-intl
 all-host: maybe-all-tcl
 all-host: maybe-all-itcl
+all-host: maybe-all-ld
 all-host: maybe-all-libdecnumber
 all-host: maybe-all-libgui
 all-host: maybe-all-libiberty
@@ -3151,6 +3155,27 @@ maintainer-clean-bfd:
 
 .PHONY: configure-opcodes maybe-configure-opcodes
 maybe-configure-opcodes:
+maybe-configure-opcodes: configure-opcodes
+configure-opcodes: 
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/opcodes/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/opcodes; \
+	$(HOST_EXPORTS)  \
+	echo Configuring in $(HOST_SUBDIR)/opcodes; \
+	cd "$(HOST_SUBDIR)/opcodes" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/opcodes/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=opcodes; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias}  \
+	  || exit 1
 
 
 
@@ -3178,6 +3203,15 @@ maybe-configure-stagefeedback-opcodes:
 
 .PHONY: all-opcodes maybe-all-opcodes
 maybe-all-opcodes:
+TARGET-opcodes=all
+maybe-all-opcodes: all-opcodes
+all-opcodes: configure-opcodes
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS)  \
+	(cd $(HOST_SUBDIR)/opcodes && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
+		$(TARGET-opcodes))
 
 
 
@@ -3222,58 +3256,368 @@ maybe-clean-stagefeedback-opcodes:
 
 .PHONY: check-opcodes maybe-check-opcodes
 maybe-check-opcodes:
+maybe-check-opcodes: check-opcodes
+
+check-opcodes:
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) $(EXTRA_HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/opcodes && \
+	  $(MAKE) $(FLAGS_TO_PASS)  $(EXTRA_BOOTSTRAP_FLAGS) check)
+
 
 .PHONY: install-opcodes maybe-install-opcodes
 maybe-install-opcodes:
+maybe-install-opcodes: install-opcodes
+
+install-opcodes: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/opcodes && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
 
 .PHONY: install-strip-opcodes maybe-install-strip-opcodes
 maybe-install-strip-opcodes:
+maybe-install-strip-opcodes: install-strip-opcodes
+
+install-strip-opcodes: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/opcodes && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+
 
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-opcodes info-opcodes
 maybe-info-opcodes:
+maybe-info-opcodes: info-opcodes
+
+info-opcodes: \
+    configure-opcodes 
+	@[ -f ./opcodes/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing info in opcodes"; \
+	(cd $(HOST_SUBDIR)/opcodes && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          info) \
+	  || exit 1
+
 
 .PHONY: maybe-dvi-opcodes dvi-opcodes
 maybe-dvi-opcodes:
+maybe-dvi-opcodes: dvi-opcodes
+
+dvi-opcodes: \
+    configure-opcodes 
+	@[ -f ./opcodes/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing dvi in opcodes"; \
+	(cd $(HOST_SUBDIR)/opcodes && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          dvi) \
+	  || exit 1
+
 
 .PHONY: maybe-pdf-opcodes pdf-opcodes
 maybe-pdf-opcodes:
+maybe-pdf-opcodes: pdf-opcodes
+
+pdf-opcodes: \
+    configure-opcodes 
+	@[ -f ./opcodes/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing pdf in opcodes"; \
+	(cd $(HOST_SUBDIR)/opcodes && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          pdf) \
+	  || exit 1
+
 
 .PHONY: maybe-html-opcodes html-opcodes
 maybe-html-opcodes:
+maybe-html-opcodes: html-opcodes
+
+html-opcodes: \
+    configure-opcodes 
+	@[ -f ./opcodes/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing html in opcodes"; \
+	(cd $(HOST_SUBDIR)/opcodes && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          html) \
+	  || exit 1
+
 
 .PHONY: maybe-TAGS-opcodes TAGS-opcodes
 maybe-TAGS-opcodes:
+maybe-TAGS-opcodes: TAGS-opcodes
+
+TAGS-opcodes: \
+    configure-opcodes 
+	@[ -f ./opcodes/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing TAGS in opcodes"; \
+	(cd $(HOST_SUBDIR)/opcodes && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          TAGS) \
+	  || exit 1
+
 
 .PHONY: maybe-install-info-opcodes install-info-opcodes
 maybe-install-info-opcodes:
+maybe-install-info-opcodes: install-info-opcodes
+
+install-info-opcodes: \
+    configure-opcodes \
+    info-opcodes 
+	@[ -f ./opcodes/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-info in opcodes"; \
+	(cd $(HOST_SUBDIR)/opcodes && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-info) \
+	  || exit 1
+
 
 .PHONY: maybe-install-pdf-opcodes install-pdf-opcodes
 maybe-install-pdf-opcodes:
+maybe-install-pdf-opcodes: install-pdf-opcodes
+
+install-pdf-opcodes: \
+    configure-opcodes \
+    pdf-opcodes 
+	@[ -f ./opcodes/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in opcodes"; \
+	(cd $(HOST_SUBDIR)/opcodes && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-pdf) \
+	  || exit 1
+
 
 .PHONY: maybe-install-html-opcodes install-html-opcodes
 maybe-install-html-opcodes:
+maybe-install-html-opcodes: install-html-opcodes
+
+install-html-opcodes: \
+    configure-opcodes \
+    html-opcodes 
+	@[ -f ./opcodes/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-html in opcodes"; \
+	(cd $(HOST_SUBDIR)/opcodes && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-html) \
+	  || exit 1
+
 
 .PHONY: maybe-installcheck-opcodes installcheck-opcodes
 maybe-installcheck-opcodes:
+maybe-installcheck-opcodes: installcheck-opcodes
+
+installcheck-opcodes: \
+    configure-opcodes 
+	@[ -f ./opcodes/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing installcheck in opcodes"; \
+	(cd $(HOST_SUBDIR)/opcodes && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          installcheck) \
+	  || exit 1
+
 
 .PHONY: maybe-mostlyclean-opcodes mostlyclean-opcodes
 maybe-mostlyclean-opcodes:
+maybe-mostlyclean-opcodes: mostlyclean-opcodes
+
+mostlyclean-opcodes: 
+	@[ -f ./opcodes/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing mostlyclean in opcodes"; \
+	(cd $(HOST_SUBDIR)/opcodes && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          mostlyclean) \
+	  || exit 1
+
 
 .PHONY: maybe-clean-opcodes clean-opcodes
 maybe-clean-opcodes:
+maybe-clean-opcodes: clean-opcodes
+
+clean-opcodes: 
+	@[ -f ./opcodes/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing clean in opcodes"; \
+	(cd $(HOST_SUBDIR)/opcodes && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          clean) \
+	  || exit 1
+
 
 .PHONY: maybe-distclean-opcodes distclean-opcodes
 maybe-distclean-opcodes:
+maybe-distclean-opcodes: distclean-opcodes
+
+distclean-opcodes: 
+	@[ -f ./opcodes/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing distclean in opcodes"; \
+	(cd $(HOST_SUBDIR)/opcodes && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          distclean) \
+	  || exit 1
+
 
 .PHONY: maybe-maintainer-clean-opcodes maintainer-clean-opcodes
 maybe-maintainer-clean-opcodes:
+maybe-maintainer-clean-opcodes: maintainer-clean-opcodes
+
+maintainer-clean-opcodes: 
+	@[ -f ./opcodes/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing maintainer-clean in opcodes"; \
+	(cd $(HOST_SUBDIR)/opcodes && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          maintainer-clean) \
+	  || exit 1
+
 
 
 
 .PHONY: configure-binutils maybe-configure-binutils
 maybe-configure-binutils:
+maybe-configure-binutils: configure-binutils
+configure-binutils: 
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/binutils/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/binutils; \
+	$(HOST_EXPORTS)  \
+	echo Configuring in $(HOST_SUBDIR)/binutils; \
+	cd "$(HOST_SUBDIR)/binutils" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/binutils/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=binutils; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias}  \
+	  || exit 1
 
 
 
@@ -3301,6 +3645,15 @@ maybe-configure-stagefeedback-binutils:
 
 .PHONY: all-binutils maybe-all-binutils
 maybe-all-binutils:
+TARGET-binutils=all
+maybe-all-binutils: all-binutils
+all-binutils: configure-binutils
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS)  \
+	(cd $(HOST_SUBDIR)/binutils && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
+		$(TARGET-binutils))
 
 
 
@@ -3345,53 +3698,342 @@ maybe-clean-stagefeedback-binutils:
 
 .PHONY: check-binutils maybe-check-binutils
 maybe-check-binutils:
+maybe-check-binutils: check-binutils
+
+check-binutils:
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) $(EXTRA_HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/binutils && \
+	  $(MAKE) $(FLAGS_TO_PASS)  $(EXTRA_BOOTSTRAP_FLAGS) check)
+
 
 .PHONY: install-binutils maybe-install-binutils
 maybe-install-binutils:
+maybe-install-binutils: install-binutils
+
+install-binutils: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/binutils && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
 
 .PHONY: install-strip-binutils maybe-install-strip-binutils
 maybe-install-strip-binutils:
+maybe-install-strip-binutils: install-strip-binutils
+
+install-strip-binutils: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/binutils && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+
 
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-binutils info-binutils
 maybe-info-binutils:
+maybe-info-binutils: info-binutils
+
+info-binutils: \
+    configure-binutils 
+	@[ -f ./binutils/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing info in binutils"; \
+	(cd $(HOST_SUBDIR)/binutils && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          info) \
+	  || exit 1
+
 
 .PHONY: maybe-dvi-binutils dvi-binutils
 maybe-dvi-binutils:
+maybe-dvi-binutils: dvi-binutils
+
+dvi-binutils: \
+    configure-binutils 
+	@[ -f ./binutils/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing dvi in binutils"; \
+	(cd $(HOST_SUBDIR)/binutils && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          dvi) \
+	  || exit 1
+
 
 .PHONY: maybe-pdf-binutils pdf-binutils
 maybe-pdf-binutils:
+maybe-pdf-binutils: pdf-binutils
+
+pdf-binutils: \
+    configure-binutils 
+	@[ -f ./binutils/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing pdf in binutils"; \
+	(cd $(HOST_SUBDIR)/binutils && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          pdf) \
+	  || exit 1
+
 
 .PHONY: maybe-html-binutils html-binutils
 maybe-html-binutils:
+maybe-html-binutils: html-binutils
+
+html-binutils: \
+    configure-binutils 
+	@[ -f ./binutils/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing html in binutils"; \
+	(cd $(HOST_SUBDIR)/binutils && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          html) \
+	  || exit 1
+
 
 .PHONY: maybe-TAGS-binutils TAGS-binutils
 maybe-TAGS-binutils:
+maybe-TAGS-binutils: TAGS-binutils
+
+TAGS-binutils: \
+    configure-binutils 
+	@[ -f ./binutils/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing TAGS in binutils"; \
+	(cd $(HOST_SUBDIR)/binutils && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          TAGS) \
+	  || exit 1
+
 
 .PHONY: maybe-install-info-binutils install-info-binutils
 maybe-install-info-binutils:
+maybe-install-info-binutils: install-info-binutils
+
+install-info-binutils: \
+    configure-binutils \
+    info-binutils 
+	@[ -f ./binutils/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-info in binutils"; \
+	(cd $(HOST_SUBDIR)/binutils && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-info) \
+	  || exit 1
+
 
 .PHONY: maybe-install-pdf-binutils install-pdf-binutils
 maybe-install-pdf-binutils:
+maybe-install-pdf-binutils: install-pdf-binutils
+
+install-pdf-binutils: \
+    configure-binutils \
+    pdf-binutils 
+	@[ -f ./binutils/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in binutils"; \
+	(cd $(HOST_SUBDIR)/binutils && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-pdf) \
+	  || exit 1
+
 
 .PHONY: maybe-install-html-binutils install-html-binutils
 maybe-install-html-binutils:
+maybe-install-html-binutils: install-html-binutils
+
+install-html-binutils: \
+    configure-binutils \
+    html-binutils 
+	@[ -f ./binutils/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-html in binutils"; \
+	(cd $(HOST_SUBDIR)/binutils && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-html) \
+	  || exit 1
+
 
 .PHONY: maybe-installcheck-binutils installcheck-binutils
 maybe-installcheck-binutils:
+maybe-installcheck-binutils: installcheck-binutils
+
+installcheck-binutils: \
+    configure-binutils 
+	@[ -f ./binutils/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing installcheck in binutils"; \
+	(cd $(HOST_SUBDIR)/binutils && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          installcheck) \
+	  || exit 1
+
 
 .PHONY: maybe-mostlyclean-binutils mostlyclean-binutils
 maybe-mostlyclean-binutils:
+maybe-mostlyclean-binutils: mostlyclean-binutils
+
+mostlyclean-binutils: 
+	@[ -f ./binutils/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing mostlyclean in binutils"; \
+	(cd $(HOST_SUBDIR)/binutils && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          mostlyclean) \
+	  || exit 1
+
 
 .PHONY: maybe-clean-binutils clean-binutils
 maybe-clean-binutils:
+maybe-clean-binutils: clean-binutils
+
+clean-binutils: 
+	@[ -f ./binutils/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing clean in binutils"; \
+	(cd $(HOST_SUBDIR)/binutils && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          clean) \
+	  || exit 1
+
 
 .PHONY: maybe-distclean-binutils distclean-binutils
 maybe-distclean-binutils:
+maybe-distclean-binutils: distclean-binutils
+
+distclean-binutils: 
+	@[ -f ./binutils/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing distclean in binutils"; \
+	(cd $(HOST_SUBDIR)/binutils && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          distclean) \
+	  || exit 1
+
 
 .PHONY: maybe-maintainer-clean-binutils maintainer-clean-binutils
 maybe-maintainer-clean-binutils:
+maybe-maintainer-clean-binutils: maintainer-clean-binutils
+
+maintainer-clean-binutils: 
+	@[ -f ./binutils/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing maintainer-clean in binutils"; \
+	(cd $(HOST_SUBDIR)/binutils && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          maintainer-clean) \
+	  || exit 1
+
 
 
 
@@ -4244,6 +4886,27 @@ maybe-maintainer-clean-flex:
 
 .PHONY: configure-gas maybe-configure-gas
 maybe-configure-gas:
+maybe-configure-gas: configure-gas
+configure-gas: 
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/gas/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gas; \
+	$(HOST_EXPORTS)  \
+	echo Configuring in $(HOST_SUBDIR)/gas; \
+	cd "$(HOST_SUBDIR)/gas" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/gas/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=gas; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias}  \
+	  || exit 1
 
 
 
@@ -4271,6 +4934,15 @@ maybe-configure-stagefeedback-gas:
 
 .PHONY: all-gas maybe-all-gas
 maybe-all-gas:
+TARGET-gas=all
+maybe-all-gas: all-gas
+all-gas: configure-gas
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS)  \
+	(cd $(HOST_SUBDIR)/gas && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
+		$(TARGET-gas))
 
 
 
@@ -4315,53 +4987,342 @@ maybe-clean-stagefeedback-gas:
 
 .PHONY: check-gas maybe-check-gas
 maybe-check-gas:
+maybe-check-gas: check-gas
+
+check-gas:
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) $(EXTRA_HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/gas && \
+	  $(MAKE) $(FLAGS_TO_PASS)  $(EXTRA_BOOTSTRAP_FLAGS) check)
+
 
 .PHONY: install-gas maybe-install-gas
 maybe-install-gas:
+maybe-install-gas: install-gas
+
+install-gas: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/gas && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
 
 .PHONY: install-strip-gas maybe-install-strip-gas
 maybe-install-strip-gas:
+maybe-install-strip-gas: install-strip-gas
+
+install-strip-gas: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/gas && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+
 
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-gas info-gas
 maybe-info-gas:
+maybe-info-gas: info-gas
+
+info-gas: \
+    configure-gas 
+	@[ -f ./gas/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing info in gas"; \
+	(cd $(HOST_SUBDIR)/gas && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          info) \
+	  || exit 1
+
 
 .PHONY: maybe-dvi-gas dvi-gas
 maybe-dvi-gas:
+maybe-dvi-gas: dvi-gas
+
+dvi-gas: \
+    configure-gas 
+	@[ -f ./gas/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing dvi in gas"; \
+	(cd $(HOST_SUBDIR)/gas && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          dvi) \
+	  || exit 1
+
 
 .PHONY: maybe-pdf-gas pdf-gas
 maybe-pdf-gas:
+maybe-pdf-gas: pdf-gas
+
+pdf-gas: \
+    configure-gas 
+	@[ -f ./gas/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing pdf in gas"; \
+	(cd $(HOST_SUBDIR)/gas && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          pdf) \
+	  || exit 1
+
 
 .PHONY: maybe-html-gas html-gas
 maybe-html-gas:
+maybe-html-gas: html-gas
+
+html-gas: \
+    configure-gas 
+	@[ -f ./gas/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing html in gas"; \
+	(cd $(HOST_SUBDIR)/gas && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          html) \
+	  || exit 1
+
 
 .PHONY: maybe-TAGS-gas TAGS-gas
 maybe-TAGS-gas:
+maybe-TAGS-gas: TAGS-gas
+
+TAGS-gas: \
+    configure-gas 
+	@[ -f ./gas/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing TAGS in gas"; \
+	(cd $(HOST_SUBDIR)/gas && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          TAGS) \
+	  || exit 1
+
 
 .PHONY: maybe-install-info-gas install-info-gas
 maybe-install-info-gas:
+maybe-install-info-gas: install-info-gas
+
+install-info-gas: \
+    configure-gas \
+    info-gas 
+	@[ -f ./gas/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-info in gas"; \
+	(cd $(HOST_SUBDIR)/gas && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-info) \
+	  || exit 1
+
 
 .PHONY: maybe-install-pdf-gas install-pdf-gas
 maybe-install-pdf-gas:
+maybe-install-pdf-gas: install-pdf-gas
+
+install-pdf-gas: \
+    configure-gas \
+    pdf-gas 
+	@[ -f ./gas/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in gas"; \
+	(cd $(HOST_SUBDIR)/gas && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-pdf) \
+	  || exit 1
+
 
 .PHONY: maybe-install-html-gas install-html-gas
 maybe-install-html-gas:
+maybe-install-html-gas: install-html-gas
+
+install-html-gas: \
+    configure-gas \
+    html-gas 
+	@[ -f ./gas/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-html in gas"; \
+	(cd $(HOST_SUBDIR)/gas && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-html) \
+	  || exit 1
+
 
 .PHONY: maybe-installcheck-gas installcheck-gas
 maybe-installcheck-gas:
+maybe-installcheck-gas: installcheck-gas
+
+installcheck-gas: \
+    configure-gas 
+	@[ -f ./gas/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing installcheck in gas"; \
+	(cd $(HOST_SUBDIR)/gas && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          installcheck) \
+	  || exit 1
+
 
 .PHONY: maybe-mostlyclean-gas mostlyclean-gas
 maybe-mostlyclean-gas:
+maybe-mostlyclean-gas: mostlyclean-gas
+
+mostlyclean-gas: 
+	@[ -f ./gas/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing mostlyclean in gas"; \
+	(cd $(HOST_SUBDIR)/gas && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          mostlyclean) \
+	  || exit 1
+
 
 .PHONY: maybe-clean-gas clean-gas
 maybe-clean-gas:
+maybe-clean-gas: clean-gas
+
+clean-gas: 
+	@[ -f ./gas/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing clean in gas"; \
+	(cd $(HOST_SUBDIR)/gas && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          clean) \
+	  || exit 1
+
 
 .PHONY: maybe-distclean-gas distclean-gas
 maybe-distclean-gas:
+maybe-distclean-gas: distclean-gas
+
+distclean-gas: 
+	@[ -f ./gas/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing distclean in gas"; \
+	(cd $(HOST_SUBDIR)/gas && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          distclean) \
+	  || exit 1
+
 
 .PHONY: maybe-maintainer-clean-gas maintainer-clean-gas
 maybe-maintainer-clean-gas:
+maybe-maintainer-clean-gas: maintainer-clean-gas
+
+maintainer-clean-gas: 
+	@[ -f ./gas/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing maintainer-clean in gas"; \
+	(cd $(HOST_SUBDIR)/gas && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          maintainer-clean) \
+	  || exit 1
+
 
 
 
@@ -5228,6 +6189,28 @@ maybe-maintainer-clean-gold:
 
 .PHONY: configure-gprof maybe-configure-gprof
 maybe-configure-gprof:
+maybe-configure-gprof: configure-gprof
+configure-gprof: 
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/gprof/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gprof; \
+	$(HOST_EXPORTS)  \
+	echo Configuring in $(HOST_SUBDIR)/gprof; \
+	cd "$(HOST_SUBDIR)/gprof" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/gprof/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=gprof; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias}  \
+	  || exit 1
 
 
 
@@ -5235,59 +6218,371 @@ maybe-configure-gprof:
 
 .PHONY: all-gprof maybe-all-gprof
 maybe-all-gprof:
+TARGET-gprof=all
+maybe-all-gprof: all-gprof
+all-gprof: configure-gprof
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS)  \
+	(cd $(HOST_SUBDIR)/gprof && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
+		$(TARGET-gprof))
 
 
 
 
 .PHONY: check-gprof maybe-check-gprof
 maybe-check-gprof:
+maybe-check-gprof: check-gprof
+
+check-gprof:
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS)  \
+	(cd $(HOST_SUBDIR)/gprof && \
+	  $(MAKE) $(FLAGS_TO_PASS)  check)
+
 
 .PHONY: install-gprof maybe-install-gprof
 maybe-install-gprof:
+maybe-install-gprof: install-gprof
+
+install-gprof: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/gprof && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
 
 .PHONY: install-strip-gprof maybe-install-strip-gprof
 maybe-install-strip-gprof:
+maybe-install-strip-gprof: install-strip-gprof
+
+install-strip-gprof: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/gprof && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+
 
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-gprof info-gprof
 maybe-info-gprof:
+maybe-info-gprof: info-gprof
+
+info-gprof: \
+    configure-gprof 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gprof/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing info in gprof"; \
+	(cd $(HOST_SUBDIR)/gprof && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          info) \
+	  || exit 1
+
 
 .PHONY: maybe-dvi-gprof dvi-gprof
 maybe-dvi-gprof:
+maybe-dvi-gprof: dvi-gprof
+
+dvi-gprof: \
+    configure-gprof 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gprof/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing dvi in gprof"; \
+	(cd $(HOST_SUBDIR)/gprof && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          dvi) \
+	  || exit 1
+
 
 .PHONY: maybe-pdf-gprof pdf-gprof
 maybe-pdf-gprof:
+maybe-pdf-gprof: pdf-gprof
+
+pdf-gprof: \
+    configure-gprof 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gprof/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing pdf in gprof"; \
+	(cd $(HOST_SUBDIR)/gprof && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          pdf) \
+	  || exit 1
+
 
 .PHONY: maybe-html-gprof html-gprof
 maybe-html-gprof:
+maybe-html-gprof: html-gprof
+
+html-gprof: \
+    configure-gprof 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gprof/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing html in gprof"; \
+	(cd $(HOST_SUBDIR)/gprof && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          html) \
+	  || exit 1
+
 
 .PHONY: maybe-TAGS-gprof TAGS-gprof
 maybe-TAGS-gprof:
+maybe-TAGS-gprof: TAGS-gprof
+
+TAGS-gprof: \
+    configure-gprof 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gprof/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing TAGS in gprof"; \
+	(cd $(HOST_SUBDIR)/gprof && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          TAGS) \
+	  || exit 1
+
 
 .PHONY: maybe-install-info-gprof install-info-gprof
 maybe-install-info-gprof:
+maybe-install-info-gprof: install-info-gprof
+
+install-info-gprof: \
+    configure-gprof \
+    info-gprof 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gprof/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-info in gprof"; \
+	(cd $(HOST_SUBDIR)/gprof && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-info) \
+	  || exit 1
+
 
 .PHONY: maybe-install-pdf-gprof install-pdf-gprof
 maybe-install-pdf-gprof:
+maybe-install-pdf-gprof: install-pdf-gprof
+
+install-pdf-gprof: \
+    configure-gprof \
+    pdf-gprof 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gprof/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in gprof"; \
+	(cd $(HOST_SUBDIR)/gprof && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-pdf) \
+	  || exit 1
+
 
 .PHONY: maybe-install-html-gprof install-html-gprof
 maybe-install-html-gprof:
+maybe-install-html-gprof: install-html-gprof
+
+install-html-gprof: \
+    configure-gprof \
+    html-gprof 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gprof/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-html in gprof"; \
+	(cd $(HOST_SUBDIR)/gprof && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-html) \
+	  || exit 1
+
 
 .PHONY: maybe-installcheck-gprof installcheck-gprof
 maybe-installcheck-gprof:
+maybe-installcheck-gprof: installcheck-gprof
+
+installcheck-gprof: \
+    configure-gprof 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gprof/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing installcheck in gprof"; \
+	(cd $(HOST_SUBDIR)/gprof && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          installcheck) \
+	  || exit 1
+
 
 .PHONY: maybe-mostlyclean-gprof mostlyclean-gprof
 maybe-mostlyclean-gprof:
+maybe-mostlyclean-gprof: mostlyclean-gprof
+
+mostlyclean-gprof: 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gprof/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing mostlyclean in gprof"; \
+	(cd $(HOST_SUBDIR)/gprof && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          mostlyclean) \
+	  || exit 1
+
 
 .PHONY: maybe-clean-gprof clean-gprof
 maybe-clean-gprof:
+maybe-clean-gprof: clean-gprof
+
+clean-gprof: 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gprof/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing clean in gprof"; \
+	(cd $(HOST_SUBDIR)/gprof && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          clean) \
+	  || exit 1
+
 
 .PHONY: maybe-distclean-gprof distclean-gprof
 maybe-distclean-gprof:
+maybe-distclean-gprof: distclean-gprof
+
+distclean-gprof: 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gprof/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing distclean in gprof"; \
+	(cd $(HOST_SUBDIR)/gprof && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          distclean) \
+	  || exit 1
+
 
 .PHONY: maybe-maintainer-clean-gprof maintainer-clean-gprof
 maybe-maintainer-clean-gprof:
+maybe-maintainer-clean-gprof: maintainer-clean-gprof
+
+maintainer-clean-gprof: 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gprof/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing maintainer-clean in gprof"; \
+	(cd $(HOST_SUBDIR)/gprof && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          maintainer-clean) \
+	  || exit 1
+
 
 
 
@@ -5865,6 +7160,27 @@ maybe-maintainer-clean-itcl:
 
 .PHONY: configure-ld maybe-configure-ld
 maybe-configure-ld:
+maybe-configure-ld: configure-ld
+configure-ld: 
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/ld/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/ld; \
+	$(HOST_EXPORTS)  \
+	echo Configuring in $(HOST_SUBDIR)/ld; \
+	cd "$(HOST_SUBDIR)/ld" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/ld/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=ld; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias}  \
+	  || exit 1
 
 
 
@@ -5892,6 +7208,15 @@ maybe-configure-stagefeedback-ld:
 
 .PHONY: all-ld maybe-all-ld
 maybe-all-ld:
+TARGET-ld=all
+maybe-all-ld: all-ld
+all-ld: configure-ld
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS)  \
+	(cd $(HOST_SUBDIR)/ld && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
+		$(TARGET-ld))
 
 
 
@@ -5936,53 +7261,342 @@ maybe-clean-stagefeedback-ld:
 
 .PHONY: check-ld maybe-check-ld
 maybe-check-ld:
+maybe-check-ld: check-ld
+
+check-ld:
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) $(EXTRA_HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/ld && \
+	  $(MAKE) $(FLAGS_TO_PASS)  $(EXTRA_BOOTSTRAP_FLAGS) check)
+
 
 .PHONY: install-ld maybe-install-ld
 maybe-install-ld:
+maybe-install-ld: install-ld
+
+install-ld: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/ld && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
 
 .PHONY: install-strip-ld maybe-install-strip-ld
 maybe-install-strip-ld:
+maybe-install-strip-ld: install-strip-ld
+
+install-strip-ld: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/ld && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+
 
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-ld info-ld
 maybe-info-ld:
+maybe-info-ld: info-ld
+
+info-ld: \
+    configure-ld 
+	@[ -f ./ld/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing info in ld"; \
+	(cd $(HOST_SUBDIR)/ld && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          info) \
+	  || exit 1
+
 
 .PHONY: maybe-dvi-ld dvi-ld
 maybe-dvi-ld:
+maybe-dvi-ld: dvi-ld
+
+dvi-ld: \
+    configure-ld 
+	@[ -f ./ld/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing dvi in ld"; \
+	(cd $(HOST_SUBDIR)/ld && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          dvi) \
+	  || exit 1
+
 
 .PHONY: maybe-pdf-ld pdf-ld
 maybe-pdf-ld:
+maybe-pdf-ld: pdf-ld
+
+pdf-ld: \
+    configure-ld 
+	@[ -f ./ld/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing pdf in ld"; \
+	(cd $(HOST_SUBDIR)/ld && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          pdf) \
+	  || exit 1
+
 
 .PHONY: maybe-html-ld html-ld
 maybe-html-ld:
+maybe-html-ld: html-ld
+
+html-ld: \
+    configure-ld 
+	@[ -f ./ld/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing html in ld"; \
+	(cd $(HOST_SUBDIR)/ld && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          html) \
+	  || exit 1
+
 
 .PHONY: maybe-TAGS-ld TAGS-ld
 maybe-TAGS-ld:
+maybe-TAGS-ld: TAGS-ld
+
+TAGS-ld: \
+    configure-ld 
+	@[ -f ./ld/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing TAGS in ld"; \
+	(cd $(HOST_SUBDIR)/ld && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          TAGS) \
+	  || exit 1
+
 
 .PHONY: maybe-install-info-ld install-info-ld
 maybe-install-info-ld:
+maybe-install-info-ld: install-info-ld
+
+install-info-ld: \
+    configure-ld \
+    info-ld 
+	@[ -f ./ld/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-info in ld"; \
+	(cd $(HOST_SUBDIR)/ld && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-info) \
+	  || exit 1
+
 
 .PHONY: maybe-install-pdf-ld install-pdf-ld
 maybe-install-pdf-ld:
+maybe-install-pdf-ld: install-pdf-ld
+
+install-pdf-ld: \
+    configure-ld \
+    pdf-ld 
+	@[ -f ./ld/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in ld"; \
+	(cd $(HOST_SUBDIR)/ld && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-pdf) \
+	  || exit 1
+
 
 .PHONY: maybe-install-html-ld install-html-ld
 maybe-install-html-ld:
+maybe-install-html-ld: install-html-ld
+
+install-html-ld: \
+    configure-ld \
+    html-ld 
+	@[ -f ./ld/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-html in ld"; \
+	(cd $(HOST_SUBDIR)/ld && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-html) \
+	  || exit 1
+
 
 .PHONY: maybe-installcheck-ld installcheck-ld
 maybe-installcheck-ld:
+maybe-installcheck-ld: installcheck-ld
+
+installcheck-ld: \
+    configure-ld 
+	@[ -f ./ld/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing installcheck in ld"; \
+	(cd $(HOST_SUBDIR)/ld && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          installcheck) \
+	  || exit 1
+
 
 .PHONY: maybe-mostlyclean-ld mostlyclean-ld
 maybe-mostlyclean-ld:
+maybe-mostlyclean-ld: mostlyclean-ld
+
+mostlyclean-ld: 
+	@[ -f ./ld/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing mostlyclean in ld"; \
+	(cd $(HOST_SUBDIR)/ld && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          mostlyclean) \
+	  || exit 1
+
 
 .PHONY: maybe-clean-ld clean-ld
 maybe-clean-ld:
+maybe-clean-ld: clean-ld
+
+clean-ld: 
+	@[ -f ./ld/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing clean in ld"; \
+	(cd $(HOST_SUBDIR)/ld && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          clean) \
+	  || exit 1
+
 
 .PHONY: maybe-distclean-ld distclean-ld
 maybe-distclean-ld:
+maybe-distclean-ld: distclean-ld
+
+distclean-ld: 
+	@[ -f ./ld/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing distclean in ld"; \
+	(cd $(HOST_SUBDIR)/ld && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          distclean) \
+	  || exit 1
+
 
 .PHONY: maybe-maintainer-clean-ld maintainer-clean-ld
 maybe-maintainer-clean-ld:
+maybe-maintainer-clean-ld: maintainer-clean-ld
+
+maintainer-clean-ld: 
+	@[ -f ./ld/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing maintainer-clean in ld"; \
+	(cd $(HOST_SUBDIR)/ld && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          maintainer-clean) \
+	  || exit 1
+
 
 
 
@@ -7958,6 +9572,28 @@ maybe-maintainer-clean-sid:
 
 .PHONY: configure-sim maybe-configure-sim
 maybe-configure-sim:
+maybe-configure-sim: configure-sim
+configure-sim: 
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/sim/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/sim; \
+	$(HOST_EXPORTS)  \
+	echo Configuring in $(HOST_SUBDIR)/sim; \
+	cd "$(HOST_SUBDIR)/sim" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/sim/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=sim; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias}  \
+	  || exit 1
 
 
 
@@ -7965,59 +9601,371 @@ maybe-configure-sim:
 
 .PHONY: all-sim maybe-all-sim
 maybe-all-sim:
+TARGET-sim=all
+maybe-all-sim: all-sim
+all-sim: configure-sim
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS)  \
+	(cd $(HOST_SUBDIR)/sim && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
+		$(TARGET-sim))
 
 
 
 
 .PHONY: check-sim maybe-check-sim
 maybe-check-sim:
+maybe-check-sim: check-sim
+
+check-sim:
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS)  \
+	(cd $(HOST_SUBDIR)/sim && \
+	  $(MAKE) $(FLAGS_TO_PASS)  check)
+
 
 .PHONY: install-sim maybe-install-sim
 maybe-install-sim:
+maybe-install-sim: install-sim
+
+install-sim: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/sim && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
 
 .PHONY: install-strip-sim maybe-install-strip-sim
 maybe-install-strip-sim:
+maybe-install-strip-sim: install-strip-sim
+
+install-strip-sim: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/sim && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+
 
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-sim info-sim
 maybe-info-sim:
+maybe-info-sim: info-sim
+
+info-sim: \
+    configure-sim 
+	@: $(MAKE); $(unstage)
+	@[ -f ./sim/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing info in sim"; \
+	(cd $(HOST_SUBDIR)/sim && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          info) \
+	  || exit 1
+
 
 .PHONY: maybe-dvi-sim dvi-sim
 maybe-dvi-sim:
+maybe-dvi-sim: dvi-sim
+
+dvi-sim: \
+    configure-sim 
+	@: $(MAKE); $(unstage)
+	@[ -f ./sim/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing dvi in sim"; \
+	(cd $(HOST_SUBDIR)/sim && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          dvi) \
+	  || exit 1
+
 
 .PHONY: maybe-pdf-sim pdf-sim
 maybe-pdf-sim:
+maybe-pdf-sim: pdf-sim
+
+pdf-sim: \
+    configure-sim 
+	@: $(MAKE); $(unstage)
+	@[ -f ./sim/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing pdf in sim"; \
+	(cd $(HOST_SUBDIR)/sim && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          pdf) \
+	  || exit 1
+
 
 .PHONY: maybe-html-sim html-sim
 maybe-html-sim:
+maybe-html-sim: html-sim
+
+html-sim: \
+    configure-sim 
+	@: $(MAKE); $(unstage)
+	@[ -f ./sim/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing html in sim"; \
+	(cd $(HOST_SUBDIR)/sim && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          html) \
+	  || exit 1
+
 
 .PHONY: maybe-TAGS-sim TAGS-sim
 maybe-TAGS-sim:
+maybe-TAGS-sim: TAGS-sim
+
+TAGS-sim: \
+    configure-sim 
+	@: $(MAKE); $(unstage)
+	@[ -f ./sim/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing TAGS in sim"; \
+	(cd $(HOST_SUBDIR)/sim && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          TAGS) \
+	  || exit 1
+
 
 .PHONY: maybe-install-info-sim install-info-sim
 maybe-install-info-sim:
+maybe-install-info-sim: install-info-sim
+
+install-info-sim: \
+    configure-sim \
+    info-sim 
+	@: $(MAKE); $(unstage)
+	@[ -f ./sim/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-info in sim"; \
+	(cd $(HOST_SUBDIR)/sim && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-info) \
+	  || exit 1
+
 
 .PHONY: maybe-install-pdf-sim install-pdf-sim
 maybe-install-pdf-sim:
+maybe-install-pdf-sim: install-pdf-sim
+
+install-pdf-sim: \
+    configure-sim \
+    pdf-sim 
+	@: $(MAKE); $(unstage)
+	@[ -f ./sim/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in sim"; \
+	(cd $(HOST_SUBDIR)/sim && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-pdf) \
+	  || exit 1
+
 
 .PHONY: maybe-install-html-sim install-html-sim
 maybe-install-html-sim:
+maybe-install-html-sim: install-html-sim
+
+install-html-sim: \
+    configure-sim \
+    html-sim 
+	@: $(MAKE); $(unstage)
+	@[ -f ./sim/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-html in sim"; \
+	(cd $(HOST_SUBDIR)/sim && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-html) \
+	  || exit 1
+
 
 .PHONY: maybe-installcheck-sim installcheck-sim
 maybe-installcheck-sim:
+maybe-installcheck-sim: installcheck-sim
+
+installcheck-sim: \
+    configure-sim 
+	@: $(MAKE); $(unstage)
+	@[ -f ./sim/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing installcheck in sim"; \
+	(cd $(HOST_SUBDIR)/sim && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          installcheck) \
+	  || exit 1
+
 
 .PHONY: maybe-mostlyclean-sim mostlyclean-sim
 maybe-mostlyclean-sim:
+maybe-mostlyclean-sim: mostlyclean-sim
+
+mostlyclean-sim: 
+	@: $(MAKE); $(unstage)
+	@[ -f ./sim/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing mostlyclean in sim"; \
+	(cd $(HOST_SUBDIR)/sim && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          mostlyclean) \
+	  || exit 1
+
 
 .PHONY: maybe-clean-sim clean-sim
 maybe-clean-sim:
+maybe-clean-sim: clean-sim
+
+clean-sim: 
+	@: $(MAKE); $(unstage)
+	@[ -f ./sim/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing clean in sim"; \
+	(cd $(HOST_SUBDIR)/sim && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          clean) \
+	  || exit 1
+
 
 .PHONY: maybe-distclean-sim distclean-sim
 maybe-distclean-sim:
+maybe-distclean-sim: distclean-sim
+
+distclean-sim: 
+	@: $(MAKE); $(unstage)
+	@[ -f ./sim/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing distclean in sim"; \
+	(cd $(HOST_SUBDIR)/sim && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          distclean) \
+	  || exit 1
+
 
 .PHONY: maybe-maintainer-clean-sim maintainer-clean-sim
 maybe-maintainer-clean-sim:
+maybe-maintainer-clean-sim: maintainer-clean-sim
+
+maintainer-clean-sim: 
+	@: $(MAKE); $(unstage)
+	@[ -f ./sim/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing maintainer-clean in sim"; \
+	(cd $(HOST_SUBDIR)/sim && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          maintainer-clean) \
+	  || exit 1
+
 
 
 
@@ -8512,6 +10460,28 @@ maintainer-clean-zlib:
 
 .PHONY: configure-gnulib maybe-configure-gnulib
 maybe-configure-gnulib:
+maybe-configure-gnulib: configure-gnulib
+configure-gnulib: 
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/gnulib/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gnulib; \
+	$(HOST_EXPORTS)  \
+	echo Configuring in $(HOST_SUBDIR)/gnulib; \
+	cd "$(HOST_SUBDIR)/gnulib" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/gnulib/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=gnulib; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias}  \
+	  || exit 1
 
 
 
@@ -8519,64 +10489,398 @@ maybe-configure-gnulib:
 
 .PHONY: all-gnulib maybe-all-gnulib
 maybe-all-gnulib:
+TARGET-gnulib=all
+maybe-all-gnulib: all-gnulib
+all-gnulib: configure-gnulib
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS)  \
+	(cd $(HOST_SUBDIR)/gnulib && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
+		$(TARGET-gnulib))
 
 
 
 
 .PHONY: check-gnulib maybe-check-gnulib
 maybe-check-gnulib:
+maybe-check-gnulib: check-gnulib
+
+check-gnulib:
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS)  \
+	(cd $(HOST_SUBDIR)/gnulib && \
+	  $(MAKE) $(FLAGS_TO_PASS)  check)
+
 
 .PHONY: install-gnulib maybe-install-gnulib
 maybe-install-gnulib:
+maybe-install-gnulib: install-gnulib
+
+install-gnulib: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/gnulib && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
 
 .PHONY: install-strip-gnulib maybe-install-strip-gnulib
 maybe-install-strip-gnulib:
+maybe-install-strip-gnulib: install-strip-gnulib
+
+install-strip-gnulib: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/gnulib && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+
 
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-gnulib info-gnulib
 maybe-info-gnulib:
+maybe-info-gnulib: info-gnulib
+
+info-gnulib: \
+    configure-gnulib 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gnulib/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing info in gnulib"; \
+	(cd $(HOST_SUBDIR)/gnulib && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          info) \
+	  || exit 1
+
 
 .PHONY: maybe-dvi-gnulib dvi-gnulib
 maybe-dvi-gnulib:
+maybe-dvi-gnulib: dvi-gnulib
+
+dvi-gnulib: \
+    configure-gnulib 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gnulib/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing dvi in gnulib"; \
+	(cd $(HOST_SUBDIR)/gnulib && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          dvi) \
+	  || exit 1
+
 
 .PHONY: maybe-pdf-gnulib pdf-gnulib
 maybe-pdf-gnulib:
+maybe-pdf-gnulib: pdf-gnulib
+
+pdf-gnulib: \
+    configure-gnulib 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gnulib/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing pdf in gnulib"; \
+	(cd $(HOST_SUBDIR)/gnulib && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          pdf) \
+	  || exit 1
+
 
 .PHONY: maybe-html-gnulib html-gnulib
 maybe-html-gnulib:
+maybe-html-gnulib: html-gnulib
+
+html-gnulib: \
+    configure-gnulib 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gnulib/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing html in gnulib"; \
+	(cd $(HOST_SUBDIR)/gnulib && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          html) \
+	  || exit 1
+
 
 .PHONY: maybe-TAGS-gnulib TAGS-gnulib
 maybe-TAGS-gnulib:
+maybe-TAGS-gnulib: TAGS-gnulib
+
+TAGS-gnulib: \
+    configure-gnulib 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gnulib/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing TAGS in gnulib"; \
+	(cd $(HOST_SUBDIR)/gnulib && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          TAGS) \
+	  || exit 1
+
 
 .PHONY: maybe-install-info-gnulib install-info-gnulib
 maybe-install-info-gnulib:
+maybe-install-info-gnulib: install-info-gnulib
+
+install-info-gnulib: \
+    configure-gnulib \
+    info-gnulib 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gnulib/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-info in gnulib"; \
+	(cd $(HOST_SUBDIR)/gnulib && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-info) \
+	  || exit 1
+
 
 .PHONY: maybe-install-pdf-gnulib install-pdf-gnulib
 maybe-install-pdf-gnulib:
+maybe-install-pdf-gnulib: install-pdf-gnulib
+
+install-pdf-gnulib: \
+    configure-gnulib \
+    pdf-gnulib 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gnulib/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in gnulib"; \
+	(cd $(HOST_SUBDIR)/gnulib && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-pdf) \
+	  || exit 1
+
 
 .PHONY: maybe-install-html-gnulib install-html-gnulib
 maybe-install-html-gnulib:
+maybe-install-html-gnulib: install-html-gnulib
+
+install-html-gnulib: \
+    configure-gnulib \
+    html-gnulib 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gnulib/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-html in gnulib"; \
+	(cd $(HOST_SUBDIR)/gnulib && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-html) \
+	  || exit 1
+
 
 .PHONY: maybe-installcheck-gnulib installcheck-gnulib
 maybe-installcheck-gnulib:
+maybe-installcheck-gnulib: installcheck-gnulib
+
+installcheck-gnulib: \
+    configure-gnulib 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gnulib/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing installcheck in gnulib"; \
+	(cd $(HOST_SUBDIR)/gnulib && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          installcheck) \
+	  || exit 1
+
 
 .PHONY: maybe-mostlyclean-gnulib mostlyclean-gnulib
 maybe-mostlyclean-gnulib:
+maybe-mostlyclean-gnulib: mostlyclean-gnulib
+
+mostlyclean-gnulib: 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gnulib/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing mostlyclean in gnulib"; \
+	(cd $(HOST_SUBDIR)/gnulib && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          mostlyclean) \
+	  || exit 1
+
 
 .PHONY: maybe-clean-gnulib clean-gnulib
 maybe-clean-gnulib:
+maybe-clean-gnulib: clean-gnulib
+
+clean-gnulib: 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gnulib/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing clean in gnulib"; \
+	(cd $(HOST_SUBDIR)/gnulib && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          clean) \
+	  || exit 1
+
 
 .PHONY: maybe-distclean-gnulib distclean-gnulib
 maybe-distclean-gnulib:
+maybe-distclean-gnulib: distclean-gnulib
+
+distclean-gnulib: 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gnulib/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing distclean in gnulib"; \
+	(cd $(HOST_SUBDIR)/gnulib && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          distclean) \
+	  || exit 1
+
 
 .PHONY: maybe-maintainer-clean-gnulib maintainer-clean-gnulib
 maybe-maintainer-clean-gnulib:
+maybe-maintainer-clean-gnulib: maintainer-clean-gnulib
+
+maintainer-clean-gnulib: 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gnulib/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing maintainer-clean in gnulib"; \
+	(cd $(HOST_SUBDIR)/gnulib && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          maintainer-clean) \
+	  || exit 1
+
 
 
 
 .PHONY: configure-gdbsupport maybe-configure-gdbsupport
 maybe-configure-gdbsupport:
+maybe-configure-gdbsupport: configure-gdbsupport
+configure-gdbsupport: 
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/gdbsupport/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gdbsupport; \
+	$(HOST_EXPORTS)  \
+	echo Configuring in $(HOST_SUBDIR)/gdbsupport; \
+	cd "$(HOST_SUBDIR)/gdbsupport" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/gdbsupport/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=gdbsupport; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias}  \
+	  || exit 1
 
 
 
@@ -8584,59 +10888,371 @@ maybe-configure-gdbsupport:
 
 .PHONY: all-gdbsupport maybe-all-gdbsupport
 maybe-all-gdbsupport:
+TARGET-gdbsupport=all
+maybe-all-gdbsupport: all-gdbsupport
+all-gdbsupport: configure-gdbsupport
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS)  \
+	(cd $(HOST_SUBDIR)/gdbsupport && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
+		$(TARGET-gdbsupport))
 
 
 
 
 .PHONY: check-gdbsupport maybe-check-gdbsupport
 maybe-check-gdbsupport:
+maybe-check-gdbsupport: check-gdbsupport
+
+check-gdbsupport:
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS)  \
+	(cd $(HOST_SUBDIR)/gdbsupport && \
+	  $(MAKE) $(FLAGS_TO_PASS)  check)
+
 
 .PHONY: install-gdbsupport maybe-install-gdbsupport
 maybe-install-gdbsupport:
+maybe-install-gdbsupport: install-gdbsupport
+
+install-gdbsupport: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/gdbsupport && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
 
 .PHONY: install-strip-gdbsupport maybe-install-strip-gdbsupport
 maybe-install-strip-gdbsupport:
+maybe-install-strip-gdbsupport: install-strip-gdbsupport
+
+install-strip-gdbsupport: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/gdbsupport && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+
 
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-gdbsupport info-gdbsupport
 maybe-info-gdbsupport:
+maybe-info-gdbsupport: info-gdbsupport
+
+info-gdbsupport: \
+    configure-gdbsupport 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gdbsupport/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing info in gdbsupport"; \
+	(cd $(HOST_SUBDIR)/gdbsupport && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          info) \
+	  || exit 1
+
 
 .PHONY: maybe-dvi-gdbsupport dvi-gdbsupport
 maybe-dvi-gdbsupport:
+maybe-dvi-gdbsupport: dvi-gdbsupport
+
+dvi-gdbsupport: \
+    configure-gdbsupport 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gdbsupport/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing dvi in gdbsupport"; \
+	(cd $(HOST_SUBDIR)/gdbsupport && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          dvi) \
+	  || exit 1
+
 
 .PHONY: maybe-pdf-gdbsupport pdf-gdbsupport
 maybe-pdf-gdbsupport:
+maybe-pdf-gdbsupport: pdf-gdbsupport
+
+pdf-gdbsupport: \
+    configure-gdbsupport 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gdbsupport/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing pdf in gdbsupport"; \
+	(cd $(HOST_SUBDIR)/gdbsupport && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          pdf) \
+	  || exit 1
+
 
 .PHONY: maybe-html-gdbsupport html-gdbsupport
 maybe-html-gdbsupport:
+maybe-html-gdbsupport: html-gdbsupport
+
+html-gdbsupport: \
+    configure-gdbsupport 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gdbsupport/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing html in gdbsupport"; \
+	(cd $(HOST_SUBDIR)/gdbsupport && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          html) \
+	  || exit 1
+
 
 .PHONY: maybe-TAGS-gdbsupport TAGS-gdbsupport
 maybe-TAGS-gdbsupport:
+maybe-TAGS-gdbsupport: TAGS-gdbsupport
+
+TAGS-gdbsupport: \
+    configure-gdbsupport 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gdbsupport/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing TAGS in gdbsupport"; \
+	(cd $(HOST_SUBDIR)/gdbsupport && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          TAGS) \
+	  || exit 1
+
 
 .PHONY: maybe-install-info-gdbsupport install-info-gdbsupport
 maybe-install-info-gdbsupport:
+maybe-install-info-gdbsupport: install-info-gdbsupport
+
+install-info-gdbsupport: \
+    configure-gdbsupport \
+    info-gdbsupport 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gdbsupport/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-info in gdbsupport"; \
+	(cd $(HOST_SUBDIR)/gdbsupport && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-info) \
+	  || exit 1
+
 
 .PHONY: maybe-install-pdf-gdbsupport install-pdf-gdbsupport
 maybe-install-pdf-gdbsupport:
+maybe-install-pdf-gdbsupport: install-pdf-gdbsupport
+
+install-pdf-gdbsupport: \
+    configure-gdbsupport \
+    pdf-gdbsupport 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gdbsupport/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in gdbsupport"; \
+	(cd $(HOST_SUBDIR)/gdbsupport && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-pdf) \
+	  || exit 1
+
 
 .PHONY: maybe-install-html-gdbsupport install-html-gdbsupport
 maybe-install-html-gdbsupport:
+maybe-install-html-gdbsupport: install-html-gdbsupport
+
+install-html-gdbsupport: \
+    configure-gdbsupport \
+    html-gdbsupport 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gdbsupport/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-html in gdbsupport"; \
+	(cd $(HOST_SUBDIR)/gdbsupport && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-html) \
+	  || exit 1
+
 
 .PHONY: maybe-installcheck-gdbsupport installcheck-gdbsupport
 maybe-installcheck-gdbsupport:
+maybe-installcheck-gdbsupport: installcheck-gdbsupport
+
+installcheck-gdbsupport: \
+    configure-gdbsupport 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gdbsupport/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing installcheck in gdbsupport"; \
+	(cd $(HOST_SUBDIR)/gdbsupport && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          installcheck) \
+	  || exit 1
+
 
 .PHONY: maybe-mostlyclean-gdbsupport mostlyclean-gdbsupport
 maybe-mostlyclean-gdbsupport:
+maybe-mostlyclean-gdbsupport: mostlyclean-gdbsupport
+
+mostlyclean-gdbsupport: 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gdbsupport/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing mostlyclean in gdbsupport"; \
+	(cd $(HOST_SUBDIR)/gdbsupport && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          mostlyclean) \
+	  || exit 1
+
 
 .PHONY: maybe-clean-gdbsupport clean-gdbsupport
 maybe-clean-gdbsupport:
+maybe-clean-gdbsupport: clean-gdbsupport
+
+clean-gdbsupport: 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gdbsupport/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing clean in gdbsupport"; \
+	(cd $(HOST_SUBDIR)/gdbsupport && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          clean) \
+	  || exit 1
+
 
 .PHONY: maybe-distclean-gdbsupport distclean-gdbsupport
 maybe-distclean-gdbsupport:
+maybe-distclean-gdbsupport: distclean-gdbsupport
+
+distclean-gdbsupport: 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gdbsupport/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing distclean in gdbsupport"; \
+	(cd $(HOST_SUBDIR)/gdbsupport && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          distclean) \
+	  || exit 1
+
 
 .PHONY: maybe-maintainer-clean-gdbsupport maintainer-clean-gdbsupport
 maybe-maintainer-clean-gdbsupport:
+maybe-maintainer-clean-gdbsupport: maintainer-clean-gdbsupport
+
+maintainer-clean-gdbsupport: 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gdbsupport/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing maintainer-clean in gdbsupport"; \
+	(cd $(HOST_SUBDIR)/gdbsupport && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          maintainer-clean) \
+	  || exit 1
+
 
 
 
@@ -8707,6 +11323,28 @@ maybe-maintainer-clean-gdbserver:
 
 .PHONY: configure-gdb maybe-configure-gdb
 maybe-configure-gdb:
+maybe-configure-gdb: configure-gdb
+configure-gdb: 
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/gdb/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gdb; \
+	$(HOST_EXPORTS)  \
+	echo Configuring in $(HOST_SUBDIR)/gdb; \
+	cd "$(HOST_SUBDIR)/gdb" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/gdb/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=gdb; \
+	$(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias}  \
+	  || exit 1
 
 
 
@@ -8714,59 +11352,371 @@ maybe-configure-gdb:
 
 .PHONY: all-gdb maybe-all-gdb
 maybe-all-gdb:
+TARGET-gdb=all
+maybe-all-gdb: all-gdb
+all-gdb: configure-gdb
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS)  \
+	(cd $(HOST_SUBDIR)/gdb && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
+		$(TARGET-gdb))
 
 
 
 
 .PHONY: check-gdb maybe-check-gdb
 maybe-check-gdb:
+maybe-check-gdb: check-gdb
+
+check-gdb:
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS)  \
+	(cd $(HOST_SUBDIR)/gdb && \
+	  $(MAKE) $(FLAGS_TO_PASS)  check)
+
 
 .PHONY: install-gdb maybe-install-gdb
 maybe-install-gdb:
+maybe-install-gdb: install-gdb
+
+install-gdb: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/gdb && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
 
 .PHONY: install-strip-gdb maybe-install-strip-gdb
 maybe-install-strip-gdb:
+maybe-install-strip-gdb: install-strip-gdb
+
+install-strip-gdb: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/gdb && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+
 
 # Other targets (info, dvi, pdf, etc.)
 
 .PHONY: maybe-info-gdb info-gdb
 maybe-info-gdb:
+maybe-info-gdb: info-gdb
+
+info-gdb: \
+    configure-gdb 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gdb/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing info in gdb"; \
+	(cd $(HOST_SUBDIR)/gdb && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          info) \
+	  || exit 1
+
 
 .PHONY: maybe-dvi-gdb dvi-gdb
 maybe-dvi-gdb:
+maybe-dvi-gdb: dvi-gdb
+
+dvi-gdb: \
+    configure-gdb 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gdb/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing dvi in gdb"; \
+	(cd $(HOST_SUBDIR)/gdb && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          dvi) \
+	  || exit 1
+
 
 .PHONY: maybe-pdf-gdb pdf-gdb
 maybe-pdf-gdb:
+maybe-pdf-gdb: pdf-gdb
+
+pdf-gdb: \
+    configure-gdb 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gdb/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing pdf in gdb"; \
+	(cd $(HOST_SUBDIR)/gdb && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          pdf) \
+	  || exit 1
+
 
 .PHONY: maybe-html-gdb html-gdb
 maybe-html-gdb:
+maybe-html-gdb: html-gdb
+
+html-gdb: \
+    configure-gdb 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gdb/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing html in gdb"; \
+	(cd $(HOST_SUBDIR)/gdb && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          html) \
+	  || exit 1
+
 
 .PHONY: maybe-TAGS-gdb TAGS-gdb
 maybe-TAGS-gdb:
+maybe-TAGS-gdb: TAGS-gdb
+
+TAGS-gdb: \
+    configure-gdb 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gdb/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing TAGS in gdb"; \
+	(cd $(HOST_SUBDIR)/gdb && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          TAGS) \
+	  || exit 1
+
 
 .PHONY: maybe-install-info-gdb install-info-gdb
 maybe-install-info-gdb:
+maybe-install-info-gdb: install-info-gdb
+
+install-info-gdb: \
+    configure-gdb \
+    info-gdb 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gdb/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-info in gdb"; \
+	(cd $(HOST_SUBDIR)/gdb && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-info) \
+	  || exit 1
+
 
 .PHONY: maybe-install-pdf-gdb install-pdf-gdb
 maybe-install-pdf-gdb:
+maybe-install-pdf-gdb: install-pdf-gdb
+
+install-pdf-gdb: \
+    configure-gdb \
+    pdf-gdb 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gdb/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in gdb"; \
+	(cd $(HOST_SUBDIR)/gdb && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-pdf) \
+	  || exit 1
+
 
 .PHONY: maybe-install-html-gdb install-html-gdb
 maybe-install-html-gdb:
+maybe-install-html-gdb: install-html-gdb
+
+install-html-gdb: \
+    configure-gdb \
+    html-gdb 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gdb/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-html in gdb"; \
+	(cd $(HOST_SUBDIR)/gdb && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-html) \
+	  || exit 1
+
 
 .PHONY: maybe-installcheck-gdb installcheck-gdb
 maybe-installcheck-gdb:
+maybe-installcheck-gdb: installcheck-gdb
+
+installcheck-gdb: \
+    configure-gdb 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gdb/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing installcheck in gdb"; \
+	(cd $(HOST_SUBDIR)/gdb && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          installcheck) \
+	  || exit 1
+
 
 .PHONY: maybe-mostlyclean-gdb mostlyclean-gdb
 maybe-mostlyclean-gdb:
+maybe-mostlyclean-gdb: mostlyclean-gdb
+
+mostlyclean-gdb: 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gdb/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing mostlyclean in gdb"; \
+	(cd $(HOST_SUBDIR)/gdb && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          mostlyclean) \
+	  || exit 1
+
 
 .PHONY: maybe-clean-gdb clean-gdb
 maybe-clean-gdb:
+maybe-clean-gdb: clean-gdb
+
+clean-gdb: 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gdb/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing clean in gdb"; \
+	(cd $(HOST_SUBDIR)/gdb && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          clean) \
+	  || exit 1
+
 
 .PHONY: maybe-distclean-gdb distclean-gdb
 maybe-distclean-gdb:
+maybe-distclean-gdb: distclean-gdb
+
+distclean-gdb: 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gdb/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing distclean in gdb"; \
+	(cd $(HOST_SUBDIR)/gdb && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          distclean) \
+	  || exit 1
+
 
 .PHONY: maybe-maintainer-clean-gdb maintainer-clean-gdb
 maybe-maintainer-clean-gdb:
+maybe-maintainer-clean-gdb: maintainer-clean-gdb
+
+maintainer-clean-gdb: 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gdb/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing maintainer-clean in gdb"; \
+	(cd $(HOST_SUBDIR)/gdb && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          maintainer-clean) \
+	  || exit 1
+
 
 
 
@@ -11898,9 +14848,21 @@ stage1-start::
 	@cd $(HOST_SUBDIR); [ -d stage1-bfd ] || \
 	  mkdir stage1-bfd; \
 	mv stage1-bfd bfd
+	@cd $(HOST_SUBDIR); [ -d stage1-opcodes ] || \
+	  mkdir stage1-opcodes; \
+	mv stage1-opcodes opcodes
+	@cd $(HOST_SUBDIR); [ -d stage1-binutils ] || \
+	  mkdir stage1-binutils; \
+	mv stage1-binutils binutils
+	@cd $(HOST_SUBDIR); [ -d stage1-gas ] || \
+	  mkdir stage1-gas; \
+	mv stage1-gas gas
 	@cd $(HOST_SUBDIR); [ -d stage1-intl ] || \
 	  mkdir stage1-intl; \
 	mv stage1-intl intl
+	@cd $(HOST_SUBDIR); [ -d stage1-ld ] || \
+	  mkdir stage1-ld; \
+	mv stage1-ld ld
 	@cd $(HOST_SUBDIR); [ -d stage1-libdecnumber ] || \
 	  mkdir stage1-libdecnumber; \
 	mv stage1-libdecnumber libdecnumber
@@ -11921,8 +14883,20 @@ stage1-end::
 	@if test -d $(HOST_SUBDIR)/bfd; then \
 	  cd $(HOST_SUBDIR); mv bfd stage1-bfd; \
 	fi
+	@if test -d $(HOST_SUBDIR)/opcodes; then \
+	  cd $(HOST_SUBDIR); mv opcodes stage1-opcodes; \
+	fi
+	@if test -d $(HOST_SUBDIR)/binutils; then \
+	  cd $(HOST_SUBDIR); mv binutils stage1-binutils; \
+	fi
+	@if test -d $(HOST_SUBDIR)/gas; then \
+	  cd $(HOST_SUBDIR); mv gas stage1-gas; \
+	fi
 	@if test -d $(HOST_SUBDIR)/intl; then \
 	  cd $(HOST_SUBDIR); mv intl stage1-intl; \
+	fi
+	@if test -d $(HOST_SUBDIR)/ld; then \
+	  cd $(HOST_SUBDIR); mv ld stage1-ld; \
 	fi
 	@if test -d $(HOST_SUBDIR)/libdecnumber; then \
 	  cd $(HOST_SUBDIR); mv libdecnumber stage1-libdecnumber; \
@@ -11973,10 +14947,26 @@ stage2-start::
 	  mkdir stage2-bfd; \
 	mv stage2-bfd bfd; \
 	mv stage1-bfd prev-bfd || test -f stage1-lean 
+	@cd $(HOST_SUBDIR); [ -d stage2-opcodes ] || \
+	  mkdir stage2-opcodes; \
+	mv stage2-opcodes opcodes; \
+	mv stage1-opcodes prev-opcodes || test -f stage1-lean 
+	@cd $(HOST_SUBDIR); [ -d stage2-binutils ] || \
+	  mkdir stage2-binutils; \
+	mv stage2-binutils binutils; \
+	mv stage1-binutils prev-binutils || test -f stage1-lean 
+	@cd $(HOST_SUBDIR); [ -d stage2-gas ] || \
+	  mkdir stage2-gas; \
+	mv stage2-gas gas; \
+	mv stage1-gas prev-gas || test -f stage1-lean 
 	@cd $(HOST_SUBDIR); [ -d stage2-intl ] || \
 	  mkdir stage2-intl; \
 	mv stage2-intl intl; \
 	mv stage1-intl prev-intl || test -f stage1-lean 
+	@cd $(HOST_SUBDIR); [ -d stage2-ld ] || \
+	  mkdir stage2-ld; \
+	mv stage2-ld ld; \
+	mv stage1-ld prev-ld || test -f stage1-lean 
 	@cd $(HOST_SUBDIR); [ -d stage2-libdecnumber ] || \
 	  mkdir stage2-libdecnumber; \
 	mv stage2-libdecnumber libdecnumber; \
@@ -12003,9 +14993,25 @@ stage2-end::
 	  cd $(HOST_SUBDIR); mv bfd stage2-bfd; \
 	  mv prev-bfd stage1-bfd; : ; \
 	fi
+	@if test -d $(HOST_SUBDIR)/opcodes; then \
+	  cd $(HOST_SUBDIR); mv opcodes stage2-opcodes; \
+	  mv prev-opcodes stage1-opcodes; : ; \
+	fi
+	@if test -d $(HOST_SUBDIR)/binutils; then \
+	  cd $(HOST_SUBDIR); mv binutils stage2-binutils; \
+	  mv prev-binutils stage1-binutils; : ; \
+	fi
+	@if test -d $(HOST_SUBDIR)/gas; then \
+	  cd $(HOST_SUBDIR); mv gas stage2-gas; \
+	  mv prev-gas stage1-gas; : ; \
+	fi
 	@if test -d $(HOST_SUBDIR)/intl; then \
 	  cd $(HOST_SUBDIR); mv intl stage2-intl; \
 	  mv prev-intl stage1-intl; : ; \
+	fi
+	@if test -d $(HOST_SUBDIR)/ld; then \
+	  cd $(HOST_SUBDIR); mv ld stage2-ld; \
+	  mv prev-ld stage1-ld; : ; \
 	fi
 	@if test -d $(HOST_SUBDIR)/libdecnumber; then \
 	  cd $(HOST_SUBDIR); mv libdecnumber stage2-libdecnumber; \
@@ -12061,10 +15067,26 @@ stage3-start::
 	  mkdir stage3-bfd; \
 	mv stage3-bfd bfd; \
 	mv stage2-bfd prev-bfd || test -f stage2-lean 
+	@cd $(HOST_SUBDIR); [ -d stage3-opcodes ] || \
+	  mkdir stage3-opcodes; \
+	mv stage3-opcodes opcodes; \
+	mv stage2-opcodes prev-opcodes || test -f stage2-lean 
+	@cd $(HOST_SUBDIR); [ -d stage3-binutils ] || \
+	  mkdir stage3-binutils; \
+	mv stage3-binutils binutils; \
+	mv stage2-binutils prev-binutils || test -f stage2-lean 
+	@cd $(HOST_SUBDIR); [ -d stage3-gas ] || \
+	  mkdir stage3-gas; \
+	mv stage3-gas gas; \
+	mv stage2-gas prev-gas || test -f stage2-lean 
 	@cd $(HOST_SUBDIR); [ -d stage3-intl ] || \
 	  mkdir stage3-intl; \
 	mv stage3-intl intl; \
 	mv stage2-intl prev-intl || test -f stage2-lean 
+	@cd $(HOST_SUBDIR); [ -d stage3-ld ] || \
+	  mkdir stage3-ld; \
+	mv stage3-ld ld; \
+	mv stage2-ld prev-ld || test -f stage2-lean 
 	@cd $(HOST_SUBDIR); [ -d stage3-libdecnumber ] || \
 	  mkdir stage3-libdecnumber; \
 	mv stage3-libdecnumber libdecnumber; \
@@ -12091,9 +15113,25 @@ stage3-end::
 	  cd $(HOST_SUBDIR); mv bfd stage3-bfd; \
 	  mv prev-bfd stage2-bfd; : ; \
 	fi
+	@if test -d $(HOST_SUBDIR)/opcodes; then \
+	  cd $(HOST_SUBDIR); mv opcodes stage3-opcodes; \
+	  mv prev-opcodes stage2-opcodes; : ; \
+	fi
+	@if test -d $(HOST_SUBDIR)/binutils; then \
+	  cd $(HOST_SUBDIR); mv binutils stage3-binutils; \
+	  mv prev-binutils stage2-binutils; : ; \
+	fi
+	@if test -d $(HOST_SUBDIR)/gas; then \
+	  cd $(HOST_SUBDIR); mv gas stage3-gas; \
+	  mv prev-gas stage2-gas; : ; \
+	fi
 	@if test -d $(HOST_SUBDIR)/intl; then \
 	  cd $(HOST_SUBDIR); mv intl stage3-intl; \
 	  mv prev-intl stage2-intl; : ; \
+	fi
+	@if test -d $(HOST_SUBDIR)/ld; then \
+	  cd $(HOST_SUBDIR); mv ld stage3-ld; \
+	  mv prev-ld stage2-ld; : ; \
 	fi
 	@if test -d $(HOST_SUBDIR)/libdecnumber; then \
 	  cd $(HOST_SUBDIR); mv libdecnumber stage3-libdecnumber; \
@@ -12154,10 +15192,26 @@ stage4-start::
 	  mkdir stage4-bfd; \
 	mv stage4-bfd bfd; \
 	mv stage3-bfd prev-bfd || test -f stage3-lean 
+	@cd $(HOST_SUBDIR); [ -d stage4-opcodes ] || \
+	  mkdir stage4-opcodes; \
+	mv stage4-opcodes opcodes; \
+	mv stage3-opcodes prev-opcodes || test -f stage3-lean 
+	@cd $(HOST_SUBDIR); [ -d stage4-binutils ] || \
+	  mkdir stage4-binutils; \
+	mv stage4-binutils binutils; \
+	mv stage3-binutils prev-binutils || test -f stage3-lean 
+	@cd $(HOST_SUBDIR); [ -d stage4-gas ] || \
+	  mkdir stage4-gas; \
+	mv stage4-gas gas; \
+	mv stage3-gas prev-gas || test -f stage3-lean 
 	@cd $(HOST_SUBDIR); [ -d stage4-intl ] || \
 	  mkdir stage4-intl; \
 	mv stage4-intl intl; \
 	mv stage3-intl prev-intl || test -f stage3-lean 
+	@cd $(HOST_SUBDIR); [ -d stage4-ld ] || \
+	  mkdir stage4-ld; \
+	mv stage4-ld ld; \
+	mv stage3-ld prev-ld || test -f stage3-lean 
 	@cd $(HOST_SUBDIR); [ -d stage4-libdecnumber ] || \
 	  mkdir stage4-libdecnumber; \
 	mv stage4-libdecnumber libdecnumber; \
@@ -12184,9 +15238,25 @@ stage4-end::
 	  cd $(HOST_SUBDIR); mv bfd stage4-bfd; \
 	  mv prev-bfd stage3-bfd; : ; \
 	fi
+	@if test -d $(HOST_SUBDIR)/opcodes; then \
+	  cd $(HOST_SUBDIR); mv opcodes stage4-opcodes; \
+	  mv prev-opcodes stage3-opcodes; : ; \
+	fi
+	@if test -d $(HOST_SUBDIR)/binutils; then \
+	  cd $(HOST_SUBDIR); mv binutils stage4-binutils; \
+	  mv prev-binutils stage3-binutils; : ; \
+	fi
+	@if test -d $(HOST_SUBDIR)/gas; then \
+	  cd $(HOST_SUBDIR); mv gas stage4-gas; \
+	  mv prev-gas stage3-gas; : ; \
+	fi
 	@if test -d $(HOST_SUBDIR)/intl; then \
 	  cd $(HOST_SUBDIR); mv intl stage4-intl; \
 	  mv prev-intl stage3-intl; : ; \
+	fi
+	@if test -d $(HOST_SUBDIR)/ld; then \
+	  cd $(HOST_SUBDIR); mv ld stage4-ld; \
+	  mv prev-ld stage3-ld; : ; \
 	fi
 	@if test -d $(HOST_SUBDIR)/libdecnumber; then \
 	  cd $(HOST_SUBDIR); mv libdecnumber stage4-libdecnumber; \
@@ -12247,10 +15317,26 @@ stageprofile-start::
 	  mkdir stageprofile-bfd; \
 	mv stageprofile-bfd bfd; \
 	mv stage1-bfd prev-bfd || test -f stage1-lean 
+	@cd $(HOST_SUBDIR); [ -d stageprofile-opcodes ] || \
+	  mkdir stageprofile-opcodes; \
+	mv stageprofile-opcodes opcodes; \
+	mv stage1-opcodes prev-opcodes || test -f stage1-lean 
+	@cd $(HOST_SUBDIR); [ -d stageprofile-binutils ] || \
+	  mkdir stageprofile-binutils; \
+	mv stageprofile-binutils binutils; \
+	mv stage1-binutils prev-binutils || test -f stage1-lean 
+	@cd $(HOST_SUBDIR); [ -d stageprofile-gas ] || \
+	  mkdir stageprofile-gas; \
+	mv stageprofile-gas gas; \
+	mv stage1-gas prev-gas || test -f stage1-lean 
 	@cd $(HOST_SUBDIR); [ -d stageprofile-intl ] || \
 	  mkdir stageprofile-intl; \
 	mv stageprofile-intl intl; \
 	mv stage1-intl prev-intl || test -f stage1-lean 
+	@cd $(HOST_SUBDIR); [ -d stageprofile-ld ] || \
+	  mkdir stageprofile-ld; \
+	mv stageprofile-ld ld; \
+	mv stage1-ld prev-ld || test -f stage1-lean 
 	@cd $(HOST_SUBDIR); [ -d stageprofile-libdecnumber ] || \
 	  mkdir stageprofile-libdecnumber; \
 	mv stageprofile-libdecnumber libdecnumber; \
@@ -12277,9 +15363,25 @@ stageprofile-end::
 	  cd $(HOST_SUBDIR); mv bfd stageprofile-bfd; \
 	  mv prev-bfd stage1-bfd; : ; \
 	fi
+	@if test -d $(HOST_SUBDIR)/opcodes; then \
+	  cd $(HOST_SUBDIR); mv opcodes stageprofile-opcodes; \
+	  mv prev-opcodes stage1-opcodes; : ; \
+	fi
+	@if test -d $(HOST_SUBDIR)/binutils; then \
+	  cd $(HOST_SUBDIR); mv binutils stageprofile-binutils; \
+	  mv prev-binutils stage1-binutils; : ; \
+	fi
+	@if test -d $(HOST_SUBDIR)/gas; then \
+	  cd $(HOST_SUBDIR); mv gas stageprofile-gas; \
+	  mv prev-gas stage1-gas; : ; \
+	fi
 	@if test -d $(HOST_SUBDIR)/intl; then \
 	  cd $(HOST_SUBDIR); mv intl stageprofile-intl; \
 	  mv prev-intl stage1-intl; : ; \
+	fi
+	@if test -d $(HOST_SUBDIR)/ld; then \
+	  cd $(HOST_SUBDIR); mv ld stageprofile-ld; \
+	  mv prev-ld stage1-ld; : ; \
 	fi
 	@if test -d $(HOST_SUBDIR)/libdecnumber; then \
 	  cd $(HOST_SUBDIR); mv libdecnumber stageprofile-libdecnumber; \
@@ -12335,10 +15437,26 @@ stagefeedback-start::
 	  mkdir stagefeedback-bfd; \
 	mv stagefeedback-bfd bfd; \
 	mv stageprofile-bfd prev-bfd || test -f stageprofile-lean 
+	@cd $(HOST_SUBDIR); [ -d stagefeedback-opcodes ] || \
+	  mkdir stagefeedback-opcodes; \
+	mv stagefeedback-opcodes opcodes; \
+	mv stageprofile-opcodes prev-opcodes || test -f stageprofile-lean 
+	@cd $(HOST_SUBDIR); [ -d stagefeedback-binutils ] || \
+	  mkdir stagefeedback-binutils; \
+	mv stagefeedback-binutils binutils; \
+	mv stageprofile-binutils prev-binutils || test -f stageprofile-lean 
+	@cd $(HOST_SUBDIR); [ -d stagefeedback-gas ] || \
+	  mkdir stagefeedback-gas; \
+	mv stagefeedback-gas gas; \
+	mv stageprofile-gas prev-gas || test -f stageprofile-lean 
 	@cd $(HOST_SUBDIR); [ -d stagefeedback-intl ] || \
 	  mkdir stagefeedback-intl; \
 	mv stagefeedback-intl intl; \
 	mv stageprofile-intl prev-intl || test -f stageprofile-lean 
+	@cd $(HOST_SUBDIR); [ -d stagefeedback-ld ] || \
+	  mkdir stagefeedback-ld; \
+	mv stagefeedback-ld ld; \
+	mv stageprofile-ld prev-ld || test -f stageprofile-lean 
 	@cd $(HOST_SUBDIR); [ -d stagefeedback-libdecnumber ] || \
 	  mkdir stagefeedback-libdecnumber; \
 	mv stagefeedback-libdecnumber libdecnumber; \
@@ -12365,9 +15483,25 @@ stagefeedback-end::
 	  cd $(HOST_SUBDIR); mv bfd stagefeedback-bfd; \
 	  mv prev-bfd stageprofile-bfd; : ; \
 	fi
+	@if test -d $(HOST_SUBDIR)/opcodes; then \
+	  cd $(HOST_SUBDIR); mv opcodes stagefeedback-opcodes; \
+	  mv prev-opcodes stageprofile-opcodes; : ; \
+	fi
+	@if test -d $(HOST_SUBDIR)/binutils; then \
+	  cd $(HOST_SUBDIR); mv binutils stagefeedback-binutils; \
+	  mv prev-binutils stageprofile-binutils; : ; \
+	fi
+	@if test -d $(HOST_SUBDIR)/gas; then \
+	  cd $(HOST_SUBDIR); mv gas stagefeedback-gas; \
+	  mv prev-gas stageprofile-gas; : ; \
+	fi
 	@if test -d $(HOST_SUBDIR)/intl; then \
 	  cd $(HOST_SUBDIR); mv intl stagefeedback-intl; \
 	  mv prev-intl stageprofile-intl; : ; \
+	fi
+	@if test -d $(HOST_SUBDIR)/ld; then \
+	  cd $(HOST_SUBDIR); mv ld stagefeedback-ld; \
+	  mv prev-ld stageprofile-ld; : ; \
 	fi
 	@if test -d $(HOST_SUBDIR)/libdecnumber; then \
 	  cd $(HOST_SUBDIR); mv libdecnumber stagefeedback-libdecnumber; \
@@ -13384,7 +16518,7 @@ install-gdb: $(INSTALL_GDB_TK)
 
 # Rebuilding Makefile.in, using autogen.
 AUTOGEN = autogen
-$(srcdir)/Makefile.in: # $(srcdir)/Makefile.tpl $(srcdir)/Makefile.def
+$(srcdir)/Makefile.in:  $(srcdir)/Makefile.tpl $(srcdir)/Makefile.def
 	cd $(srcdir) && $(AUTOGEN) Makefile.def
 
 # Rebuilding Makefile.
@@ -13396,7 +16530,7 @@ config.status: configure
 
 # Rebuilding configure.
 AUTOCONF = autoconf
-$(srcdir)/configure: # $(srcdir)/configure.ac $(srcdir)/config/acx.m4 \
+$(srcdir)/configure:  $(srcdir)/configure.ac $(srcdir)/config/acx.m4 \
 	$(srcdir)/config/override.m4 $(srcdir)/config/proginstall.m4 \
 	$(srcdir)/config/elf.m4 $(srcdir)/config/isl.m4 \
 	$(srcdir)/libtool.m4 $(srcdir)/ltoptions.m4 $(srcdir)/ltsugar.m4 \

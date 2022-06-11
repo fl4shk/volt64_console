@@ -1212,7 +1212,6 @@ case $cpu-$vendor in
 			| mmix \
 			| mn10200 | mn10300 \
 			| moxie \
-			| volt32 \
 			| mt \
 			| msp430 \
 			| nds32 | nds32le | nds32be \
@@ -1245,6 +1244,7 @@ case $cpu-$vendor in
 			| v70 | v850 | v850e | v850e1 | v850es | v850e2 | v850e2v3 \
 			| vax \
 			| visium \
+			| volt32 \
 			| w65 \
 			| wasm32 | wasm64 \
 			| we32k \

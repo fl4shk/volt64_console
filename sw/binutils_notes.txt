@@ -2,3 +2,9 @@
 //I left off.
 
 Remember `enable_binutils_autotools.sh` and `autoreconf`
+
+The TL;DR is Add a config.sub target, ../configure --target <my-fun-target> and make until it fails.
+
+That's fine. The advice of just adding a `config.sub` and 
+`../configure --target <my-fun-target>` is probably all I need. (edited)
+

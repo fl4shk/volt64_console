@@ -593,7 +593,6 @@ do
     mn10300_elf32_vec)		 tb="$tb elf-m10300.lo elf32.lo $elf" ;;
     moxie_elf32_be_vec)		 tb="$tb elf32-moxie.lo elf32.lo $elf" ;;
     moxie_elf32_le_vec)		 tb="$tb elf32-moxie.lo elf32.lo $elf" ;;
-    volt32_elf32_le_vec)		 tb="$tb elf32-volt32.lo elf32.lo $elf" ;;
     msp430_elf32_vec)		 tb="$tb elf32-msp430.lo elf32.lo $elf" ;;
     msp430_elf32_ti_vec)	 tb="$tb elf32-msp430.lo elf32.lo $elf" ;;
     mt_elf32_vec)		 tb="$tb elf32-mt.lo elf32.lo $elf" ;;
