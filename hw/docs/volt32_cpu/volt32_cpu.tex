@@ -227,19 +227,13 @@
 	\begin{itemize}
 	%--------
 	\item When \texttt{xct == 0x0}:
-		Taking an interrupt (which would also set \texttt{ie} to
-		\texttt{0b0}).
+		Taking a non-software interrupt (which would also set \texttt{ie}
+		to \texttt{0b0}).
 	\item When \texttt{xct == 0x1}: Division by zero.
 	\item When \texttt{xct == 0x2}: Undefined instruction.
 	\item When \texttt{xct == 0x3}:
 		Instructions where 64-bit ops are not defined.
 	\item When \texttt{xct == 0x4}: \texttt{swi}.
-		\begin{itemize}
-		%--------
-		\item Note that this instruction always causes an exception to
-			occur.
-		%--------
-		\end{itemize}
 	\item When \texttt{xct == 0x5}: \texttt{reti} when in user mode.
 	\item When \texttt{xct == 0x6}: \texttt{retx} when in user mode.
 
@@ -251,6 +245,10 @@
 		\texttt{cpy} that reads from \texttt{xct} in user mode.
 	\item When \texttt{xct == 0xa}:
 		\texttt{cpy} that writes to \texttt{xct} in user mode.
+
+	% I need to not bring these `swiargN` `cpy`s back to causing
+	% exceptions, or at least not the ones that *write* to these registers.
+	% Not being able to write 
 
 	%\item \texttt{cpy} that reads from \texttt{swiarg0} when in user mode.
 	%\item \texttt{cpy} that writes to \texttt{swiarg0} when in user mode.
@@ -300,26 +298,26 @@
 			\begin{enumerate}
 			%--------
 			\item \texttt{add dA, dB, dC}
-				\begin{itemize}
-				%--------
-				\item This instruction causes an exception if \texttt{dA}
-					is of the following types: \texttt{u64}, \texttt{s64}.
-				%--------
-				\end{itemize}
+				%\begin{itemize}
+				%%--------
+				%\item This instruction causes an exception if \texttt{dA}
+				%	is of the following types: \texttt{u64}, \texttt{s64}.
+				%%--------
+				%\end{itemize}
 			\item \texttt{sub dA, dB, dC}
-				\begin{itemize}
-				%--------
-				\item This instruction causes an exception if \texttt{dA}
-					is of the following types: \texttt{u64}, \texttt{s64}.
-				%--------
-				\end{itemize}
+				%\begin{itemize}
+				%%--------
+				%\item This instruction causes an exception if \texttt{dA}
+				%	is of the following types: \texttt{u64}, \texttt{s64}.
+				%%--------
+				%\end{itemize}
 			\item \texttt{slt dA, dB, dC}
-				\begin{itemize}
-				%--------
-				\item This instruction causes an exception if \texttt{dA}
-					is of the following types: \texttt{u64}, \texttt{s64}.
-				%--------
-				\end{itemize}
+				%\begin{itemize}
+				%%--------
+				%\item This instruction causes an exception if \texttt{dA}
+				%	is of the following types: \texttt{u64}, \texttt{s64}.
+				%%--------
+				%\end{itemize}
 			\item \texttt{mul dA, dB, dC}
 				\begin{itemize}
 				%--------
@@ -1024,6 +1022,12 @@
 			\item \texttt{cpy swiarg3, dA}
 
 			\item \texttt{swi dA, dB, dC, dD}
+				\begin{itemize}
+				%--------
+				\item Note that this instruction always causes an exception
+					to occur.
+				%--------
+				\end{itemize}
 			\item \textit{Reserved for future expansion.}
 			\item \textit{Reserved for future expansion.}
 			\item \textit{Reserved for future expansion.}
