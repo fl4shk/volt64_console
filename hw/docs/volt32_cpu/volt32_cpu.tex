@@ -1241,6 +1241,33 @@
 			\end{enumerate}
 		%--------
 		\end{itemize}
+		\newpage
+
+	\subsection{Group 10 Instructions}
+		\begin{itemize}
+		%--------
+		\item Encoding: \texttt{1010 aaaa aabb bbbbb  iiii iiii iiii iiii}
+			\begin{itemize}
+			%--------
+			\item \texttt{a}: DLAR a
+			\item \texttt{b}: DLAR b
+			\item \texttt{i}: \texttt{simm16} (sign-extended 16-bit
+				immediate)
+			%--------
+			\end{itemize}
+		\item Instruction List:
+			\begin{enumerate}
+			%--------
+			\item \texttt{add.s dA, dB, ipc.addr, simm16}
+				\begin{itemize}
+				%--------
+				\item Note: this is a scalar operation.
+				%--------
+				\end{itemize}
+			%--------
+			\end{enumerate}
+		%--------
+		\end{itemize}
 
 
 	%\printbibliography[heading=bibnumbered,title={Bibliography}]
