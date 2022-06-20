@@ -859,7 +859,7 @@
 	\subsection{Group 7 Instructions}
 		\begin{itemize}
 		%--------
-		\item Encoding: \texttt{0111 aaaa aabb bbbb  cccc ccii iiii sooo}
+		\item Encoding: \texttt{0111 aaaa aabb bbbb  cccc ccii iiii Sooo}
 			\begin{itemize}
 			%--------
 			\item \texttt{a}: ILAR a or DLAR a
@@ -867,7 +867,7 @@
 			\item \texttt{c}: DLAR c
 			\item \texttt{i}: \texttt{imm6} (zero-extended 6-bit
 				immediate), amount of LAR contents to use
-			\item \texttt{s}:
+			\item \texttt{S}:
 				\begin{itemize}
 				%--------
 				\item when \texttt{0b0}: Destination LARs (the ones
@@ -875,16 +875,16 @@
 					LARs (the ones starting with \texttt{iB} or
 					\texttt{dB}) are user mode LARs. An example of the
 					syntax for \texttt{getaddr} in this case is
-					\texttt{getaddr.u}. The "\texttt{.u}" suffix indicates
-					this instruction will have the \texttt{s} bit set to
+					\texttt{getaddr.U}. The "\texttt{.U}" suffix indicates
+					this instruction will have the \texttt{S} bit set to
 					\texttt{0b0}.
 				\item when \texttt{0b1}: Destination LARs (the ones
 					starting with \texttt{iA} or \texttt{dA}) or source
 					LARs (the ones starting with \texttt{iB} or
 					\texttt{dB}) are supervisor mode LARs. An example of
 					the syntax for \texttt{getaddr} in this case is
-					\texttt{getaddr.s}. The "\texttt{.s}" suffix indicates
-					this instruction will have the \texttt{s} bit set to
+					\texttt{getaddr.S}. The "\texttt{.S}" suffix indicates
+					this instruction will have the \texttt{S} bit set to
 					\texttt{0b1}.
 				%--------
 				\end{itemize}
@@ -897,7 +897,7 @@
 			\item \texttt{getaddr dA, dB, imm6}
 				\begin{itemize}
 				%--------
-				\item This instruction uses the \texttt{s} bit to indicate
+				\item This instruction uses the \texttt{S} bit to indicate
 					which mode the source DLARs belong to.
 				\item This instruction grabs the addresses of source DLARs
 					starting with \texttt{dB} and then also the following
@@ -914,7 +914,7 @@
 			\item \texttt{getaddr dA, iB, imm6}
 				\begin{itemize}
 				%--------
-				\item This instruction uses the \texttt{s} bit to indicate
+				\item This instruction uses the \texttt{S} bit to indicate
 					which mode the source ILARs belong to.
 				\item This instruction grabs the addresses of source ILARs
 					starting with \texttt{dB} and then also the following
@@ -931,7 +931,7 @@
 			\item \texttt{gettype dA, dB, imm6}
 				\begin{itemize}
 				%--------
-				\item This instruction uses the \texttt{s} bit to indicate
+				\item This instruction uses the \texttt{S} bit to indicate
 					which mode the source DLARs belong to.
 				\item This instruction grabs the types of source DLARs
 					starting with \texttt{dB} and then also the following
@@ -949,7 +949,7 @@
 				\begin{itemize}
 				%--------
 				\item This instruction's name is short for "load multiple".
-				\item This instruction uses the \texttt{s} bit to indicate
+				\item This instruction uses the \texttt{S} bit to indicate
 					to which mode the destination DLARs belong.
 				\item This instruction uses addresses stored in the
 					\texttt{imm6} scalar data elements of consecutive DLARs
@@ -969,7 +969,7 @@
 				%--------
 				\item This instruction's name is short for "fetch
 					multiple".
-				\item This instruction uses the \texttt{s} bit to indicate
+				\item This instruction uses the \texttt{S} bit to indicate
 					to which mode the destination DLARs belong.
 				\item This instruction uses addresses stored in the
 					\texttt{imm6} scalar data elements of consecutive DLARs
