@@ -1247,19 +1247,30 @@
 	\subsection{Group 10 Instructions}
 		\begin{itemize}
 		%--------
-		\item Encoding: \texttt{1010 aaaa aabb bbbbb  iiii iiii iiii iiii}
+		\item Encoding: \texttt{1010 aaaa aabb bbbbb  iiii iiii iiii iiiv}
 			\begin{itemize}
 			%--------
 			\item \texttt{a}: DLAR a
 			\item \texttt{b}: DLAR b
-			\item \texttt{i}: \texttt{simm16} (sign-extended 16-bit
+			\item \texttt{i}: \texttt{simm15} (sign-extended 15-bit
 				immediate)
+			\item \texttt{v}:
+				\begin{itemize}
+				%--------
+				\item when \texttt{0b0}: scalar operation. The assembly
+					syntax indicating a scalar operation simply adds
+					"\texttt{.s}" to the instruction's name.
+				\item when \texttt{0b1}: vector operation. The assembly
+					syntax indicating a vector operation simply adds
+					"\texttt{.v}" to the instruction's name.
+				%--------
+				\end{itemize}
 			%--------
 			\end{itemize}
 		\item Instruction List:
 			\begin{enumerate}
 			%--------
-			\item \texttt{add.s dA, dB, ipc.addr, simm16}
+			\item \texttt{add dA, dB, ipc.addr, simm15}
 				\begin{itemize}
 				%--------
 				\item Note: this is a scalar operation.
