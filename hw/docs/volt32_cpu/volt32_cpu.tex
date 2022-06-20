@@ -874,16 +874,16 @@
 					starting with \texttt{iA} or \texttt{dA}) or source
 					LARs (the ones starting with \texttt{iB} or
 					\texttt{dB}) are user mode LARs. An example of the
-					syntax for \texttt{getaddr} in this case is
-					\texttt{getaddr.U}. The "\texttt{.U}" suffix indicates
+					syntax for \texttt{getaddrs} in this case is
+					\texttt{getaddrs.U}. The "\texttt{.U}" suffix indicates
 					this instruction will have the \texttt{S} bit set to
 					\texttt{0b0}.
 				\item when \texttt{0b1}: Destination LARs (the ones
 					starting with \texttt{iA} or \texttt{dA}) or source
 					LARs (the ones starting with \texttt{iB} or
 					\texttt{dB}) are supervisor mode LARs. An example of
-					the syntax for \texttt{getaddr} in this case is
-					\texttt{getaddr.S}. The "\texttt{.S}" suffix indicates
+					the syntax for \texttt{getaddrs} in this case is
+					\texttt{getaddrs.S}. The "\texttt{.S}" suffix indicates
 					this instruction will have the \texttt{S} bit set to
 					\texttt{0b1}.
 				%--------
@@ -894,7 +894,7 @@
 		\item Instruction List:
 			\begin{enumerate}
 			%--------
-			\item \texttt{getaddr dA, dB, imm6}
+			\item \texttt{getaddrs dA, dB, imm6}
 				\begin{itemize}
 				%--------
 				\item This instruction uses the \texttt{S} bit to indicate
@@ -911,7 +911,7 @@
 					mode.
 				%--------
 				\end{itemize}
-			\item \texttt{getaddr dA, iB, imm6}
+			\item \texttt{getaddrs dA, iB, imm6}
 				\begin{itemize}
 				%--------
 				\item This instruction uses the \texttt{S} bit to indicate
@@ -928,7 +928,7 @@
 					mode.
 				%--------
 				\end{itemize}
-			\item \texttt{gettype dA, dB, imm6}
+			\item \texttt{gettypes dA, dB, imm6}
 				\begin{itemize}
 				%--------
 				\item This instruction uses the \texttt{S} bit to indicate
