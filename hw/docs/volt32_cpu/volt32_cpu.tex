@@ -564,7 +564,9 @@
 			\end{itemize}
 		\item For these instructions, the \texttt{dB} register's scalar
 			data field (temporarily casted to the \texttt{u32} type) and
-			the \texttt{dC} register's address field are used. 
+			the \texttt{dC} register's address field are added together,
+			plus \texttt{simm7} (sign-extended to 32-bit), to calculate the
+			address being loaded from.
 		\item Also, the type that a DLAR is set to is indicated in the
 			instruction name, with, for example, \texttt{ldu8} setting
 			\texttt{dA}'s type to \texttt{u8}.
@@ -601,7 +603,9 @@
 			\end{itemize}
 		\item For these instructions, the \texttt{dB} register's scalar
 			data field (temporarily casted to the \texttt{u32} type) and
-			the \texttt{dC} register's address field are used. 
+			the \texttt{dC} register's address field are added together,
+			plus \texttt{simm7} (sign-extended to 32-bit), to calculate the
+			address being stored to.
 		\item Also, the type that a DLAR is set to is indicated in the
 			instruction name, with, for example, \texttt{stu8} setting
 			\texttt{dA}'s type to \texttt{u8}.
@@ -1271,18 +1275,11 @@
 			\begin{enumerate}
 			%--------
 			\item \texttt{add dA, dB, ipc.addr, simm15}
-				\begin{itemize}
-				%--------
-				\item Note: this is a scalar operation.
-				%--------
-				\end{itemize}
 			%--------
 			\end{enumerate}
 		%--------
 		\end{itemize}
 
-
 	%\printbibliography[heading=bibnumbered,title={Bibliography}]
-
 %--------
 \end{document}
