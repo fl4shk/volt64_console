@@ -827,27 +827,32 @@
 	\subsection{Group 5 Instructions}
 		\begin{itemize}
 		%--------
-		\item Encoding: \texttt{0101 aaaa aabb bbbb  cccc ccii iiii jjjj}
+		\item Encoding 0: \texttt{0101 aaaa aabb bbbb  cccc cc00 000j jjjo}
+		\item Encoding 1: \texttt{0101 aaaa aabb bbbb  iiii iiii iiij jjjo}
 			\begin{itemize}
 			%--------
 			\item \texttt{a}: ILAR a
 			\item \texttt{b}: ILAR b
 			\item \texttt{c}: DLAR c
-			\item \texttt{i}: \texttt{isimm6} (sign-extended 6-bit
-				immediate)
-			\item \texttt{j}: \texttt{jimm4} (zero-extended 4-bit
-				immediate), the number of consecutive ILARs past
-				\texttt{iA} to \texttt{fetch} into.
+			\item \texttt{i}: \texttt{isimm11} (11-bit immediate, left
+				shifted by 2, then sign-extended)
+			\item \texttt{j}: \texttt{jimm4}, the number of consecutive
+				ILARs past \texttt{iA} to \texttt{fetch} into.
+			\item \texttt{o}: Opcode
 			%--------
 			\end{itemize}
 
-		\item This instruction uses the address field of \texttt{iB} and
-			the scalar data field (temporarily casted to the \texttt{u32}
-			type) of the \texttt{dC} DLAR.
-		\item Also, the address to \texttt{fetch} from is computed by
-			adding these two temporary values to a temporary value
-			equivalent to the 32-bit sign extended value of
-			\texttt{isimm6}.
+		\item For Encoding 0, the address to \texttt{fetch} from is
+			computed by adding the address field of \texttt{iB} to the
+			scalar data field (temporarily casted to the \texttt{u32} type)
+			of the \texttt{dC} DLAR.
+		%\item Also, the address to \texttt{fetch} from is computed by
+		%	adding these two temporary values to a temporary value
+		%	equivalent to the 32-bit sign extended value of
+		%	\texttt{isimm11 << 2}.
+		\item For Encoding 1, the address to \texttt{fetch} from is
+			computed by adding the address field of \texttt{iB} to the
+			the value \texttt{cast(s32, (isimm11 << 2))}.
 		\item Additionally, this and any other instructions with
 			"\texttt{fetch}" in their names are the only way to fetch
 			instructions from memory (or other ILARs) in this CPU's design.
@@ -861,7 +866,18 @@
 		\item Instruction List:
 			\begin{enumerate}
 			%--------
-			\item \texttt{fetch iA, iB, dC, isimm6, jimm4}
+			\item \texttt{fetch iA, iB, dC, jimm4}
+				\begin{itemize}
+				%--------
+				\item This instruction uses Encoding 0.
+				%--------
+				\end{itemize}
+			\item \texttt{fetch iA, iB, isimm11, jimm4}
+				\begin{itemize}
+				%--------
+				\item This instruction uses Encoding 1.
+				%--------
+				\end{itemize}
 			%--------
 			\end{enumerate}
 		%--------
