@@ -100,7 +100,10 @@
 			\texttt{ipc}.
 		\item In supervisor mode, ILARs 64 to 127 are referred to as
 			\texttt{i0}, \texttt{i1}, \texttt{i2}, ..., \texttt{i61},
-			\texttt{i62}, \texttt{ipc}.
+			\texttt{i62}, \texttt{ipc}. Note that supervisor mode ILARs are
+			encoded into instructions without the most significant bit,
+			i.e. supervisor mode \texttt{i0} is encoded as
+			\texttt{0b000000}.
 		\item The two ILARs called "\texttt{i0}" have all their
 			fields set to zero, and when written to, the contents of the
 			ILAR does not change.
@@ -126,7 +129,10 @@
 			\texttt{dcp}, \texttt{dfp}, \texttt{dsp}.
 		\item In supervisor mode, DLARs 64 to 127 are referred to as
 			\texttt{d0}, \texttt{d1}, \texttt{d2}, ..., \texttt{d59},
-			\texttt{d60}, \texttt{dcp}, \texttt{dfp}, \texttt{dsp}.
+			\texttt{d60}, \texttt{dcp}, \texttt{dfp}, \texttt{dsp}. Note
+			that supervisor mode DLARs are encoded into instructions
+			without the most significant bit, i.e. supervisor mode
+			\texttt{d0} is encoded as \texttt{0b000000}.
 		\item The two DLARs called "\texttt{d0}" have all their
 			fields set to zero, and when written to, the contents of the
 			DLAR does not change.
@@ -410,7 +416,8 @@
 				\item For \texttt{add.v dA, dB.addr, dC}, this instruction
 					duplicates the value of \texttt{cast(dA.type, dB.addr)}
 					(a scalar) into a temporary (DLAR data's length number
-					of bytes long) vector of element type \texttt{dA.type}.
+					of bytes long) vector of element type \texttt{dA.type}
+					for the purposes of this calculation.
 				%--------
 				\end{itemize}
 
@@ -423,7 +430,8 @@
 				\item For \texttt{shl.v dA, dB.addr, dC}, this instruction
 					duplicates \texttt{cast(dA.type, dB.addr)} (a scalar)
 					into a temporary (DLAR data's length number of bytes
-					long) vector of element type \texttt{dA.type}.
+					long) vector of element type \texttt{dA.type} for the
+					purposes of this calculation.
 				\item This instruction casts a temporary copy of
 					\texttt{dC} to the unsigned type that is the same size
 					as \texttt{dA}'s type and uses that instead of
@@ -439,7 +447,8 @@
 				\item For \texttt{add.v dA, iB.addr, dC}, this instruction
 					duplicates the value of \texttt{cast(dA.type, iB.addr)}
 					(a scalar) into a temporary (DLAR data's length number
-					of bytes long) vector of element type \texttt{dA.type}.
+					of bytes long) vector of element type \texttt{dA.type}
+					for the purposes of this calculation.
 				%--------
 				\end{itemize}
 			\item \texttt{div.s dA, dB, dC, dD}
@@ -474,24 +483,43 @@
 	\subsection{Group 1 Instructions}
 		\begin{itemize}
 		%--------
-		\item Encoding: \texttt{0001 aaaa aabb bbbb  0000 0000 0000 oooo}
+		\item Encoding: \texttt{0001 aaaa aabb bbbb  cccc cc00 000o oooo}
 			\begin{itemize}
 			%--------
 			\item \texttt{a}: DLAR a
 			\item \texttt{b}: DLAR b
+			\item \texttt{c}: DLAR c
 			%\item \texttt{i}: \texttt{simm12} (sign-extended 12-bit
 			%	immediate)
 			\item \texttt{o}: Opcode
 			%--------
 			\end{itemize}
-		%\item For the instructions with names of the form
-		%	"\texttt{ld<type>}", the \texttt{dB} DLAR's scalar data field
-		%	(temporarily casted to the \texttt{u32} type) is added to
-		%	\texttt{simm12} (sign-extended to 32-bit), to calculate the
-		%	address being loaded from. Also, for these same instructions,
-		%	the type \texttt{dA} is set to is indicated in the instruction
-		%	name, with, for example, \texttt{ldu8} setting \texttt{dA}'s
-		%	type to \texttt{u8}.
+		\item For the first 8 instructions with names of the form
+			"\texttt{ld<type>}", the \texttt{dB} DLAR's scalar data field
+			(temporarily casted to the \texttt{u32} type) is added to
+			the \texttt{dC} DLAR's scalar data field (temporarily casted to
+			the \texttt{u32} type), to calculate the address being loaded
+			from. Also, for these same instructions, the type \texttt{dA}
+			is set to is indicated in the instruction name, with, for
+			example, \texttt{ldu8} setting \texttt{dA}'s type to
+			\texttt{u8}.
+		\item For the second 8 instructions with names of the form
+			"\texttt{ld<type>}", the \texttt{dB} DLAR's address field
+			(temporarily casted to the \texttt{u32} type) is added to the
+			\texttt{dC} DLAR's scalar data field (temporarily casted to the
+			\texttt{u32} type), to calculate the address being loaded from.
+			Also, for these same instructions, the type \texttt{dA} is set
+			to is indicated in the instruction name, with, for example,
+			\texttt{lds32} setting \texttt{dA}'s type to \texttt{s32}.
+		\item For the instructions with names of the form
+			"\texttt{st<type>}", the \texttt{dB} DLAR's scalar data field
+			(temporarily casted to the \texttt{u32} type) is added to
+			the \texttt{dC} DLAR's scalar data field (temporarily casted to
+			the \texttt{u32} type), to calculate the address being stored
+			to. Also, for these same instructions, the type \texttt{dA}
+			is set to is indicated in the instruction name, with, for
+			example, \texttt{sts64} setting \texttt{dA}'s type to
+			\texttt{s64}.
 		\item Instruction List:
 			\begin{enumerate}
 			%--------
@@ -581,24 +609,36 @@
 				%--------
 				\end{itemize}
 			\item \textit{Reserved for future expansion.}
+			%--------
+			\item \texttt{ldu8 dA, dB, dC}
+			\item \texttt{lds8 dA, dB, dC}
+			\item \texttt{ldu16 dA, dB, dC}
+			\item \texttt{lds16 dA, dB, dC}
 
-			%\item \texttt{ldu8 dA, dB, simm12}
-			%\item \texttt{lds8 dA, dB, simm12}
-			%\item \texttt{ldu16 dA, dB, simm12}
-			%\item \texttt{lds16 dA, dB, simm12}
-			%\item \texttt{ldu32 dA, dB, simm12}
-			%\item \texttt{lds32 dA, dB, simm12}
-			%\item \texttt{ldu64 dA, dB, simm12}
-			%\item \texttt{lds64 dA, dB, simm12}
-			\item \textit{Reserved for future expansion.}
-			\item \textit{Reserved for future expansion.}
-			\item \textit{Reserved for future expansion.}
-			\item \textit{Reserved for future expansion.}
+			\item \texttt{ldu32 dA, dB, dC}
+			\item \texttt{lds32 dA, dB, dC}
+			\item \texttt{ldu64 dA, dB, dC}
+			\item \texttt{lds64 dA, dB, dC}
+			%--------
+			\item \texttt{ldu8 dA, dB.addr, dC}
+			\item \texttt{lds8 dA, dB.addr, dC}
+			\item \texttt{ldu16 dA, dB.addr, dC}
+			\item \texttt{lds16 dA, dB.addr, dC}
 
-			\item \textit{Reserved for future expansion.}
-			\item \textit{Reserved for future expansion.}
-			\item \textit{Reserved for future expansion.}
-			\item \textit{Reserved for future expansion.}
+			\item \texttt{ldu32 dA, dB.addr, dC}
+			\item \texttt{lds32 dA, dB.addr, dC}
+			\item \texttt{ldu64 dA, dB.addr, dC}
+			\item \texttt{lds64 dA, dB.addr, dC}
+			%--------
+			\item \texttt{stu8 dA, dB, dC}
+			\item \texttt{sts8 dA, dB, dC}
+			\item \texttt{stu16 dA, dB, dC}
+			\item \texttt{sts16 dA, dB, dC}
+
+			\item \texttt{stu32 dA, dB, dC}
+			\item \texttt{sts32 dA, dB, dC}
+			\item \texttt{stu64 dA, dB, dC}
+			\item \texttt{sts64 dA, dB, dC}
 			%--------
 			\end{enumerate}
 		%--------
@@ -842,17 +882,18 @@
 			%--------
 			\end{itemize}
 
-		\item For Encoding 0, the address to \texttt{fetch} from is
-			computed by adding the address field of \texttt{iB} to the
-			scalar data field (temporarily casted to the \texttt{u32} type)
-			of the \texttt{dC} DLAR.
+		\item For instructions using Encoding 0, the address to
+			\texttt{fetch} from is computed by adding the address field of
+			\texttt{iB} to the scalar data field (temporarily casted to the
+			\texttt{u32} type) of the \texttt{dC} DLAR.
 		%\item Also, the address to \texttt{fetch} from is computed by
 		%	adding these two temporary values to a temporary value
 		%	equivalent to the 32-bit sign extended value of
 		%	\texttt{isimm11 << 2}.
-		\item For Encoding 1, the address to \texttt{fetch} from is
-			computed by adding the address field of \texttt{iB} to the
-			the value \texttt{cast(s32, (isimm11 << 2))}.
+		\item For instructions using Encoding 1, the address to
+			\texttt{fetch} from is computed by adding the address field of
+			\texttt{iB} to the the value
+			\texttt{cast(s32, (isimm11 << 2))}.
 		\item Additionally, this and any other instructions with
 			"\texttt{fetch}" in their names are the only way to fetch
 			instructions from memory (or other ILARs) in this CPU's design.
@@ -1397,75 +1438,75 @@
 		\end{itemize}
 		\newpage
 
-	\subsection{Group 10 Instructions}
-		\begin{itemize}
-		%--------
-		\item Encoding: \texttt{1010 aaaa aabb bbbb  iiii iiii iiii iiiv}
-			\begin{itemize}
-			%--------
-			\item \texttt{a}: DLAR a
-			\item \texttt{b}: DLAR b
-			\item \texttt{i}: \texttt{simm15} (sign-extended 15-bit
-				immediate)
-			\item \texttt{v}:
-				\begin{itemize}
-				%--------
-				\item when \texttt{0b0}: scalar operation. The assembly
-					syntax indicating a scalar operation simply adds
-					"\texttt{.s}" to the instruction's name.
-				\item when \texttt{0b1}: vector operation. The assembly
-					syntax indicating a vector operation simply adds
-					"\texttt{.v}" to the instruction's name.
-				%--------
-				\end{itemize}
-			%--------
-			\end{itemize}
-		\item Instruction List:
-			\begin{enumerate}
-			%--------
-			\item \texttt{add dA, dB, ipc.addr, simm15}
-			%--------
-			\end{enumerate}
-		%--------
-		\end{itemize}
-		\newpage
+	%\subsection{Group 10 Instructions}
+	%	\begin{itemize}
+	%	%--------
+	%	\item Encoding: \texttt{1010 aaaa aabb bbbb  iiii iiii iiii iiiv}
+	%		\begin{itemize}
+	%		%--------
+	%		\item \texttt{a}: DLAR a
+	%		\item \texttt{b}: DLAR b
+	%		\item \texttt{i}: \texttt{simm15} (sign-extended 15-bit
+	%			immediate)
+	%		\item \texttt{v}:
+	%			\begin{itemize}
+	%			%--------
+	%			\item when \texttt{0b0}: scalar operation. The assembly
+	%				syntax indicating a scalar operation simply adds
+	%				"\texttt{.s}" to the instruction's name.
+	%			\item when \texttt{0b1}: vector operation. The assembly
+	%				syntax indicating a vector operation simply adds
+	%				"\texttt{.v}" to the instruction's name.
+	%			%--------
+	%			\end{itemize}
+	%		%--------
+	%		\end{itemize}
+	%	\item Instruction List:
+	%		\begin{enumerate}
+	%		%--------
+	%		\item \texttt{add dA, dB, ipc.addr, simm15}
+	%		%--------
+	%		\end{enumerate}
+	%	%--------
+	%	\end{itemize}
+	%	\newpage
 
-	\subsection{Group 11 Instructions}
-		\begin{itemize}
-		%--------
-		\item Encoding: \texttt{1011 aaaa aabb bbbb  iiii iiii iiii iooo}
-			\begin{itemize}
-			%--------
-			\item \texttt{a}: DLAR a
-			\item \texttt{b}: DLAR b
-			\item \texttt{i}: \texttt{simm13} (sign-extended 13-bit
-				immediate)
-			\item \texttt{o}: Opcode
-			%--------
-			\end{itemize}
-		\item For these instructions, the \texttt{dB} DLAR's scalar
-			data field (temporarily casted to the \texttt{u32} type) and
-			the \texttt{ipc} ILAR's address field are added together,
-			plus \texttt{simm13} (sign-extended to 32-bit), to calculate
-			the address being loaded from.
-		\item Also, the type that \texttt{dA} is set to is indicated in the
-			instruction name, with, for example, \texttt{ldu8} setting
-			\texttt{dA}'s type to \texttt{u8}.
-		\item Instruction List:
-			\begin{enumerate}
-			%--------
-			\item \texttt{ldu8 dA, dB, ipc.addr, simm13}
-			\item \texttt{lds8 dA, dB, ipc.addr, simm13}
-			\item \texttt{ldu16 dA, dB, ipc.addr, simm13}
-			\item \texttt{lds16 dA, dB, ipc.addr, simm13}
-			\item \texttt{ldu32 dA, dB, ipc.addr, simm13}
-			\item \texttt{lds32 dA, dB, ipc.addr, simm13}
-			\item \texttt{ldu64 dA, dB, ipc.addr, simm13}
-			\item \texttt{lds64 dA, dB, ipc.addr, simm13}
-			%--------
-			\end{enumerate}
-		%--------
-		\end{itemize}
+	%\subsection{Group 11 Instructions}
+	%	\begin{itemize}
+	%	%--------
+	%	\item Encoding: \texttt{1011 aaaa aabb bbbb  iiii iiii iiii iooo}
+	%		\begin{itemize}
+	%		%--------
+	%		\item \texttt{a}: DLAR a
+	%		\item \texttt{b}: DLAR b
+	%		\item \texttt{i}: \texttt{simm13} (sign-extended 13-bit
+	%			immediate)
+	%		\item \texttt{o}: Opcode
+	%		%--------
+	%		\end{itemize}
+	%	\item For these instructions, the \texttt{dB} DLAR's scalar
+	%		data field (temporarily casted to the \texttt{u32} type) and
+	%		the \texttt{ipc} ILAR's address field are added together,
+	%		plus \texttt{simm13} (sign-extended to 32-bit), to calculate
+	%		the address being loaded from.
+	%	\item Also, the type that \texttt{dA} is set to is indicated in the
+	%		instruction name, with, for example, \texttt{ldu8} setting
+	%		\texttt{dA}'s type to \texttt{u8}.
+	%	\item Instruction List:
+	%		\begin{enumerate}
+	%		%--------
+	%		\item \texttt{ldu8 dA, dB, ipc.addr, simm13}
+	%		\item \texttt{lds8 dA, dB, ipc.addr, simm13}
+	%		\item \texttt{ldu16 dA, dB, ipc.addr, simm13}
+	%		\item \texttt{lds16 dA, dB, ipc.addr, simm13}
+	%		\item \texttt{ldu32 dA, dB, ipc.addr, simm13}
+	%		\item \texttt{lds32 dA, dB, ipc.addr, simm13}
+	%		\item \texttt{ldu64 dA, dB, ipc.addr, simm13}
+	%		\item \texttt{lds64 dA, dB, ipc.addr, simm13}
+	%		%--------
+	%		\end{enumerate}
+	%	%--------
+	%	\end{itemize}
 
 
 	%\printbibliography[heading=bibnumbered,title={Bibliography}]
