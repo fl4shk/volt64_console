@@ -1,0 +1,160 @@
+\documentclass{article}
+
+\usepackage{pbox}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{fancyvrb}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{setspace}
+\usepackage[nottoc]{tocbibind}
+\usepackage[font=large]{caption}
+\usepackage{framed}
+\usepackage{tabularx}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{fontspec}
+\usepackage[backend=biber,sorting=none]{biblatex}
+%%\usepackage[
+%%	backend=biber,
+%%	style=ieee,
+%%	sorting=none
+%%]{biblatex}
+%\addbibresource{project_refs.bib}
+
+%% Hide section, subsection, and subsubsection numbering
+%\renewcommand{\thesection}{}
+%\renewcommand{\thesubsection}{}
+%\renewcommand{\thesubsubsection}{}
+
+%% Alternative form of doing section stuff
+%\renewcommand{\thesection}{}
+%\renewcommand{\thesubsection}{\arabic{section}.\arabic{subsection}}
+%\makeatletter
+%\def\@seccntformat#1{\csname #1ignore\expandafter\endcsname\csname the#1\endcsname\quad}
+%\let\sectionignore\@gobbletwo
+%\let\latex@numberline\numberline
+%\def\numberline#1{\if\relax#1\relax\else\latex@numberline{#1}\fi}
+%\makeatother
+%
+%\makeatletter
+%\renewcommand\tableofcontents{%
+%    \@starttoc{toc}%
+%}
+%\makeatother
+
+\newcommand{\respacing}{\doublespacing \singlespacing}
+\newcommand{\code}[2][1]{\noindent \texttt{\tab[#1] #2} \\}
+\newcommand{\skipline}[0]{\texttt{}\\}
+\newcommand{\tnl}[0]{\tabularnewline}
+
+\begin{document}
+%--------
+	\font\titlefont={Times New Roman} at 20pt
+	\title{{\titlefont Example}}
+
+	\font\bottomtextfont={Times New Roman} at 12pt
+	\date{{\bottomtextfont} \today}
+	\author{{\bottomtextfont Andrew Clark}}
+
+	\setmainfont{Times New Roman}
+	\setmonofont{Courier New}
+
+	\maketitle
+	\pagenumbering{gobble}
+
+	\newpage
+	\pagenumbering{arabic}
+	%\tableofcontents
+	%\newpage
+
+	%\doublespacing
+
+%\section{Abstract}
+	%\setcounter{section}{-1}
+
+\section{Table of Contents}
+	\tableofcontents
+	\newpage
+
+\section{General Information}
+	\begin{itemize}
+	%--------
+	\item The high level assembly language for \texttt{volt32\_cpu} is
+		intended to be that of a memory-to-memory machine without the
+		awkwardness of instruction LARs. Data LARs machines approximate
+		memory-to-memory machines, and GCC (and probably LLVM) supports
+		arbitrary addressing modes. The problem with attempting to use GCC
+		for a DLARs machine is that multiple DLARs may update at the same
+		time if they point to the same address, assuming the compiler
+		doesn't know that they point to the same address.
+	\item As a side note, there's an LLVM backend targeting the 6502, which
+		basically uses the first 256 bytes of RAM as extra registers. Since
+		the first 256 bytes of memory can be pointed to, this means that
+		LLVM could probably deal with multiple DLARs that point to the same
+		address updating at the same time.
+	%--------
+	\end{itemize}
+
+\section{Instruction LARs}
+	\begin{itemize}
+	%--------
+	\item "At some performance cost, it's pretty cheap to be excessive
+		and always insert (\texttt{fetch}es) after branches and on
+		alignment boundaries, or slightly clever and run a pessimistic
+		heuristic cache policy in the assembler, since spurious loads
+		(fetches) are almost free unless you evict something you
+		needed."
+	\item "I could see it being possible to handle ILARs like this:
+		branches to places the assembler can't see (but perhaps the
+		linker can) mean you don't know what ILARs have been modified
+
+		and as such, when you return from a function not in the current
+		translation unit, you `fetch` into a dedicated ILAR for
+		following a branch
+
+		well, for following a branch outside the translation unit
+
+		You could handle pc-relative branches the same way, I think..."
+	%--------
+	\end{itemize}
+
+\section{High Level, Pseudo Assembly Language}
+	\begin{itemize}
+	%--------
+	\item Dedicate some number of DLARs (perhaps 32?) to act like regular
+		registers. Call these "pseudo registers". These will be loaded, at
+		the start of a function, with locations on the stack, close to the
+		frame pointer. Only registers that get used by the function will be
+		allocated on the stack. This enables us to have temporaries, backed
+		up by memory. They will not be the \texttt{dA} argument of native
+		loads and stores.
+		\begin{itemize}
+		%--------
+		\item It should be possible to do spill/reload of these pseudo
+			registers by just changing the address (load/store) of the real
+			DLARs (by way of a native load/store).
+		%--------
+		\end{itemize}
+	\item Include fake addresing modes that access "memory" at addresses
+		calculated by \texttt{dsp + simm32}, \texttt{dfp + simm32},
+		\texttt{pseudo\_register + simm32}, and \texttt{simm32}. These
+		"memory" accesses will be preceded by native loads or stores into
+		non-pseudo-register-DLARs that are managed entirely by the
+		assembler. Allow generic three-argument instructions using these
+		types of "memory" accesses, and/or pseudo registers, and/or
+		immediates.
+		\begin{itemize}
+		%--------
+		\item Optimize out spurious loads that I can prove are from
+			addresses already in non-pseudo-reg DLARs. Use a combination of
+			common subexpression elimiation and constant propagation.
+		%--------
+		\end{itemize}
+	%--------
+	\end{itemize}
+
+	%\printbibliography[heading=bibnumbered,title={Bibliography}]
+
+%--------
+\end{document}

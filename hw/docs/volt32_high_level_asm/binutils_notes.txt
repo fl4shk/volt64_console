@@ -1,0 +1,8 @@
+09:04 <FL4SHK> How can I make BFD `relax_section()` take into account both the constant pool section and the section the instruction to be relaxed is in?
+09:05 <FL4SHK> `relax_section()` takes only one `asection *`
+09:05 <FL4SHK> I suppose I just need to look up `.rodata`
+09:06 <segher> if you have an insn that does a load from a readonly section, you can relax that to an immediate
+09:06 <FL4SHK> ah!
+09:07 <segher> but if your load is from a writable section, you would have to prove yoiu know what value it holds (and you usually cannot, and it is very hard for little gain)
+09:08 <segher> but for readonly you often know the actual value, and then it is very doable
+09:09 <segher> (it can also be readonly but for example the address of some symbol)
