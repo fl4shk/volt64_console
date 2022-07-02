@@ -149,26 +149,6 @@
 			\texttt{d58},
 			\texttt{dt0} (aka \texttt{d59}, assembler temporary 0),
 			\texttt{dt1} (aka \texttt{d60}, assembler temporary 1),
-			%\texttt{dcu8} (aka \texttt{d51},
-			%	intended to be used for table of \texttt{u8} constants),
-			%\texttt{dcs8} (aka \texttt{d52},
-			%	intended to be used for table of \texttt{s8} constants),
-			%\texttt{dcu16} (aka \texttt{d53},
-			%	intended to be used for table of \texttt{u16} constants),
-			%\texttt{dcs16} (aka \texttt{d54},
-			%	intended to be used for table of \texttt{s16} constants),
-			%\texttt{dcu32} (aka \texttt{d55},
-			%	intended to be used for table of \texttt{u32} constants),
-			%\texttt{dcs32} (aka \texttt{d56},
-			%	intended to be used for table of \texttt{s32} constants),
-			%\texttt{dcu64} (aka \texttt{d57},
-			%	intended to be used for table of \texttt{u64} constants),
-			%\texttt{dcs64} (aka \texttt{d58},
-			%	intended to be used for table of \texttt{s64} constants),
-			%\texttt{dcf32} (aka \texttt{d59},
-			%	intended to be used for table of \texttt{f32} constants),
-			%\texttt{dcf64} (aka \texttt{d60},
-			%	intended to be used for table of \texttt{f64} constants),
 			\texttt{dcp} (aka \texttt{d61},
 				intended to be used as the constant pools pointer),
 			\texttt{dfp} (aka \texttt{d62},
@@ -180,26 +160,6 @@
 			\texttt{d58},
 			\texttt{dt0} (aka \texttt{d59}, assembler temporary 0),
 			\texttt{dt1} (aka \texttt{d60}, assembler temporary 1),
-			%\texttt{dcu8} (aka \texttt{d51},
-			%	intended to be used for table of \texttt{u8} constants),
-			%\texttt{dcs8} (aka \texttt{d52},
-			%	intended to be used for table of \texttt{s8} constants),
-			%\texttt{dcu16} (aka \texttt{d53},
-			%	intended to be used for table of \texttt{u16} constants),
-			%\texttt{dcs16} (aka \texttt{d54},
-			%	intended to be used for table of \texttt{s16} constants),
-			%\texttt{dcu32} (aka \texttt{d55},
-			%	intended to be used for table of \texttt{u32} constants),
-			%\texttt{dcs32} (aka \texttt{d56},
-			%	intended to be used for table of \texttt{s32} constants),
-			%\texttt{dcu64} (aka \texttt{d57},
-			%	intended to be used for table of \texttt{u64} constants),
-			%\texttt{dcs64} (aka \texttt{d58},
-			%	intended to be used for table of \texttt{s64} constants),
-			%\texttt{dcf32} (aka \texttt{d59},
-			%	intended to be used for table of \texttt{f32} constants),
-			%\texttt{dcf64} (aka \texttt{d60},
-			%	intended to be used for table of \texttt{f64} constants),
 			\texttt{dcp} (aka \texttt{d61},
 				intended to be used as the constant pools pointer),
 			\texttt{dfp} (aka \texttt{d62},
@@ -592,33 +552,6 @@
 			\item \texttt{o}: Opcode
 			%--------
 			\end{itemize}
-		%\item For the first 10 instructions with names of the form
-		%	"\texttt{ld<type>}", the value of 
-		%	\texttt{cast(u32, dB.scalar\_data)}
-		%	is added to the value of
-		%	\texttt{cast(u32, dC.scalar\_data)}
-		%	to calculate the address being loaded from. Also, for these
-		%	same instructions, the type \texttt{dA} is set to is indicated
-		%	in the instruction name, with, for example, \texttt{ldu8}
-		%	setting \texttt{dA}'s type to \texttt{u8}.
-		%\item For the second 10 instructions with names of the form
-		%	"\texttt{ld<type>}", the value of
-		%	\texttt{cast(u32, align(dB.type, dB.addr))}
-		%	is added to the
-		%	\texttt{cast(u32, dC.scalar\_data)}
-		%	to calculate the address being loaded from.  Also, for these
-		%	same instructions, the type \texttt{dA} is set to is indicated
-		%	in the instruction name, with, for example, \texttt{lds32}
-		%	setting \texttt{dA}'s type to \texttt{s32}.
-		%\item For the instructions with names of the form
-		%	"\texttt{st<type>}", the value of
-		%	\texttt{cast(u32, dB.scalar\_data)}
-		%	is added to the value of
-		%	\texttt{cast(u32, dC.scalar\_data)}
-		%	to calculate the address being stored to. Also, for these same
-		%	instructions, the type \texttt{dA} is set to is indicated in
-		%	the instruction name, with, for example, \texttt{sts64} setting
-		%	\texttt{dA}'s type to \texttt{s64}.
 		\item Instruction List:
 			\begin{enumerate}
 			%--------
@@ -708,82 +641,6 @@
 				%--------
 				\end{itemize}
 			\item \textit{Reserved for future expansion.}
-
-			%\item \textit{Reserved for future expansion.}
-			%\item \textit{Reserved for future expansion.}
-			%\item \textit{Reserved for future expansion.}
-			%\item \textit{Reserved for future expansion.}
-
-			%\item \textit{Reserved for future expansion.}
-			%\item \textit{Reserved for future expansion.}
-			%\item \textit{Reserved for future expansion.}
-			%\item \textit{Reserved for future expansion.}
-			%%--------
-			%\item \texttt{ldu8 dA, dB, dC}
-			%\item \texttt{lds8 dA, dB, dC}
-			%\item \texttt{ldu16 dA, dB, dC}
-			%\item \texttt{lds16 dA, dB, dC}
-
-			%\item \texttt{ldu32 dA, dB, dC}
-			%\item \texttt{lds32 dA, dB, dC}
-			%\item \texttt{ldu64 dA, dB, dC}
-			%\item \texttt{lds64 dA, dB, dC}
-
-			%%\item \texttt{ldf32 dA, dB, dC}
-			%%\item \texttt{ldf64 dA, dB, dC}
-			%\item \textit{Reserved for future expansion.}
-			%\item \textit{Reserved for future expansion.}
-			%\item \textit{Reserved for future expansion.}
-			%\item \textit{Reserved for future expansion.}
-
-			%\item \textit{Reserved for future expansion.}
-			%\item \textit{Reserved for future expansion.}
-			%\item \textit{Reserved for future expansion.}
-			%\item \textit{Reserved for future expansion.}
-			%%--------
-			%\item \texttt{ldu8 dA, dB.addr, dC}
-			%\item \texttt{lds8 dA, dB.addr, dC}
-			%\item \texttt{ldu16 dA, dB.addr, dC}
-			%\item \texttt{lds16 dA, dB.addr, dC}
-
-			%\item \texttt{ldu32 dA, dB.addr, dC}
-			%\item \texttt{lds32 dA, dB.addr, dC}
-			%\item \texttt{ldu64 dA, dB.addr, dC}
-			%\item \texttt{lds64 dA, dB.addr, dC}
-
-			%%\item \texttt{ldf32 dA, dB.addr, dC}
-			%%\item \texttt{ldf64 dA, dB.addr, dC}
-			%\item \textit{Reserved for future expansion.}
-			%\item \textit{Reserved for future expansion.}
-			%\item \textit{Reserved for future expansion.}
-			%\item \textit{Reserved for future expansion.}
-
-			%\item \textit{Reserved for future expansion.}
-			%\item \textit{Reserved for future expansion.}
-			%\item \textit{Reserved for future expansion.}
-			%\item \textit{Reserved for future expansion.}
-			%%--------
-			%\item \texttt{stu8 dA, dB, dC}
-			%\item \texttt{sts8 dA, dB, dC}
-			%\item \texttt{stu16 dA, dB, dC}
-			%\item \texttt{sts16 dA, dB, dC}
-
-			%\item \texttt{stu32 dA, dB, dC}
-			%\item \texttt{sts32 dA, dB, dC}
-			%\item \texttt{stu64 dA, dB, dC}
-			%\item \texttt{sts64 dA, dB, dC}
-
-			%%\item \texttt{stf32 dA, dB, dC}
-			%%\item \texttt{stf64 dA, dB, dC}
-			%\item \textit{Reserved for future expansion.}
-			%\item \textit{Reserved for future expansion.}
-			%\item \textit{Reserved for future expansion.}
-			%\item \textit{Reserved for future expansion.}
-
-			%\item \textit{Reserved for future expansion.}
-			%\item \textit{Reserved for future expansion.}
-			%\item \textit{Reserved for future expansion.}
-			%\item \textit{Reserved for future expansion.}
 			%--------
 			\end{enumerate}
 		%--------
@@ -1002,18 +859,18 @@
 			%\item \texttt{stu64 dA, dB, dC.addr, simm7}
 			%\item \texttt{sts64 dA, dB, dC.addr, simm7}
 
-			\item \texttt{stu8 dA, dB, simm12}
-			\item \texttt{sts8 dA, dB, simm12}
-			\item \texttt{stu16 dA, dB, simm12}
-			\item \texttt{sts16 dA, dB, simm12}
+			\item \texttt{stu8i dA, dB, simm12}
+			\item \texttt{sts8i dA, dB, simm12}
+			\item \texttt{stu16i dA, dB, simm12}
+			\item \texttt{sts16i dA, dB, simm12}
 
-			\item \texttt{stu32 dA, dB, simm12}
-			\item \texttt{sts32 dA, dB, simm12}
-			\item \texttt{stu64 dA, dB, simm12}
-			\item \texttt{sts64 dA, dB, simm12}
+			\item \texttt{stu32i dA, dB, simm12}
+			\item \texttt{sts32i dA, dB, simm12}
+			\item \texttt{stu64i dA, dB, simm12}
+			\item \texttt{sts64i dA, dB, simm12}
 
-			%\item \texttt{stf32 dA, dB, simm12}
-			%\item \texttt{stf64 dA, dB, simm12}
+			%\item \texttt{stf32i dA, dB, simm12}
+			%\item \texttt{stf64i dA, dB, simm12}
 			\item \textit{Reserved for future expansion.}
 			\item \textit{Reserved for future expansion.}
 			\item \textit{Reserved for future expansion.}
