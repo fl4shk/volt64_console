@@ -119,6 +119,40 @@
 	%--------
 	\end{itemize}
 
+\section{Slightly Higher Level, (Almost) DLARs-Only Assembly Language}
+	\begin{itemize}
+	%--------
+	\item ILARs handled mostly automatically, but ILARs affected by Group 9
+		instructions (\texttt{getaddrs}, \texttt{fetchm}, etc.)
+	\item DLARs \texttt{dt0} and \texttt{dt1} reserved for use by the
+		assembler, other than for setting their initial addresses. These
+		should have their addresses set to something near \texttt{dfp} and
+		\texttt{dsp}.
+	\item \texttt{dcp} is handled automatically, so it can't be the
+		destination DLAR of any instruction. It's probably a good idea to
+		not allow accessing it at all.
+		\begin{itemize}
+		%--------
+		\item A family of pseudo instructions with names of the form
+			"\texttt{cpy<type>i.s}" would be usable to get constant scalars
+			into DLARs. These instructions might adjust the address of
+			\texttt{dcp} by use of \texttt{dt0} or \texttt{dt1}.
+		%--------
+		\end{itemize}
+	\item Allow conditional jumping to labels/DLARs.
+		The assembler will insert \texttt{fetch}/\texttt{fetchi} before the
+		jump, though not if the assembler knows if the jump target address
+		is already in an ILAR.
+		\begin{itemize}
+		%--------
+		\item What about \texttt{sel}? Generate it automatically when two
+			branch targets are within a single ILAR. I need to keep in mind
+			that \texttt{fetch} could support extra RAM.
+		%--------
+		\end{itemize}
+	%--------
+	\end{itemize}
+
 \section{High Level, Pseudo Assembly Language}
 	\begin{itemize}
 	%--------

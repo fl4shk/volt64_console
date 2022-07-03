@@ -469,6 +469,24 @@
 				%--------
 				\end{itemize}
 
+			\item \texttt{add dA, iB.addr, dC}
+				\begin{itemize}
+				%--------
+				%\item This instruction causes an exception if \texttt{dA}
+				%	or \texttt{dC} is of the following types: \texttt{u64},
+				%	\texttt{s64}.
+				\item For \texttt{add.s dA, iB.addr, dC}, this instruction
+					uses the value of
+					\texttt{cast(dA.type, align(u32, dB.addr))}
+					as the second argument of the \texttt{add}.
+				\item For \texttt{add.v dA, iB.addr, dC}, this instruction
+					duplicates the value of
+					\texttt{cast(dA.type, align(u32, iB.addr))}
+					(a scalar) into a temporary (DLAR data's length number
+					of bytes long) vector of element type \texttt{dA.type}
+					for the purposes of this calculation.
+				%--------
+				\end{itemize}
 			\item \texttt{shl dA, dB.addr, dC}
 				\begin{itemize}
 				%--------
@@ -489,24 +507,6 @@
 					\texttt{dC} to the unsigned type that is the same size
 					as \texttt{dA}'s type and uses that instead of
 					\texttt{dC}.
-				%--------
-				\end{itemize}
-			\item \texttt{add dA, iB.addr, dC}
-				\begin{itemize}
-				%--------
-				%\item This instruction causes an exception if \texttt{dA}
-				%	or \texttt{dC} is of the following types: \texttt{u64},
-				%	\texttt{s64}.
-				\item For \texttt{add.s dA, iB.addr, dC}, this instruction
-					uses the value of
-					\texttt{cast(dA.type, align(u32, dB.addr))}
-					as the second argument of the \texttt{add}.
-				\item For \texttt{add.v dA, iB.addr, dC}, this instruction
-					duplicates the value of
-					\texttt{cast(dA.type, align(u32, iB.addr))}
-					(a scalar) into a temporary (DLAR data's length number
-					of bytes long) vector of element type \texttt{dA.type}
-					for the purposes of this calculation.
 				%--------
 				\end{itemize}
 			\item \texttt{div.s dA, dB, dC, dD}
@@ -1037,18 +1037,24 @@
 			%--------
 			\end{itemize}
 
+		%\item For instructions using Encoding 0, the address to
+		%	\texttt{fetch} from is computed by adding the address field of
+		%	\texttt{iB} to the scalar data field (temporarily casted to the
+		%	\texttt{u32} type) of the \texttt{dC} DLAR.
 		\item For instructions using Encoding 0, the address to
-			\texttt{fetch} from is computed by adding the address field of
-			\texttt{iB} to the scalar data field (temporarily casted to the
-			\texttt{u32} type) of the \texttt{dC} DLAR.
-		%\item Also, the address to \texttt{fetch} from is computed by
-		%	adding these two temporary values to a temporary value
-		%	equivalent to the 32-bit sign extended value of
-		%	\texttt{isimm11 << 2}.
+			\texttt{fetch} from is computed with the following formula:
+			\texttt{cast(u32, align(u32, dC.scalar\_data))}.
+		%%\item Also, the address to \texttt{fetch} from is computed by
+		%%	adding these two temporary values to a temporary value
+		%%	equivalent to the 32-bit sign extended value of
+		%%	\texttt{isimm11 << 2}.
+		%\item For instructions using Encoding 1, the address to
+		%	\texttt{fetch} from is computed by adding the address field of
+		%	\texttt{iB} to the the value
+		%	\texttt{cast(s32, (isimm11 << 2))}.
 		\item For instructions using Encoding 1, the address to
-			\texttt{fetch} from is computed by adding the address field of
-			\texttt{iB} to the the value
-			\texttt{cast(s32, (isimm11 << 2))}.
+			\texttt{fetchi} from is computed with the following formula:
+			\texttt{cast(u32, iB.addr) + cast(u32, (isimm11 << 2))}.
 		\item Additionally, this and any other instructions with
 			"\texttt{fetch}" in their names are the only way to fetch
 			instructions from memory (or other ILARs) in this CPU's design.
@@ -1068,7 +1074,7 @@
 				\item This instruction uses Encoding 0.
 				%--------
 				\end{itemize}
-			\item \texttt{fetch iA, iB, isimm11, jimm4}
+			\item \texttt{fetchi iA, iB, isimm11, jimm4}
 				\begin{itemize}
 				%--------
 				\item This instruction uses Encoding 1.
@@ -1310,29 +1316,44 @@
 			\item \texttt{reload dA, imm6}
 				\begin{itemize}
 				%--------
+				\item This instruction uses the \texttt{S} bit to indicate
+					to which mode the operand DLARs belong.
 				\item This instruction forcibly re-loads the \texttt{imm6}
 					consecutive DLARs, starting with \texttt{dA}, from
 					memory. The \texttt{dirty} flags of each of these
 					DLARs' shared data elements are cleared.
-				%--------
-				\end{itemize}
-			\item \texttt{flush dA, imm6}
-				\begin{itemize}
-				%--------
-				\item This instruction forcibly flushes the \texttt{imm6}
-					consecutive DLARs, starting with \texttt{dA}, to
-					memory. The \texttt{dirty} flags of each of these
-					DLARs' shared data elements are cleared.
+				\item When supervisor mode LARs are used for the operands,
+					this instruction causes an exception if used in user
+					mode.
 				%--------
 				\end{itemize}
 			\item \texttt{reload iA, imm6}
 				\begin{itemize}
 				%--------
+				\item This instruction uses the \texttt{S} bit to indicate
+					to which mode the operand DLARs belong.
 				\item This instruction forcibly re-loads the \texttt{imm6}
 					consecutive ILARs, starting with \texttt{iA}, from
 					memory.
+				\item When supervisor mode LARs are used for the operands,
+					this instruction causes an exception if used in user
+					mode.
 				\item Note: This instruction is potentially useful for
 					self-modifying code.
+				%--------
+				\end{itemize}
+			\item \texttt{flush dA, imm6}
+				\begin{itemize}
+				%--------
+				\item This instruction uses the \texttt{S} bit to indicate
+					to which mode the operand DLARs belong.
+				\item This instruction forcibly flushes the \texttt{imm6}
+					consecutive DLARs, starting with \texttt{dA}, to
+					memory. The \texttt{dirty} flags of each of these
+					DLARs' shared data elements are cleared.
+				\item When supervisor mode LARs are used for the operands,
+					this instruction causes an exception if used in user
+					mode.
 				%--------
 				\end{itemize}
 			%--------
@@ -1732,6 +1753,44 @@
 		%--------
 		\end{itemize}
 		\newpage
+
+	\subsection{Group 12 Instructions}
+		\begin{itemize}
+		%--------
+		\item Encoding: \texttt{1100 aaaa aaii iiii  iiii iiii iiii iiii}
+			\begin{itemize}
+			%--------
+			\item \texttt{a}: DLAR a
+			\item \texttt{i}: \texttt{simm22}: (sign-extended 22-bit
+				immediate)
+			\item \texttt{o}: Opcode
+			%--------
+			\end{itemize}
+		\item Instruction List:
+			\begin{itemize}
+			%--------
+			\item \texttt{cpyi.s dA, simm22}
+				\begin{itemize}
+				%--------
+				\item This instruction copies the value of
+					\texttt{cast(dA.type, cast(s64, simm22))} to
+					\texttt{dA.scalar\_data}.
+				%--------
+				\end{itemize}
+			%\item \texttt{shlori.s dA, simm21}
+			%	\begin{itemize}
+			%	%--------
+			%	\item This instruction copies the value of
+			%		\texttt{cast(dA.type,
+			%			(cast(s64, dA.scalar\_data) << 21)
+			%			| cast(s64, simm21))}
+			%		to \texttt{dA.scalar\_data}.
+			%	%--------
+			%	\end{itemize}
+			%--------
+			\end{itemize}
+		%--------
+		\end{itemize}
 
 	%\subsection{Group 12 Instructions}
 	%	\begin{itemize}
